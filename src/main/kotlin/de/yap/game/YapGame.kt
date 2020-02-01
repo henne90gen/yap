@@ -1,15 +1,20 @@
 package de.yap.game
 
 import de.yap.engine.*
+import org.joml.Matrix4f
+import org.joml.Vector3f
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL20.glViewport
 
 
 class YapGame : IGameLogic {
-    private var direction = 0
+    private var directionZ = 0.0F
+    private var directionY = 0.0F
+    private var directionX = 0.0F
     private var color = 0.0f
     private val renderer: Renderer = Renderer()
     private val shader = Shader("src/main/glsl/vertex.glsl", "src/main/glsl/fragment.glsl")
+    private val camera = Camera(Vector3f(), Matrix4f())
 
     @Throws(Exception::class)
     override fun init() {
@@ -18,34 +23,59 @@ class YapGame : IGameLogic {
     }
 
     override fun input(window: Window) {
-        direction = when {
-            window.isKeyPressed(GLFW.GLFW_KEY_UP) -> {
-                1
+        directionX = when {
+            window.isKeyPressed(GLFW.GLFW_KEY_A) -> {
+                1.0F
             }
-            window.isKeyPressed(GLFW.GLFW_KEY_DOWN) -> {
-                -1
+            window.isKeyPressed(GLFW.GLFW_KEY_D) -> {
+                -1.0F
             }
             else -> {
-                0
+                0.0F
+            }
+        }
+        directionY = when {
+            window.isKeyPressed(GLFW.GLFW_KEY_E) -> {
+                1.0F
+            }
+            window.isKeyPressed(GLFW.GLFW_KEY_Q) -> {
+                -1.0F
+            }
+            else -> {
+                0.0F
+            }
+        }
+        directionZ = when {
+            window.isKeyPressed(GLFW.GLFW_KEY_W) -> {
+                1.0F
+            }
+            window.isKeyPressed(GLFW.GLFW_KEY_S) -> {
+                -1.0F
+            }
+            else -> {
+                0.0F
             }
         }
     }
 
     override fun update(interval: Float) {
-        color += direction * 0.01f
-        if (color > 1) {
-            color = 1.0f
-        } else if (color < 0) {
-            color = 0.0f
-        }
+        camera.move(Vector3f(directionX, 0.0F, 0.0F))
+        camera.move(Vector3f(0.0F, directionY, 0.0F))
+        camera.move(Vector3f(0.0F, 0.0F, directionZ))
     }
 
     override fun render(window: Window) {
         if (window.isResized) {
             glViewport(0, 0, window.width, window.height)
             window.isResized = false
+            val aspectRatio = window.width.toFloat() / window.height.toFloat()
+            camera.aspectRatioChanged(aspectRatio)
         }
+
         renderer.clear()
+
+        shader.setUniform("model", Matrix4f().translate(0.0F, 0.0F, -1.0F))
+        shader.apply(camera)
 
         renderQuadMesh()
         renderer.quad(shader)

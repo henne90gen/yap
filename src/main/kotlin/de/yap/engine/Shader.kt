@@ -2,10 +2,13 @@ package de.yap.engine
 
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import org.joml.Matrix4f
 import org.lwjgl.opengl.GL20.*
+import org.lwjgl.system.MemoryUtil
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
+import java.nio.FloatBuffer
 import java.util.stream.Collectors
 
 class Shader(private val vertexShaderPath: String, private val fragmentShaderPath: String) {
@@ -27,6 +30,33 @@ class Shader(private val vertexShaderPath: String, private val fragmentShaderPat
 
     fun unbind() {
         glUseProgram(0)
+    }
+
+    fun apply(camera: Camera) {
+        setUniform("view", camera.viewMatrix)
+        setUniform("projection", camera.projectionMatrix)
+    }
+
+    fun setUniform(name: String, mat: Matrix4f) {
+        bind()
+
+        val loc = glGetUniformLocation(programId, name)
+        if (loc < 0) {
+            log.warn("Could not find uniform '{}'", name)
+            return
+        }
+
+        var buffer: FloatBuffer? = null
+        try {
+            buffer = MemoryUtil.memAllocFloat(16)
+            mat.get(buffer)
+
+            glUniformMatrix4fv(loc, false, buffer!!)
+        } finally {
+            if (buffer != null) {
+                MemoryUtil.memFree(buffer)
+            }
+        }
     }
 
     private fun compilePartial(type: Int, filePath: String): Int {
