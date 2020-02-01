@@ -11,7 +11,6 @@ class YapGame : IGameLogic {
     private var directionZ = 0.0F
     private var directionY = 0.0F
     private var directionX = 0.0F
-    private var color = 0.0f
     private val renderer: Renderer = Renderer()
     private val shader = Shader("src/main/glsl/vertex.glsl", "src/main/glsl/fragment.glsl")
     private val camera = Camera(Vector3f(), Matrix4f())
@@ -74,28 +73,8 @@ class YapGame : IGameLogic {
 
         renderer.clear()
 
-        shader.setUniform("model", Matrix4f().translate(0.0F, 0.0F, -1.0F))
         shader.apply(camera)
 
-        renderQuadMesh()
-        renderer.quad(shader)
-
-        // Todo remove if you want to render quads
-        window.setClearColor(color, color, color, 0.0f)
-    }
-
-    private fun renderQuadMesh() {
-        val vertices = listOf(
-                -1.0f, -1.0f, 0.0f,
-                1.0f, 1.0f, 0.0f,
-                -1.0f, 1.0f, 0.0f,
-                1.0f, -1.0f, 0.0f
-        )
-        val indices = listOf(
-                0, 1, 2,
-                0, 3, 1
-        )
-        val mesh = Mesh(vertices, indices)
-        renderer.mesh(shader, mesh)
+        renderer.cube(shader, Vector3f(0.0F, 0.0F, -1.0F))
     }
 }

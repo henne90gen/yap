@@ -1,5 +1,7 @@
 package de.yap.engine
 
+import org.joml.Matrix4f
+import org.joml.Vector3f
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL11.GL_TRIANGLES
 import org.lwjgl.opengl.GL11.GL_UNSIGNED_INT
@@ -19,8 +21,9 @@ class Renderer {
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT or GL11.GL_DEPTH_BUFFER_BIT)
     }
 
-    fun mesh(shader: Shader, mesh: Mesh) {
+    fun mesh(shader: Shader, mesh: Mesh, position: Vector3f = Vector3f(0.0F, 0.0F, 0.0F)) {
         shader.bind()
+        shader.setUniform("model", Matrix4f().translate(position))
 
         val vao = GL30.glGenVertexArrays()
         GL30.glBindVertexArray(vao)
@@ -61,7 +64,7 @@ class Renderer {
         shader.unbind()
     }
 
-    fun quad(shader: Shader) {
+    fun quad(shader: Shader, position: Vector3f = Vector3f(0.0F, 0.0F, 0.0F)) {
         val vertices = listOf(
                 -1.0f, -1.0f, 0.0f,
                 1.0f, 1.0f, 0.0f,
@@ -73,6 +76,49 @@ class Renderer {
                 0, 3, 1
         )
         val mesh = Mesh(vertices, indices)
-        this.mesh(shader, mesh)
+        this.mesh(shader, mesh, position)
+    }
+
+    fun cube(shader: Shader, position: Vector3f = Vector3f(0.0F, 0.0F, 0.0F)) {
+        val vertices = listOf(
+                // back
+                -1.0F, -1.0F, -1.0F, // 0
+                1.0F, -1.0F, -1.0F,  // 1
+                1.0F, 1.0F, -1.0F,   // 2
+                -1.0F, 1.0F, -1.0F,  // 3
+
+                // front
+                -1.0F, -1.0F, 1.0F,  // 4
+                1.0F, -1.0F, 1.0F,   // 5
+                1.0F, 1.0F, 1.0F,    // 6
+                -1.0F, 1.0F, 1.0F    // 7
+        )
+        val indices = listOf(
+                // front
+                0, 1, 2,
+                0, 2, 3,
+
+                // back
+                4, 5, 6,
+                4, 6, 7,
+
+                // right
+                5, 1, 2,
+                5, 2, 6,
+
+                // left
+                0, 4, 7,
+                0, 7, 3,
+
+                // top
+                7, 6, 2,
+                7, 2, 3,
+
+                // bottom
+                4, 5, 1,
+                4, 1, 0
+        )
+        val mesh = Mesh(vertices, indices)
+        this.mesh(shader, mesh, position)
     }
 }
