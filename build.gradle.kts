@@ -60,6 +60,10 @@ dependencies {
     runtimeOnly("org.lwjgl", "lwjgl-par", classifier = lwjglNatives)
     runtimeOnly("org.lwjgl", "lwjgl-stb", classifier = lwjglNatives)
     implementation("org.joml", "joml", jomlVersion)
+
+    // Logging
+    implementation("org.apache.logging.log4j", "log4j-api", "2.13.0")
+    implementation("org.apache.logging.log4j", "log4j-core", "2.13.0")
 }
 
 application {

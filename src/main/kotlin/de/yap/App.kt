@@ -96,10 +96,15 @@ class App {
         // Set the clear color
         glClearColor(1.0f, 0.0f, 0.0f, 0.0f)
 
+        val shader = Shader("vert.glsl", "frag.glsl")
+
         // Run the rendering loop until the user has attempted to close
         // the window or has pressed the ESCAPE key.
         while (!glfwWindowShouldClose(window)) {
             glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT) // clear the framebuffer
+
+            shader.bind()
+
 
             glfwSwapBuffers(window) // swap the color buffers
 
