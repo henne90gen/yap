@@ -27,7 +27,7 @@ private val log = LogManager.getLogger("Timer")
 fun time(name: String, func: () -> Unit) {
     val startTime = System.nanoTime()
     func()
-    val diff = (System.nanoTime() - startTime) / 1000000
+    val diff = (System.nanoTime() - startTime) / 1000000.0
     log.info("{} took {}ms", name, diff)
 }
 

@@ -1,15 +1,8 @@
 package de.yap.game
 
-import de.yap.engine.IGameLogic
-import de.yap.engine.Renderer
-import de.yap.engine.Shader
-import de.yap.engine.Window
+import de.yap.engine.*
 import org.lwjgl.glfw.GLFW
-import org.lwjgl.opengl.GL20.*
-import org.lwjgl.opengl.GL30.glBindVertexArray
-import org.lwjgl.opengl.GL30.glGenVertexArrays
-import org.lwjgl.system.MemoryUtil
-import java.nio.FloatBuffer
+import org.lwjgl.opengl.GL20.glViewport
 
 
 class YapGame : IGameLogic {
@@ -54,43 +47,25 @@ class YapGame : IGameLogic {
         }
         renderer.clear()
 
-        renderQuad(shader)
+        renderQuadMesh()
+        renderer.quad(shader)
 
         // Todo remove if you want to render quads
-//        window.setClearColor(color, color, color, 0.0f)
+        window.setClearColor(color, color, color, 0.0f)
     }
 
-    private fun renderQuad(shader: Shader?) {
-        shader!!.bind()
-
-        val vao = glGenVertexArrays()
-        glBindVertexArray(vao)
-
-        val vertices = floatArrayOf(
-                0.0f, 0.5f, 0.0f,
-                -0.5f, -0.5f, 0.0f,
-                0.5f, -0.5f, 0.0f
+    private fun renderQuadMesh() {
+        val vertices = listOf(
+                -1.0f, -1.0f, 0.0f,
+                1.0f, 1.0f, 0.0f,
+                -1.0f, 1.0f, 0.0f,
+                1.0f, -1.0f, 0.0f
         )
-
-        var buffer: FloatBuffer? = null
-        try {
-            buffer = MemoryUtil.memAllocFloat(vertices.size)
-            buffer.put(vertices).flip()
-
-            val vbo = glGenBuffers()
-            glBindBuffer(GL_ARRAY_BUFFER, vbo)
-            glBufferData(GL_ARRAY_BUFFER, buffer!!, GL_STATIC_DRAW)
-        } finally {
-            if (buffer != null) {
-                MemoryUtil.memFree(buffer);
-            }
-        }
-
-        glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0)
-
-        glDrawArrays(GL_TRIANGLES, 0, 3)
-
-        shader.unbind()
+        val indices = listOf(
+                0, 1, 2,
+                0, 3, 1
+        )
+        val mesh = Mesh(vertices, indices)
+        renderer.mesh(shader, mesh)
     }
 }
