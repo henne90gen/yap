@@ -9,7 +9,7 @@ import org.lwjgl.system.MemoryUtil
 class Window(private val title: String, var width: Int, var height: Int, private var vSync: Boolean) {
 
     private var windowHandle: Long = 0
-    var isResized = false
+    var isResized = true
 
     fun init() {
         // Setup an error callback. The default implementation

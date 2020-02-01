@@ -13,7 +13,7 @@ class YapGame : IGameLogic {
     private var directionX = 0.0F
     private val renderer: Renderer = Renderer()
     private val shader = Shader("src/main/glsl/vertex.glsl", "src/main/glsl/fragment.glsl")
-    private val camera = Camera(Vector3f(), Matrix4f())
+    private val camera = Camera(Vector3f(0.0F,0.0F,-1.0F), Matrix4f())
 
     @Throws(Exception::class)
     override fun init() {
@@ -75,6 +75,9 @@ class YapGame : IGameLogic {
 
         shader.apply(camera)
 
-        renderer.cube(shader, Vector3f(0.0F, 0.0F, -1.0F))
+        renderer.cube(shader, Vector3f(0.0F, 0.0F, 0.0F), 0.5F)
+        renderer.cube(shader, Vector3f(1.0F, 0.0F, 0.0F), 0.5F)
+        renderer.cube(shader, Vector3f(0.0F, 1.0F, 0.0F), 0.5F)
+        renderer.cube(shader, Vector3f(0.0F, 0.0F, 1.0F), 0.5F)
     }
 }

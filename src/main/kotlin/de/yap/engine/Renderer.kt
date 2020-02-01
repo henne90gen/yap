@@ -21,9 +21,9 @@ class Renderer {
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT or GL11.GL_DEPTH_BUFFER_BIT)
     }
 
-    fun mesh(shader: Shader, mesh: Mesh, position: Vector3f = Vector3f(0.0F, 0.0F, 0.0F)) {
+    fun mesh(shader: Shader, mesh: Mesh, position: Vector3f = Vector3f(0.0F, 0.0F, 0.0F), scale: Float) {
         shader.bind()
-        shader.setUniform("model", Matrix4f().translate(position))
+        shader.setUniform("model", Matrix4f().translate(position).scale(scale))
 
         val vao = GL30.glGenVertexArrays()
         GL30.glBindVertexArray(vao)
@@ -64,7 +64,7 @@ class Renderer {
         shader.unbind()
     }
 
-    fun quad(shader: Shader, position: Vector3f = Vector3f(0.0F, 0.0F, 0.0F)) {
+    fun quad(shader: Shader, position: Vector3f = Vector3f(0.0F, 0.0F, 0.0F), scale: Float) {
         val vertices = listOf(
                 -1.0f, -1.0f, 0.0f,
                 1.0f, 1.0f, 0.0f,
@@ -76,22 +76,22 @@ class Renderer {
                 0, 3, 1
         )
         val mesh = Mesh(vertices, indices)
-        this.mesh(shader, mesh, position)
+        this.mesh(shader, mesh, position, scale)
     }
 
-    fun cube(shader: Shader, position: Vector3f = Vector3f(0.0F, 0.0F, 0.0F)) {
+    fun cube(shader: Shader, position: Vector3f = Vector3f(0.0F, 0.0F, 0.0F), scale: Float) {
         val vertices = listOf(
                 // back
-                -1.0F, -1.0F, -1.0F, // 0
-                1.0F, -1.0F, -1.0F,  // 1
-                1.0F, 1.0F, -1.0F,   // 2
-                -1.0F, 1.0F, -1.0F,  // 3
+                -0.5F, -0.5F, -0.5F, // 0
+                0.5F, -0.5F, -0.5F,  // 1
+                0.5F, 0.5F, -0.5F,   // 2
+                -0.5F, 0.5F, -0.5F,  // 3
 
                 // front
-                -1.0F, -1.0F, 1.0F,  // 4
-                1.0F, -1.0F, 1.0F,   // 5
-                1.0F, 1.0F, 1.0F,    // 6
-                -1.0F, 1.0F, 1.0F    // 7
+                -0.5F, -0.5F, 0.5F,  // 4
+                0.5F, -0.5F, 0.5F,   // 5
+                0.5F, 0.5F, 0.5F,    // 6
+                -0.5F, 0.5F, 0.5F    // 7
         )
         val indices = listOf(
                 // front
@@ -119,6 +119,6 @@ class Renderer {
                 4, 1, 0
         )
         val mesh = Mesh(vertices, indices)
-        this.mesh(shader, mesh, position)
+        this.mesh(shader, mesh, position, scale)
     }
 }
