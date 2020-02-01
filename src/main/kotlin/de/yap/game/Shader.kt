@@ -1,4 +1,4 @@
-package de.yap
+package de.yap.game
 
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -8,16 +8,16 @@ import java.io.File
 import java.io.FileReader
 import java.util.stream.Collectors
 
-class Shader(vertexShaderPath: String, fragmentShaderPath: String) {
+class Shader(private val vertexShaderPath: String, private val fragmentShaderPath: String) {
 
     private val log: Logger = LogManager.getLogger(this.javaClass.name)
 
     private var programId: Int = 0
 
-    init {
+    fun compile() {
         programId = glCreateProgram();
-        val vertexShader = compile(GL_VERTEX_SHADER, vertexShaderPath)
-        val fragmentShader = compile(GL_FRAGMENT_SHADER, fragmentShaderPath)
+        val vertexShader = compilePartial(GL_VERTEX_SHADER, vertexShaderPath)
+        val fragmentShader = compilePartial(GL_FRAGMENT_SHADER, fragmentShaderPath)
         link(vertexShader, fragmentShader)
     }
 
@@ -29,7 +29,7 @@ class Shader(vertexShaderPath: String, fragmentShaderPath: String) {
         glUseProgram(0)
     }
 
-    fun compile(type: Int, filePath: String): Int {
+    private fun compilePartial(type: Int, filePath: String): Int {
         if (!File(filePath).exists()) {
             log.warn("Could not find {}", filePath)
             return 0
@@ -56,7 +56,7 @@ class Shader(vertexShaderPath: String, fragmentShaderPath: String) {
         return shaderId;
     }
 
-    fun link(vertexShader: Int, fragmentShader: Int) {
+    private fun link(vertexShader: Int, fragmentShader: Int) {
         if (vertexShader == 0 || fragmentShader == 0) {
             log.warn("Could not load shader.")
             return
