@@ -3,7 +3,13 @@ package de.yap.game
 import de.yap.engine.IGameLogic
 import de.yap.engine.Window
 import org.lwjgl.glfw.GLFW
-import org.lwjgl.opengl.GL11
+import org.lwjgl.opengl.GL11.*
+import org.lwjgl.opengl.GL15.*
+import org.lwjgl.opengl.GL20.*
+import org.lwjgl.opengl.GL30.glBindVertexArray
+import org.lwjgl.opengl.GL30.glGenVertexArrays
+import org.lwjgl.system.MemoryUtil
+import java.nio.FloatBuffer
 
 
 class DummyGame : IGameLogic {
@@ -43,7 +49,7 @@ class DummyGame : IGameLogic {
 
     override fun render(window: Window) {
         if (window.isResized) {
-            GL11.glViewport(0, 0, window.width, window.height)
+            glViewport(0, 0, window.width, window.height)
             window.isResized = false
         }
 
@@ -59,8 +65,30 @@ class DummyGame : IGameLogic {
     private fun renderQuad(shader: Shader?) {
         shader?.bind()
 
-        val vertices = floatArrayOf(-1.0F, -1.0F, -1.0F, 1.0F, 1.0F, 1.0F)
-//        glCreateB
+        val vao = glGenVertexArrays()
+        glBindVertexArray(vao)
+
+        val vertices = floatArrayOf(0.0f, 0.5f, 0.0f,
+                -0.5f, -0.5f, 0.0f,
+                0.5f, -0.5f, 0.0f)
+        var buffer: FloatBuffer? = null
+        try {
+            buffer = MemoryUtil.memAllocFloat(vertices.size)
+            buffer.put(vertices).flip()
+
+            val vbo = glGenBuffers()
+            glBindBuffer(GL_ARRAY_BUFFER, vbo)
+            glBufferData(vbo, buffer!!, GL_STATIC_DRAW)
+        } finally {
+            if (buffer != null) {
+                MemoryUtil.memFree(buffer);
+            }
+        }
+
+        glEnableVertexAttribArray(0)
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0)
+
+        glDrawArrays(GL_TRIANGLES, 0, 3)
 
         shader?.unbind()
     }
