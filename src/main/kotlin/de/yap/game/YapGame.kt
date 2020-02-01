@@ -1,6 +1,8 @@
 package de.yap.game
 
 import de.yap.engine.IGameLogic
+import de.yap.engine.Renderer
+import de.yap.engine.Shader
 import de.yap.engine.Window
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL20.*
@@ -10,7 +12,7 @@ import org.lwjgl.system.MemoryUtil
 import java.nio.FloatBuffer
 
 
-class DummyGame : IGameLogic {
+class YapGame : IGameLogic {
     private var direction = 0
     private var color = 0.0f
     private val renderer: Renderer = Renderer()
@@ -50,13 +52,12 @@ class DummyGame : IGameLogic {
             glViewport(0, 0, window.width, window.height)
             window.isResized = false
         }
+        renderer.clear()
 
         renderQuad(shader)
 
         // Todo remove if you want to render quads
-        window.setClearColor(color, color, color, 0.0f)
-
-        renderer.clear()
+//        window.setClearColor(color, color, color, 0.0f)
     }
 
     private fun renderQuad(shader: Shader?) {
@@ -70,6 +71,7 @@ class DummyGame : IGameLogic {
                 -0.5f, -0.5f, 0.0f,
                 0.5f, -0.5f, 0.0f
         )
+
         var buffer: FloatBuffer? = null
         try {
             buffer = MemoryUtil.memAllocFloat(vertices.size)
@@ -77,7 +79,7 @@ class DummyGame : IGameLogic {
 
             val vbo = glGenBuffers()
             glBindBuffer(GL_ARRAY_BUFFER, vbo)
-            glBufferData(vbo, buffer!!, GL_STATIC_DRAW)
+            glBufferData(GL_ARRAY_BUFFER, buffer!!, GL_STATIC_DRAW)
         } finally {
             if (buffer != null) {
                 MemoryUtil.memFree(buffer);

@@ -1,4 +1,4 @@
-package de.yap.game
+package de.yap.engine
 
 import org.lwjgl.opengl.GL11
 
