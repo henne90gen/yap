@@ -40,19 +40,16 @@ class Shader(private val vertexShaderPath: String, private val fragmentShaderPat
                 .collect(Collectors.toList())
 
         val shaderId = glCreateShader(type)
-        glShaderSource(shaderId, lines.joinToString())
+        val shaderSource = lines.joinToString("\n")
+        glShaderSource(shaderId, shaderSource)
         glCompileShader(shaderId)
 
-        // TODO check for errors
-        //        int success;
-        //        int infoLogLength;
-        //        GL_Call(glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success));
-        //        GL_Call(glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &infoLogLength));
-        //        if (infoLogLength > 0) {
-        //            std::vector<char> vertexShaderErrorMessage(infoLogLength + 1);
-        //            GL_Call(glGetShaderInfoLog(shaderId, infoLogLength, nullptr, &vertexShaderErrorMessage[0]));
-        //            std::cout << &vertexShaderErrorMessage[0] << std::endl;
-        //        }
+        if (glGetShaderi(shaderId, GL_COMPILE_STATUS) == 0) {
+            val shaderType = if (type == GL_VERTEX_SHADER) "vertex" else "fragment"
+            log.error("Error compiling {} shader code: {}", shaderType, glGetShaderInfoLog(shaderId, 1024))
+            return 0
+        }
+
         return shaderId;
     }
 
@@ -67,16 +64,10 @@ class Shader(private val vertexShaderPath: String, private val fragmentShaderPat
 
         glLinkProgram(programId)
 
-        // TODO check for errors
-        //    int success;
-        //    int infoLogLength;
-        //    GL_Call(glGetProgramiv(newProgramId, GL_LINK_STATUS, &success));
-        //    GL_Call(glGetProgramiv(newProgramId, GL_INFO_LOG_LENGTH, &infoLogLength));
-        //    if (infoLogLength > 0) {
-        //        std::vector<char> programErrorMessage(infoLogLength + 1);
-        //        GL_Call(glGetProgramInfoLog(newProgramId, infoLogLength, nullptr, &programErrorMessage[0]));
-        //        std::cout << &programErrorMessage[0] << std::endl;
-        //    }
+        glValidateProgram(programId);
+        if (glGetProgrami(programId, GL_VALIDATE_STATUS) == 0) {
+            log.error("Warning validating Shader code: {}", glGetProgramInfoLog(programId, 1024));
+        }
 
         glDetachShader(programId, vertexShader)
         glDetachShader(programId, fragmentShader)

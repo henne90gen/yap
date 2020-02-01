@@ -1,11 +1,10 @@
 package de.yap.engine
 
-class GameEngine(windowTitle: String?, width: Int, height: Int, vSync: Boolean, gameLogic: IGameLogic) : Runnable {
+class GameEngine(windowTitle: String?, width: Int, height: Int, vSync: Boolean, private val gameLogic: IGameLogic) : Runnable {
 
     private val window: Window = Window(windowTitle!!, width, height, vSync)
     private val gameLoopThread: Thread = Thread(this, "GAME_LOOP_THREAD")
     private val timer: Timer = Timer()
-    private val gameLogic: IGameLogic = gameLogic
 
     fun start() {
         val osName = System.getProperty("os.name")
@@ -40,13 +39,17 @@ class GameEngine(windowTitle: String?, width: Int, height: Int, vSync: Boolean, 
         while (running && !window.windowShouldClose()) {
             elapsedTime = timer.elapsedTime
             accumulator += elapsedTime
+
             input()
+
             while (accumulator >= interval) {
                 update(interval)
                 accumulator -= interval
             }
+
             render()
-            if (!window.isvSync()) {
+
+            if (!window.isVSync()) {
                 sync()
             }
         }

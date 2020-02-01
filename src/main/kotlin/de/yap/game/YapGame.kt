@@ -61,7 +61,7 @@ class YapGame : IGameLogic {
     }
 
     private fun renderQuad(shader: Shader?) {
-        shader?.bind()
+        shader!!.bind()
 
         val vao = glGenVertexArrays()
         glBindVertexArray(vao)
@@ -91,6 +91,6 @@ class YapGame : IGameLogic {
 
         glDrawArrays(GL_TRIANGLES, 0, 3)
 
-        shader?.unbind()
+        shader.unbind()
     }
 }
