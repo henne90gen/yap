@@ -3,8 +3,6 @@ package de.yap.game
 import de.yap.engine.IGameLogic
 import de.yap.engine.Window
 import org.lwjgl.glfw.GLFW
-import org.lwjgl.opengl.GL11.*
-import org.lwjgl.opengl.GL15.*
 import org.lwjgl.opengl.GL20.*
 import org.lwjgl.opengl.GL30.glBindVertexArray
 import org.lwjgl.opengl.GL30.glGenVertexArrays
@@ -58,7 +56,6 @@ class DummyGame : IGameLogic {
         // Todo remove if you want to render quads
         window.setClearColor(color, color, color, 0.0f)
 
-
         renderer.clear()
     }
 
@@ -68,9 +65,11 @@ class DummyGame : IGameLogic {
         val vao = glGenVertexArrays()
         glBindVertexArray(vao)
 
-        val vertices = floatArrayOf(0.0f, 0.5f, 0.0f,
+        val vertices = floatArrayOf(
+                0.0f, 0.5f, 0.0f,
                 -0.5f, -0.5f, 0.0f,
-                0.5f, -0.5f, 0.0f)
+                0.5f, -0.5f, 0.0f
+        )
         var buffer: FloatBuffer? = null
         try {
             buffer = MemoryUtil.memAllocFloat(vertices.size)

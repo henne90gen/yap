@@ -1,5 +1,7 @@
 package de.yap.engine
 
+import org.apache.logging.log4j.LogManager
+
 class Timer {
     var lastLoopTime = 0.0
         private set
@@ -18,5 +20,17 @@ class Timer {
             lastLoopTime = time
             return elapsedTime
         }
+}
 
+private val log = LogManager.getLogger("Timer")
+
+fun time(name: String, func: () -> Unit) {
+    val startTime = System.nanoTime()
+    func()
+    val diff = (System.nanoTime() - startTime) / 1000000
+    log.info("{} took {}ms", name, diff)
+}
+
+fun timeX(name: String, func: () -> Unit) {
+    func()
 }
