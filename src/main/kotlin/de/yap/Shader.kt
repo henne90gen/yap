@@ -25,6 +25,10 @@ class Shader(vertexShaderPath: String, fragmentShaderPath: String) {
         glUseProgram(programId)
     }
 
+    fun unbind() {
+        glUseProgram(0)
+    }
+
     fun compile(type: Int, filePath: String): Int {
         if (!File(filePath).exists()) {
             log.warn("Could not find {}", filePath)
@@ -79,6 +83,5 @@ class Shader(vertexShaderPath: String, fragmentShaderPath: String) {
 
         glDeleteShader(vertexShader)
         glDeleteShader(fragmentShader)
-
     }
 }

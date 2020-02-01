@@ -10,6 +10,7 @@ import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11.*
+import org.lwjgl.opengl.GL15.*
 import org.lwjgl.system.MemoryStack.stackPush
 import org.lwjgl.system.MemoryUtil.NULL
 
@@ -21,7 +22,8 @@ class App {
     fun run() {
         System.out.println("Hello LWJGL " + Version.getVersion() + "!")
 
-        init()
+        time("init", this::init)
+
         loop()
 
         // Free the window callbacks and destroy the window
@@ -86,32 +88,38 @@ class App {
     }
 
     private fun loop() {
-        // This line is critical for LWJGL's interoperation with GLFW's
-        // OpenGL context, or any context that is managed externally.
-        // LWJGL detects the context that is current in the current thread,
-        // creates the GLCapabilities instance and makes the OpenGL
-        // bindings available for use.
-        GL.createCapabilities()
+        var shader: Shader? = null
 
-        // Set the clear color
-        glClearColor(1.0f, 0.0f, 0.0f, 0.0f)
+        time("loopInit") {
+            GL.createCapabilities()
 
-        val shader = Shader("vert.glsl", "frag.glsl")
+            glClearColor(1.0f, 0.0f, 0.0f, 0.0f)
 
-        // Run the rendering loop until the user has attempted to close
-        // the window or has pressed the ESCAPE key.
-        while (!glfwWindowShouldClose(window)) {
-            glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT) // clear the framebuffer
-
-            shader.bind()
-
-
-            glfwSwapBuffers(window) // swap the color buffers
-
-            // Poll for window events. The key callback above will only be
-            // invoked during this call.
-            glfwPollEvents()
+            shader = Shader("src/main/glsl/vertex.glsl", "src/main/glsl/fragment.glsl")
         }
+
+        while (!glfwWindowShouldClose(window)) {
+            timeX("Last frame") {
+                glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT) // clear the framebuffer
+
+                renderQuad(shader)
+
+                glfwSwapBuffers(window) // swap the color buffers
+
+                // Poll for window events. The key callback above will only be
+                // invoked during this call.
+                glfwPollEvents()
+            }
+        }
+    }
+
+    private fun renderQuad(shader: Shader?) {
+        shader?.bind()
+
+        val vertices = floatArrayOf(-1.0F, -1.0F, -1.0F, 1.0F, 1.0F, 1.0F)
+//        glCreateB
+
+        shader?.unbind()
     }
 }
 
