@@ -47,7 +47,7 @@ class GameEngine(windowTitle: String?, width: Int, height: Int, vSync: Boolean, 
             input()
 
             while (accumulator >= interval) {
-                // calculate actual last update time here
+                // TODO calculate actual last update time here
                 window.setUps(1.0F / interval)
                 update(interval)
                 accumulator -= interval

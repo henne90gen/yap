@@ -61,9 +61,7 @@ class Window(private val title: String, var width: Int, var height: Int, private
 
         // Make the OpenGL context current
         GLFW.glfwMakeContextCurrent(windowHandle)
-        if (isVSync()) { // Enable v-sync
-            GLFW.glfwSwapInterval(1)
-        }
+        setVSync(vSync)
 
         // Make the window visible
         GLFW.glfwShowWindow(windowHandle)
@@ -90,6 +88,12 @@ class Window(private val title: String, var width: Int, var height: Int, private
 
     fun setVSync(vSync: Boolean) {
         this.vSync = vSync
+        if (vSync) {
+            // Enable v-sync
+            GLFW.glfwSwapInterval(1)
+        } else {
+            GLFW.glfwSwapInterval(0)
+        }
     }
 
     fun update() {
