@@ -3,8 +3,7 @@ package de.yap.engine
 import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.lwjgl.opengl.GL11
-import org.lwjgl.opengl.GL11.GL_TRIANGLES
-import org.lwjgl.opengl.GL11.GL_UNSIGNED_INT
+import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL15
 import org.lwjgl.opengl.GL20
 import org.lwjgl.opengl.GL30
@@ -120,5 +119,39 @@ class Renderer {
         )
         val mesh = Mesh(vertices, indices)
         this.mesh(shader, mesh, position, scale)
+    }
+
+    fun line(shader: Shader, start: Vector3f, end: Vector3f) {
+        shader.bind()
+        shader.setUniform("model", Matrix4f())
+
+        val vao = GL30.glGenVertexArrays()
+        GL30.glBindVertexArray(vao)
+
+        val vertices = listOf(
+                start.x, start.y, start.z,
+                end.x, end.y, end.z
+        )
+
+        var buffer: FloatBuffer? = null
+        try {
+            buffer = MemoryUtil.memAllocFloat(vertices.size)
+            buffer.put(vertices.toFloatArray()).flip()
+
+            val vbo = GL20.glGenBuffers()
+            GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vbo)
+            GL20.glBufferData(GL20.GL_ARRAY_BUFFER, buffer!!, GL20.GL_STATIC_DRAW)
+        } finally {
+            if (buffer != null) {
+                MemoryUtil.memFree(buffer)
+            }
+        }
+
+        GL20.glEnableVertexAttribArray(0)
+        GL20.glVertexAttribPointer(0, 3, GL20.GL_FLOAT, false, 0, 0)
+
+        glDrawArrays(GL_LINES, 0, 2)
+
+        shader.unbind()
     }
 }

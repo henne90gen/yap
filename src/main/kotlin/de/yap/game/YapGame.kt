@@ -1,6 +1,8 @@
 package de.yap.game
 
 import de.yap.engine.*
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.lwjgl.glfw.GLFW
@@ -8,47 +10,48 @@ import org.lwjgl.opengl.GL20.glViewport
 
 
 class YapGame : IGameLogic {
-    private var directionZ = 0.0F
-    private var directionY = 0.0F
-    private var directionX = 0.0F
+
+    private val log: Logger = LogManager.getLogger(this.javaClass.name)
+
+    private val direction = Vector3f(0.0f, 0.0f, 0.0f)
     private val renderer: Renderer = Renderer()
     private val shader = Shader("src/main/glsl/vertex.glsl", "src/main/glsl/fragment.glsl")
-    private val camera = Camera(Vector3f(0.0F,0.0F,-1.0F), Matrix4f())
+    private val camera = Camera(Vector3f(0.5F, 0.0F, 3.0F), Matrix4f())
+    private val cameraSpeed = 0.1F;
 
-    @Throws(Exception::class)
     override fun init() {
         renderer.init()
         shader.compile()
     }
 
     override fun input(window: Window) {
-        directionX = when {
-            window.isKeyPressed(GLFW.GLFW_KEY_A) -> {
-                1.0F
-            }
+        direction.x = when {
             window.isKeyPressed(GLFW.GLFW_KEY_D) -> {
+                1.0F
+            }
+            window.isKeyPressed(GLFW.GLFW_KEY_A) -> {
                 -1.0F
             }
             else -> {
                 0.0F
             }
         }
-        directionY = when {
-            window.isKeyPressed(GLFW.GLFW_KEY_E) -> {
-                1.0F
-            }
+        direction.y = when {
             window.isKeyPressed(GLFW.GLFW_KEY_Q) -> {
+                1.0F
+            }
+            window.isKeyPressed(GLFW.GLFW_KEY_E) -> {
                 -1.0F
             }
             else -> {
                 0.0F
             }
         }
-        directionZ = when {
-            window.isKeyPressed(GLFW.GLFW_KEY_W) -> {
+        direction.z = when {
+            window.isKeyPressed(GLFW.GLFW_KEY_S) -> {
                 1.0F
             }
-            window.isKeyPressed(GLFW.GLFW_KEY_S) -> {
+            window.isKeyPressed(GLFW.GLFW_KEY_W) -> {
                 -1.0F
             }
             else -> {
@@ -58,9 +61,8 @@ class YapGame : IGameLogic {
     }
 
     override fun update(interval: Float) {
-        camera.move(Vector3f(directionX, 0.0F, 0.0F))
-        camera.move(Vector3f(0.0F, directionY, 0.0F))
-        camera.move(Vector3f(0.0F, 0.0F, directionZ))
+        val tmp = Vector3f(direction).mul(cameraSpeed)
+        camera.move(tmp)
     }
 
     override fun render(window: Window) {
@@ -75,9 +77,17 @@ class YapGame : IGameLogic {
 
         shader.apply(camera)
 
+        renderer.line(shader, camera.position, Vector3f(0.0f, 0.0f, 0.0f))
+        renderer.line(shader, camera.position, Vector3f(1.0f, 0.0f, 0.0f))
+        renderer.line(shader, camera.position, Vector3f(0.0f, 1.0f, 0.0f))
+        renderer.line(shader, camera.position, Vector3f(0.0f, 0.0f, 1.0f))
+
         renderer.cube(shader, Vector3f(0.0F, 0.0F, 0.0F), 0.5F)
         renderer.cube(shader, Vector3f(1.0F, 0.0F, 0.0F), 0.5F)
+        renderer.line(shader, Vector3f(0.0F, 0.0F, 0.0F), Vector3f(1.0F, 0.0F, 0.0F))
         renderer.cube(shader, Vector3f(0.0F, 1.0F, 0.0F), 0.5F)
+        renderer.line(shader, Vector3f(0.0F, 0.0F, 0.0F), Vector3f(0.0F, 1.0F, 0.0F))
         renderer.cube(shader, Vector3f(0.0F, 0.0F, 1.0F), 0.5F)
+        renderer.line(shader, Vector3f(0.0F, 0.0F, 0.0F), Vector3f(0.0F, 0.0F, 1.0F))
     }
 }

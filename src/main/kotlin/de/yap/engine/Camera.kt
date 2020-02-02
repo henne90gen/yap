@@ -3,7 +3,7 @@ package de.yap.engine
 import org.joml.Matrix4f
 import org.joml.Vector3f
 
-class Camera(private val position: Vector3f, private val rotation: Matrix4f) {
+class Camera(val position: Vector3f, private val rotation: Matrix4f) {
 
     private val zFar = 1000.0f
     private val zNear = 0.01f
@@ -14,7 +14,7 @@ class Camera(private val position: Vector3f, private val rotation: Matrix4f) {
 
     fun move(offset: Vector3f) {
         position.add(offset)
-        viewMatrix = Matrix4f().translate(position).mul(rotation)
+        viewMatrix = calcViewMatrix()
     }
 
     fun aspectRatioChanged(aspectRatio: Float) {
@@ -23,8 +23,9 @@ class Camera(private val position: Vector3f, private val rotation: Matrix4f) {
     }
 
     private fun calcViewMatrix(): Matrix4f {
+        val pos = Vector3f(position)
         return Matrix4f()
-                .translate(position)
+                .translate(pos.mul(-1.0f))
                 .mul(rotation)
     }
 
