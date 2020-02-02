@@ -1,5 +1,7 @@
 package de.yap.engine
 
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.lwjgl.opengl.GL11
@@ -13,11 +15,13 @@ import java.nio.IntBuffer
 
 class Renderer {
 
+    private val log: Logger = LogManager.getLogger(this.javaClass.name)
+
     fun init() {
     }
 
     fun clear() {
-        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT or GL11.GL_DEPTH_BUFFER_BIT)
+        glClear(GL11.GL_COLOR_BUFFER_BIT or GL11.GL_DEPTH_BUFFER_BIT)
     }
 
     fun mesh(shader: Shader, mesh: Mesh, position: Vector3f = Vector3f(0.0F, 0.0F, 0.0F), scale: Float) {
@@ -58,7 +62,7 @@ class Renderer {
             }
         }
 
-        GL11.glDrawElements(GL_TRIANGLES, mesh.indices.size, GL_UNSIGNED_INT, 0)
+        glDrawElements(GL_TRIANGLES, mesh.indices.size, GL_UNSIGNED_INT, 0)
 
         shader.unbind()
     }

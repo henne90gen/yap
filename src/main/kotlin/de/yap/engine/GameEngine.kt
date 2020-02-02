@@ -2,8 +2,13 @@ package de.yap.engine
 
 class GameEngine(windowTitle: String?, width: Int, height: Int, vSync: Boolean, private val gameLogic: IGameLogic) : Runnable {
 
+    companion object {
+        const val TARGET_FPS = 75
+        const val TARGET_UPS = 30
+    }
+
     private val window: Window = Window(windowTitle!!, width, height, vSync)
-    private val gameLoopThread: Thread = Thread(this, "GAME_LOOP_THREAD")
+    private val gameLoopThread: Thread = Thread(this, "GAME_LOOP")
     private val timer: Timer = Timer()
 
     fun start() {
@@ -19,19 +24,18 @@ class GameEngine(windowTitle: String?, width: Int, height: Int, vSync: Boolean, 
         try {
             init()
             gameLoop()
-        } catch (excp: Exception) {
-            excp.printStackTrace()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    @Throws(Exception::class)
-    protected fun init() {
+    private fun init() {
         window.init()
         timer.init()
         gameLogic.init()
     }
 
-    protected fun gameLoop() {
+    private fun gameLoop() {
         var elapsedTime: Float
         var accumulator = 0f
         val interval = 1f / TARGET_UPS
@@ -43,11 +47,14 @@ class GameEngine(windowTitle: String?, width: Int, height: Int, vSync: Boolean, 
             input()
 
             while (accumulator >= interval) {
+                // calculate actual last update time here
+                window.setUps(1.0F / interval)
                 update(interval)
                 accumulator -= interval
             }
 
             render()
+            window.setFps(1.0F / elapsedTime)
 
             if (!window.isVSync()) {
                 sync()
@@ -66,21 +73,16 @@ class GameEngine(windowTitle: String?, width: Int, height: Int, vSync: Boolean, 
         }
     }
 
-    protected fun input() {
+    private fun input() {
         gameLogic.input(window)
     }
 
-    protected fun update(interval: Float) {
+    private fun update(interval: Float) {
         gameLogic.update(interval)
     }
 
-    protected fun render() {
+    private fun render() {
         gameLogic.render(window)
         window.update()
-    }
-
-    companion object {
-        const val TARGET_FPS = 75
-        const val TARGET_UPS = 30
     }
 }

@@ -3,7 +3,7 @@ package de.yap.engine
 import org.joml.Matrix4f
 import org.joml.Vector3f
 
-class Camera(val position: Vector3f, private val rotation: Matrix4f) {
+class Camera(val position: Vector3f, val rotation: Matrix4f) {
 
     private val zFar = 1000.0f
     private val zNear = 0.01f

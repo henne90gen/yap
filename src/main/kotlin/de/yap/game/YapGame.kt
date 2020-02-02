@@ -5,6 +5,7 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
 import org.joml.Vector3f
+import org.joml.Vector4f
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL20.glViewport
 
@@ -66,6 +67,7 @@ class YapGame : IGameLogic {
     }
 
     override fun render(window: Window) {
+        renderer.clear()
         if (window.isResized) {
             glViewport(0, 0, window.width, window.height)
             window.isResized = false
@@ -73,21 +75,40 @@ class YapGame : IGameLogic {
             camera.aspectRatioChanged(aspectRatio)
         }
 
-        renderer.clear()
-
         shader.apply(camera)
 
-        renderer.line(shader, camera.position, Vector3f(0.0f, 0.0f, 0.0f))
-        renderer.line(shader, camera.position, Vector3f(1.0f, 0.0f, 0.0f))
-        renderer.line(shader, camera.position, Vector3f(0.0f, 1.0f, 0.0f))
-        renderer.line(shader, camera.position, Vector3f(0.0f, 0.0f, 1.0f))
+        renderRayFromCamera()
+        renderCoordinateSystemAxis()
+    }
 
-        renderer.cube(shader, Vector3f(0.0F, 0.0F, 0.0F), 0.5F)
-        renderer.cube(shader, Vector3f(1.0F, 0.0F, 0.0F), 0.5F)
+    private fun renderCoordinateSystemAxis() {
+        renderer.cube(shader, Vector3f(0.0F, 0.0F, 0.0F), 0.1F)
+        renderer.cube(shader, Vector3f(1.0F, 0.0F, 0.0F), 0.1F)
+        renderer.cube(shader, Vector3f(0.0F, 1.0F, 0.0F), 0.1F)
+        renderer.cube(shader, Vector3f(0.0F, 0.0F, 1.0F), 0.1F)
+
         renderer.line(shader, Vector3f(0.0F, 0.0F, 0.0F), Vector3f(1.0F, 0.0F, 0.0F))
-        renderer.cube(shader, Vector3f(0.0F, 1.0F, 0.0F), 0.5F)
         renderer.line(shader, Vector3f(0.0F, 0.0F, 0.0F), Vector3f(0.0F, 1.0F, 0.0F))
-        renderer.cube(shader, Vector3f(0.0F, 0.0F, 1.0F), 0.5F)
         renderer.line(shader, Vector3f(0.0F, 0.0F, 0.0F), Vector3f(0.0F, 0.0F, 1.0F))
+
+        renderer.line(shader, Vector3f(0.0F, 0.0F, 1.0F), Vector3f(1.0F, 0.0F, 0.0F))
+        renderer.line(shader, Vector3f(0.0F, 1.0F, 0.0F), Vector3f(1.0F, 0.0F, 0.0F))
+        renderer.line(shader, Vector3f(0.0F, 1.0F, 0.0F), Vector3f(0.0F, 0.0F, 1.0F))
+    }
+
+    private fun renderRayFromCamera() {
+        val direction = Vector4f(0.0F, 0.0F, -1.0F, 0.0F)
+                .mul(camera.rotation)
+        val startOffset = Vector3f(direction.x, direction.y, direction.z)
+                .add(0.0F, -0.1F, 0.0F)
+                .normalize()
+                .mul(0.01F)
+        val start = Vector3f(camera.position)
+                .add(startOffset)
+        val endOffset = Vector3f(direction.x, direction.y, direction.z)
+                .mul(10.0F)
+        val end = Vector3f(camera.position)
+                .add(endOffset)
+        renderer.line(shader, start, end)
     }
 }

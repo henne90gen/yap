@@ -6,9 +6,13 @@ import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
 import org.lwjgl.system.MemoryUtil
 
+// TODO setting vSync to 'false' has no effect
 class Window(private val title: String, var width: Int, var height: Int, private var vSync: Boolean) {
 
     private var windowHandle: Long = 0
+    private var ups = 0.0F
+    private var fps = 0.0F
+
     var isResized = true
 
     fun init() {
@@ -93,4 +97,19 @@ class Window(private val title: String, var width: Int, var height: Int, private
         GLFW.glfwPollEvents()
     }
 
+    fun setUps(ups: Float) {
+        this.ups = ups
+        updateWindowTitle()
+    }
+
+    fun setFps(fps: Float) {
+        this.fps = fps
+        updateWindowTitle()
+    }
+
+    private fun updateWindowTitle() {
+        val formattedFps = "%.4f".format(fps)
+        val formattedUps = "%.4f".format(ups)
+        GLFW.glfwSetWindowTitle(windowHandle, "$title (fps: $formattedFps, ups: $formattedUps)")
+    }
 }
