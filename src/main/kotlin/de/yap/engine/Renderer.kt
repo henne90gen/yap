@@ -24,7 +24,7 @@ class Renderer {
         glClear(GL11.GL_COLOR_BUFFER_BIT or GL11.GL_DEPTH_BUFFER_BIT)
     }
 
-    fun mesh(shader: Shader, mesh: Mesh, position: Vector3f = Vector3f(0.0F, 0.0F, 0.0F), scale: Float) {
+    fun mesh(shader: Shader, mesh: Mesh, position: Vector3f = Vector3f(0.0F, 0.0F, 0.0F), scale: Float = 1.0F) {
         shader.bind()
         shader.setUniform("model", Matrix4f().translate(position).scale(scale))
 
@@ -157,5 +157,15 @@ class Renderer {
         glDrawArrays(GL_LINES, 0, 2)
 
         shader.unbind()
+    }
+
+    fun wireframe(activate: Boolean = true, func: () -> Unit) {
+        if (activate) {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+        }
+        func()
+        if (activate) {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+        }
     }
 }

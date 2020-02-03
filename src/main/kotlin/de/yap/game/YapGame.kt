@@ -19,6 +19,7 @@ class YapGame : IGameLogic {
     private val shader = Shader("src/main/glsl/vertex.glsl", "src/main/glsl/fragment.glsl")
     private val camera = Camera(Vector3f(0.5F, 0.0F, 3.0F), Matrix4f())
     private val cameraSpeed = 0.1F;
+    private var roomWireframe = false
 
     override fun init() {
         renderer.init()
@@ -59,6 +60,11 @@ class YapGame : IGameLogic {
                 0.0F
             }
         }
+
+        // TODO this is not good enough (boolean switches back an forth really fast)
+        if (window.isKeyPressed(GLFW.GLFW_KEY_F)) {
+            roomWireframe = !roomWireframe
+        }
     }
 
     override fun update(interval: Float) {
@@ -79,6 +85,30 @@ class YapGame : IGameLogic {
 
         renderRayFromCamera()
         renderCoordinateSystemAxis()
+        renderRoom()
+    }
+
+    private fun renderRoom() {
+        val mesh = Mesh()
+                // back
+                .withQuad(Vector3f(0.0F, 1.0F, 0.0F), Vector3f(0.0F, 0.0F, 0.0F), Vector3f(1.0F, 1.0F, 0.0F))
+                // front
+                .withQuad(Vector3f(1.0F, 1.0F, 1.0F), Vector3f(1.0F, 0.0F, 1.0F), Vector3f(0.0F, 1.0F, 1.0F))
+                // left
+                .withQuad(Vector3f(0.0F, 1.0F, 1.0F), Vector3f(0.0F, 0.0F, 1.0F), Vector3f(0.0F, 1.0F, 0.0F))
+                // right
+                .withQuad(Vector3f(1.0F, 1.0F, 0.0F), Vector3f(1.0F, 0.0F, 0.0F), Vector3f(1.0F, 1.0F, 1.0F))
+                // top
+                .withQuad(Vector3f(0.0F, 1.0F, 1.0F), Vector3f(0.0F, 1.0F, 0.0F), Vector3f(1.0F, 1.0F, 1.0F))
+                // bottom
+                .withQuad(Vector3f(0.0F, 0.0F, 0.0F), Vector3f(0.0F, 0.0F, 1.0F), Vector3f(1.0F, 0.0F, 0.0F))
+
+        renderer.wireframe(roomWireframe) {
+            val scale = 2.0F
+            val negativeScaleHalf = -0.5F * scale
+            val position = Vector3f(negativeScaleHalf)
+            renderer.mesh(shader, mesh, position, scale)
+        }
     }
 
     private fun renderCoordinateSystemAxis() {
