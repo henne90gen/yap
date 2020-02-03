@@ -18,12 +18,59 @@ class YapGame : IGameLogic {
     private val renderer: Renderer = Renderer()
     private val shader = Shader("src/main/glsl/vertex.glsl", "src/main/glsl/fragment.glsl")
     private val camera = Camera(Vector3f(0.5F, 0.0F, 3.0F), Matrix4f())
-    private val cameraSpeed = 0.1F;
+    private val cameraSpeed = 0.1F
+    private var cameraRayStart = Vector3f()
+    private var cameraRayResult = IntersectionResult()
     private var roomWireframe = false
+
+    private lateinit var roomMesh: Mesh
+    private val scale = 2.0F
+    private val negativeScaleHalf = -0.5F * scale
+    private val position = Vector3f(negativeScaleHalf)
+    private val roomTransformation = Matrix4f().translate(position).scale(scale)
+
 
     override fun init() {
         renderer.init()
         shader.compile()
+
+        roomMesh = Mesh()
+                // back
+                .withQuad(
+                        Vector3f(0.0F, 1.0F, 0.0F),
+                        Vector3f(0.0F, 0.0F, 0.0F),
+                        Vector3f(1.0F, 1.0F, 0.0F)
+                )
+                // front
+                .withQuad(
+                        Vector3f(1.0F, 1.0F, 1.0F),
+                        Vector3f(1.0F, 0.0F, 1.0F),
+                        Vector3f(0.0F, 1.0F, 1.0F)
+                )
+                // left
+                .withQuad(
+                        Vector3f(0.0F, 1.0F, 1.0F),
+                        Vector3f(0.0F, 0.0F, 1.0F),
+                        Vector3f(0.0F, 1.0F, 0.0F)
+                )
+                // right
+                .withQuad(
+                        Vector3f(1.0F, 1.0F, 0.0F),
+                        Vector3f(1.0F, 0.0F, 0.0F),
+                        Vector3f(1.0F, 1.0F, 1.0F)
+                )
+                // top
+                .withQuad(
+                        Vector3f(0.0F, 1.0F, 1.0F),
+                        Vector3f(0.0F, 1.0F, 0.0F),
+                        Vector3f(1.0F, 1.0F, 1.0F)
+                )
+                // bottom
+                .withQuad(
+                        Vector3f(0.0F, 0.0F, 0.0F),
+                        Vector3f(0.0F, 0.0F, 1.0F),
+                        Vector3f(1.0F, 0.0F, 0.0F)
+                )
     }
 
     override fun input(window: Window) {
@@ -61,7 +108,7 @@ class YapGame : IGameLogic {
             }
         }
 
-        // TODO this is not good enough (boolean switches back an forth really fast)
+        // TODO this is not good enough (boolean switches back and forth really fast)
         if (window.isKeyPressed(GLFW.GLFW_KEY_F)) {
             roomWireframe = !roomWireframe
         }
@@ -70,6 +117,19 @@ class YapGame : IGameLogic {
     override fun update(interval: Float) {
         val tmp = Vector3f(direction).mul(cameraSpeed)
         camera.move(tmp)
+
+        val dir = Vector4f(0.0F, 0.0F, -1.0F, 0.0F)
+                .mul(camera.rotation)
+        val cameraDirection = Vector3f(dir.x, dir.y, dir.z)
+
+        val startOffset = Vector3f(cameraDirection)
+                .add(0.0F, -0.1F, 0.0F) // move the start down a little
+                .normalize()
+                .mul(0.01F)
+        cameraRayStart = Vector3f(camera.position)
+                .add(startOffset)
+
+        cameraRayResult = intersects(cameraRayStart, cameraDirection, roomMesh, roomTransformation)
     }
 
     override fun render(window: Window) {
@@ -82,6 +142,7 @@ class YapGame : IGameLogic {
         }
 
         shader.apply(camera)
+        shader.setUniform("color", Vector4f(1.0F, 1.0F, 1.0F, 1.0F))
 
         renderRayFromCamera()
         renderCoordinateSystemAxis()
@@ -89,33 +150,16 @@ class YapGame : IGameLogic {
     }
 
     private fun renderRoom() {
-        val mesh = Mesh()
-                // back
-                .withQuad(Vector3f(0.0F, 1.0F, 0.0F), Vector3f(0.0F, 0.0F, 0.0F), Vector3f(1.0F, 1.0F, 0.0F))
-                // front
-                .withQuad(Vector3f(1.0F, 1.0F, 1.0F), Vector3f(1.0F, 0.0F, 1.0F), Vector3f(0.0F, 1.0F, 1.0F))
-                // left
-                .withQuad(Vector3f(0.0F, 1.0F, 1.0F), Vector3f(0.0F, 0.0F, 1.0F), Vector3f(0.0F, 1.0F, 0.0F))
-                // right
-                .withQuad(Vector3f(1.0F, 1.0F, 0.0F), Vector3f(1.0F, 0.0F, 0.0F), Vector3f(1.0F, 1.0F, 1.0F))
-                // top
-                .withQuad(Vector3f(0.0F, 1.0F, 1.0F), Vector3f(0.0F, 1.0F, 0.0F), Vector3f(1.0F, 1.0F, 1.0F))
-                // bottom
-                .withQuad(Vector3f(0.0F, 0.0F, 0.0F), Vector3f(0.0F, 0.0F, 1.0F), Vector3f(1.0F, 0.0F, 0.0F))
-
         renderer.wireframe(roomWireframe) {
-            val scale = 2.0F
-            val negativeScaleHalf = -0.5F * scale
-            val position = Vector3f(negativeScaleHalf)
-            renderer.mesh(shader, mesh, position, scale)
+            renderer.mesh(shader, roomMesh, roomTransformation)
         }
     }
 
     private fun renderCoordinateSystemAxis() {
-        renderer.cube(shader, Vector3f(0.0F, 0.0F, 0.0F), 0.1F)
-        renderer.cube(shader, Vector3f(1.0F, 0.0F, 0.0F), 0.1F)
-        renderer.cube(shader, Vector3f(0.0F, 1.0F, 0.0F), 0.1F)
-        renderer.cube(shader, Vector3f(0.0F, 0.0F, 1.0F), 0.1F)
+        renderer.cube(shader, Matrix4f().translate(Vector3f(0.0F, 0.0F, 0.0F)).scale(0.1F))
+        renderer.cube(shader, Matrix4f().translate(Vector3f(1.0F, 0.0F, 0.0F)).scale(0.1F))
+        renderer.cube(shader, Matrix4f().translate(Vector3f(0.0F, 1.0F, 0.0F)).scale(0.1F))
+        renderer.cube(shader, Matrix4f().translate(Vector3f(0.0F, 0.0F, 1.0F)).scale(0.1F))
 
         renderer.line(shader, Vector3f(0.0F, 0.0F, 0.0F), Vector3f(1.0F, 0.0F, 0.0F))
         renderer.line(shader, Vector3f(0.0F, 0.0F, 0.0F), Vector3f(0.0F, 1.0F, 0.0F))
@@ -127,18 +171,11 @@ class YapGame : IGameLogic {
     }
 
     private fun renderRayFromCamera() {
-        val direction = Vector4f(0.0F, 0.0F, -1.0F, 0.0F)
-                .mul(camera.rotation)
-        val startOffset = Vector3f(direction.x, direction.y, direction.z)
-                .add(0.0F, -0.1F, 0.0F)
-                .normalize()
-                .mul(0.01F)
-        val start = Vector3f(camera.position)
-                .add(startOffset)
-        val endOffset = Vector3f(direction.x, direction.y, direction.z)
-                .mul(10.0F)
-        val end = Vector3f(camera.position)
-                .add(endOffset)
-        renderer.line(shader, start, end)
+        shader.setUniform("color", Vector4f(1.0F, 0.0F, 0.0F, 1.0F))
+        if (cameraRayResult.distanceSquared != Float.MAX_VALUE) {
+            renderer.line(shader, cameraRayStart, cameraRayResult.point)
+            renderer.cube(shader, Matrix4f().translate(cameraRayResult.point).scale(0.1F))
+        }
+        shader.setUniform("color", Vector4f(1.0F, 1.0F, 1.0F, 1.0F))
     }
 }

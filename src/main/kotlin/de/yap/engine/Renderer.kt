@@ -18,15 +18,16 @@ class Renderer {
     private val log: Logger = LogManager.getLogger(this.javaClass.name)
 
     fun init() {
+        glEnable(GL_DEPTH_TEST)
     }
 
     fun clear() {
         glClear(GL11.GL_COLOR_BUFFER_BIT or GL11.GL_DEPTH_BUFFER_BIT)
     }
 
-    fun mesh(shader: Shader, mesh: Mesh, position: Vector3f = Vector3f(0.0F, 0.0F, 0.0F), scale: Float = 1.0F) {
+    fun mesh(shader: Shader, mesh: Mesh, transformation: Matrix4f = Matrix4f()) {
         shader.bind()
-        shader.setUniform("model", Matrix4f().translate(position).scale(scale))
+        shader.setUniform("model", transformation)
 
         val vao = GL30.glGenVertexArrays()
         GL30.glBindVertexArray(vao)
@@ -67,7 +68,7 @@ class Renderer {
         shader.unbind()
     }
 
-    fun quad(shader: Shader, position: Vector3f = Vector3f(0.0F, 0.0F, 0.0F), scale: Float) {
+    fun quad(shader: Shader, transformation: Matrix4f = Matrix4f()) {
         val vertices = listOf(
                 -1.0f, -1.0f, 0.0f,
                 1.0f, 1.0f, 0.0f,
@@ -79,10 +80,10 @@ class Renderer {
                 0, 3, 1
         )
         val mesh = Mesh(vertices, indices)
-        this.mesh(shader, mesh, position, scale)
+        this.mesh(shader, mesh, transformation)
     }
 
-    fun cube(shader: Shader, position: Vector3f = Vector3f(0.0F, 0.0F, 0.0F), scale: Float) {
+    fun cube(shader: Shader, transformation: Matrix4f = Matrix4f()) {
         val vertices = listOf(
                 // back
                 -0.5F, -0.5F, -0.5F, // 0
@@ -122,7 +123,7 @@ class Renderer {
                 4, 1, 0
         )
         val mesh = Mesh(vertices, indices)
-        this.mesh(shader, mesh, position, scale)
+        this.mesh(shader, mesh, transformation)
     }
 
     fun line(shader: Shader, start: Vector3f, end: Vector3f) {
