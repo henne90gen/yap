@@ -78,6 +78,10 @@ class Window(private val title: String, var width: Int, var height: Int, private
         return GLFW.glfwGetKey(windowHandle, keyCode) == GLFW.GLFW_PRESS
     }
 
+    fun isMousePressed(mouseButtonCode: Int): Boolean {
+        return GLFW.glfwGetMouseButton(windowHandle, mouseButtonCode) == GLFW.GLFW_PRESS
+    }
+
     fun windowShouldClose(): Boolean {
         return GLFW.glfwWindowShouldClose(windowHandle)
     }
@@ -92,6 +96,7 @@ class Window(private val title: String, var width: Int, var height: Int, private
             // Enable v-sync
             GLFW.glfwSwapInterval(1)
         } else {
+            // Disable v-sync
             GLFW.glfwSwapInterval(0)
         }
     }

@@ -73,6 +73,12 @@ class YapGame : IGameLogic {
                 )
     }
 
+    /**
+     * Controls:
+     *  - W,A,S,D - move in the x-z-plane
+     *  - q,E - move along the y-axis
+     *  - SPACE - teleport to point of intersection
+     */
     override fun input(window: Window) {
         direction.x = when {
             window.isKeyPressed(GLFW.GLFW_KEY_D) -> {
@@ -111,6 +117,10 @@ class YapGame : IGameLogic {
         // TODO this is not good enough (boolean switches back and forth really fast)
         if (window.isKeyPressed(GLFW.GLFW_KEY_F)) {
             roomWireframe = !roomWireframe
+        }
+
+        if (window.isKeyPressed(GLFW.GLFW_KEY_SPACE) && cameraRayResult.hasValue()) {
+            camera.teleport(cameraRayResult.point)
         }
     }
 
@@ -172,7 +182,7 @@ class YapGame : IGameLogic {
 
     private fun renderRayFromCamera() {
         shader.setUniform("color", Vector4f(1.0F, 0.0F, 0.0F, 1.0F))
-        if (cameraRayResult.distanceSquared != Float.MAX_VALUE) {
+        if (cameraRayResult.hasValue()) {
             renderer.line(shader, cameraRayStart, cameraRayResult.point)
             renderer.cube(shader, Matrix4f().translate(cameraRayResult.point).scale(0.1F))
         }

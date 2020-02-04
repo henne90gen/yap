@@ -33,4 +33,10 @@ class Camera(val position: Vector3f, val rotation: Matrix4f) {
         return Matrix4f()
                 .perspective(Math.toRadians(45.0).toFloat(), aspectRatio, zNear, zFar)
     }
+
+    fun teleport(point: Vector3f) {
+        position.x = point.x
+        position.y = point.y
+        position.z = point.z
+    }
 }
