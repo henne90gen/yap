@@ -1,8 +1,13 @@
 package de.yap.engine
 
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import org.joml.Vector3f
+import java.io.File
 
+// TODO use List<Vector3f> instead of List<Float>
 data class Mesh(val vertices: List<Float> = emptyList(), val indices: List<Int> = emptyList()) {
+
     fun withQuad(v1: Vector3f, v2: Vector3f, v3: Vector3f): Mesh {
         /*
          v1 +----------+ v3
@@ -39,5 +44,28 @@ data class Mesh(val vertices: List<Float> = emptyList(), val indices: List<Int> 
         newIndices.add(previousVertexCount + 2)
 
         return Mesh(newVertices, newIndices)
+    }
+
+    companion object {
+        private val log: Logger = LogManager.getLogger(Mesh::class.java.name)
+
+        fun fromFile(filePath: String): Mesh? {
+            val file = File(filePath)
+            if (!file.exists()) {
+                log.warn("File '{}' does not exist", filePath)
+                return null
+            }
+
+            for (loader in MESH_LOADERS) {
+                if (!loader.supports(file)) {
+                    continue
+                }
+
+                return loader.load(file)
+            }
+
+            log.warn("Could not find a suitable loader for '{}'", filePath)
+            return null
+        }
     }
 }

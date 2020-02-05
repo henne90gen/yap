@@ -1,6 +1,7 @@
 package de.yap.engine
 
 import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 
 class Timer {
     var lastLoopTime = 0.0
@@ -22,7 +23,7 @@ class Timer {
         }
 }
 
-private val log = LogManager.getLogger("Timer")
+private val log: Logger = LogManager.getLogger(Timer::class.java.name)
 
 fun time(name: String, active: Boolean = true, func: () -> Unit) {
     val startTime = System.nanoTime()

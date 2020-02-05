@@ -11,8 +11,9 @@ import org.lwjgl.opengl.GL20.glViewport
 
 
 class YapGame : IGameLogic {
-
-    private val log: Logger = LogManager.getLogger(this.javaClass.name)
+    companion object {
+        private val log: Logger = LogManager.getLogger(YapGame::class.java.name)
+    }
 
     private val direction = Vector3f(0.0f, 0.0f, 0.0f)
     private val renderer: Renderer = Renderer()

@@ -14,7 +14,9 @@ import java.util.stream.Collectors
 
 class Shader(private val vertexShaderPath: String, private val fragmentShaderPath: String) {
 
-    private val log: Logger = LogManager.getLogger(this.javaClass.name)
+    companion object {
+        private val log: Logger = LogManager.getLogger(Shader::class.java.name)
+    }
 
     private var programId: Int = 0
 

@@ -15,7 +15,9 @@ import java.nio.IntBuffer
 
 class Renderer {
 
-    private val log: Logger = LogManager.getLogger(this.javaClass.name)
+    companion object {
+        private val log: Logger = LogManager.getLogger(Renderer::class.java.name)
+    }
 
     fun init() {
         glEnable(GL_DEPTH_TEST)
