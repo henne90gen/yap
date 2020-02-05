@@ -81,6 +81,10 @@ class ObjLoader : MeshLoader {
                 addFace(indices, line, lineNumber)
                 continue
             }
+            if (line.startsWith("s ")) {
+                // TODO what is this option
+                continue
+            }
             log.info(line)
         }
         return Mesh(vertices, indices)

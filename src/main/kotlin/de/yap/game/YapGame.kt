@@ -158,6 +158,15 @@ class YapGame : IGameLogic {
         renderRayFromCamera()
         renderCoordinateSystemAxis()
         renderRoom()
+        renderObjMesh()
+    }
+
+    private fun renderObjMesh() {
+        val mesh = Mesh.fromFile("src/test/resources/cube.obj")
+                ?: return
+        shader.setUniform("color", Vector4f(0.0F, 1.0F, 0.0F, 1.0F))
+        renderer.mesh(shader, mesh, Matrix4f().translate(3.0F, 0.0F, 0.0F))
+        shader.setUniform("color", Vector4f(0.0F, 0.0F, 0.0F, 1.0F))
     }
 
     private fun renderRoom() {
