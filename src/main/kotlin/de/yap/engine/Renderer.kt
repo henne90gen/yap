@@ -37,7 +37,7 @@ class Renderer {
 
         var buffer: FloatBuffer? = null
         try {
-            buffer = MemoryUtil.memAllocFloat(mesh.vertices.size)
+            buffer = MemoryUtil.memAllocFloat(mesh.vertices.size * 3)
             buffer.put(mesh.vertices.flatMap { v -> listOf(v.x, v.y, v.z) }.toFloatArray()).flip()
 
             val vbo = GL20.glGenBuffers()
@@ -54,7 +54,7 @@ class Renderer {
 
         var indexBuffer: IntBuffer? = null
         try {
-            indexBuffer = MemoryUtil.memAllocInt(mesh.indices.size)
+            indexBuffer = MemoryUtil.memAllocInt(mesh.indices.size * 3)
             indexBuffer.put(mesh.indices.flatMap { i -> listOf(i.x, i.y, i.z) }.toIntArray()).flip()
 
             val ibo = GL15.glGenBuffers()
@@ -66,7 +66,7 @@ class Renderer {
             }
         }
 
-        glDrawElements(GL_TRIANGLES, mesh.indices.size, GL_UNSIGNED_INT, 0)
+        glDrawElements(GL_TRIANGLES, mesh.indices.size * 3, GL_UNSIGNED_INT, 0)
 
         shader.unbind()
     }
