@@ -10,7 +10,7 @@ class App {
         try {
             val vSync = true
             val gameLogic = YapGame()
-            val gameEngine = GameEngine("GAME", 600, 480, vSync, gameLogic)
+            val gameEngine = GameEngine("YAP", 600, 480, vSync, gameLogic)
             gameEngine.start()
         } catch (excp: Exception) {
             excp.printStackTrace()

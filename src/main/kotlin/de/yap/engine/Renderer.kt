@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
 import org.joml.Vector3f
+import org.joml.Vector3i
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL15
@@ -37,7 +38,7 @@ class Renderer {
         var buffer: FloatBuffer? = null
         try {
             buffer = MemoryUtil.memAllocFloat(mesh.vertices.size)
-            buffer.put(mesh.vertices.toFloatArray()).flip()
+            buffer.put(mesh.vertices.flatMap { v -> listOf(v.x, v.y, v.z) }.toFloatArray()).flip()
 
             val vbo = GL20.glGenBuffers()
             GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vbo)
@@ -54,7 +55,7 @@ class Renderer {
         var indexBuffer: IntBuffer? = null
         try {
             indexBuffer = MemoryUtil.memAllocInt(mesh.indices.size)
-            indexBuffer.put(mesh.indices.toIntArray()).flip()
+            indexBuffer.put(mesh.indices.flatMap { i -> listOf(i.x, i.y, i.z) }.toIntArray()).flip()
 
             val ibo = GL15.glGenBuffers()
             GL20.glBindBuffer(GL20.GL_ELEMENT_ARRAY_BUFFER, ibo)
@@ -72,14 +73,14 @@ class Renderer {
 
     fun quad(shader: Shader, transformation: Matrix4f = Matrix4f()) {
         val vertices = listOf(
-                -1.0f, -1.0f, 0.0f,
-                1.0f, 1.0f, 0.0f,
-                -1.0f, 1.0f, 0.0f,
-                1.0f, -1.0f, 0.0f
+                Vector3f(-1.0F, -1.0F, 0.0F),
+                Vector3f(1.0F, 1.0F, 0.0F),
+                Vector3f(-1.0F, 1.0F, 0.0F),
+                Vector3f(1.0F, -1.0F, 0.0F)
         )
         val indices = listOf(
-                0, 1, 2,
-                0, 3, 1
+                Vector3i(0, 1, 2),
+                Vector3i(0, 3, 1)
         )
         val mesh = Mesh(vertices, indices)
         this.mesh(shader, mesh, transformation)
@@ -88,41 +89,41 @@ class Renderer {
     fun cube(shader: Shader, transformation: Matrix4f = Matrix4f()) {
         val vertices = listOf(
                 // back
-                -0.5F, -0.5F, -0.5F, // 0
-                0.5F, -0.5F, -0.5F,  // 1
-                0.5F, 0.5F, -0.5F,   // 2
-                -0.5F, 0.5F, -0.5F,  // 3
+                Vector3f(-0.5F, -0.5F, -0.5F), // 0
+                Vector3f(0.5F, -0.5F, -0.5F),  // 1
+                Vector3f(0.5F, 0.5F, -0.5F),   // 2
+                Vector3f(-0.5F, 0.5F, -0.5F),  // 3
 
                 // front
-                -0.5F, -0.5F, 0.5F,  // 4
-                0.5F, -0.5F, 0.5F,   // 5
-                0.5F, 0.5F, 0.5F,    // 6
-                -0.5F, 0.5F, 0.5F    // 7
+                Vector3f(-0.5F, -0.5F, 0.5F),  // 4
+                Vector3f(0.5F, -0.5F, 0.5F),   // 5
+                Vector3f(0.5F, 0.5F, 0.5F),    // 6
+                Vector3f(-0.5F, 0.5F, 0.5F)    // 7
         )
         val indices = listOf(
                 // front
-                0, 1, 2,
-                0, 2, 3,
+                Vector3i(0, 1, 2),
+                Vector3i(0, 2, 3),
 
                 // back
-                4, 5, 6,
-                4, 6, 7,
+                Vector3i(4, 5, 6),
+                Vector3i(4, 6, 7),
 
                 // right
-                5, 1, 2,
-                5, 2, 6,
+                Vector3i(5, 1, 2),
+                Vector3i(5, 2, 6),
 
                 // left
-                0, 4, 7,
-                0, 7, 3,
+                Vector3i(0, 4, 7),
+                Vector3i(0, 7, 3),
 
                 // top
-                7, 6, 2,
-                7, 2, 3,
+                Vector3i(7, 6, 2),
+                Vector3i(7, 2, 3),
 
                 // bottom
-                4, 5, 1,
-                4, 1, 0
+                Vector3i(4, 5, 1),
+                Vector3i(4, 1, 0)
         )
         val mesh = Mesh(vertices, indices)
         this.mesh(shader, mesh, transformation)

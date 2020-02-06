@@ -2,6 +2,8 @@ package de.yap.engine
 
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import org.joml.Vector3f
+import org.joml.Vector3i
 import java.io.File
 
 val MESH_LOADERS: List<MeshLoader> = listOf(ObjLoader())
@@ -20,7 +22,7 @@ class ObjLoader : MeshLoader {
         return file.path.endsWith(".obj")
     }
 
-    private fun addVertex(vertices: MutableList<Float>, line: String, lineNumber: Int) {
+    private fun addVertex(vertices: MutableList<Vector3f>, line: String, lineNumber: Int) {
         val floats = line.substring(2)
                 .split(" ")
                 .filter { s -> s.isNotEmpty() }
@@ -31,12 +33,10 @@ class ObjLoader : MeshLoader {
             return
         }
 
-        vertices.add(floats[0])
-        vertices.add(floats[1])
-        vertices.add(floats[2])
+        vertices.add(Vector3f(floats[0], floats[1], floats[2]))
     }
 
-    private fun addFace(indices: MutableList<Int>, line: String, lineNumber: Int) {
+    private fun addFace(indices: MutableList<Vector3i>, line: String, lineNumber: Int) {
         val ints = line.substring(2)
                 .split(" ")
                 .filter { s -> s.isNotEmpty() }
@@ -49,15 +49,13 @@ class ObjLoader : MeshLoader {
             return
         }
 
-        indices.add(ints[0])
-        indices.add(ints[1])
-        indices.add(ints[2])
+        indices.add(Vector3i(ints[0], ints[1], ints[2]))
     }
 
     override fun load(file: File): Mesh? {
         val lines = file.readLines()
-        val vertices = mutableListOf<Float>()
-        val indices = mutableListOf<Int>()
+        val vertices = mutableListOf<Vector3f>()
+        val indices = mutableListOf<Vector3i>()
         var lineNumber = 0
         for (line in lines) {
             lineNumber++

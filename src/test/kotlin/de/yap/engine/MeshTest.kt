@@ -1,6 +1,7 @@
 package de.yap.engine
 
 import org.joml.Vector3f
+import org.joml.Vector3i
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -21,9 +22,17 @@ class MeshTest {
         assertEquals(0, m.vertices.size)
         assertEquals(0, m.indices.size)
 
-        val expectedVertices = listOf(0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.0F, 1.0F, 0.0F, 0.0F)
+        val expectedVertices = listOf(
+                Vector3f(0.0F, 1.0F, 0.0F),
+                Vector3f(0.0F, 0.0F, 0.0F),
+                Vector3f(1.0F, 1.0F, 0.0F),
+                Vector3f(1.0F, 0.0F, 0.0F)
+        )
         assertEquals(expectedVertices, newM.vertices)
-        val expectedIndices = listOf(0, 1, 2, 1, 3, 2)
+        val expectedIndices = listOf(
+                Vector3i(0, 1, 2),
+                Vector3i(1, 3, 2)
+        )
         assertEquals(expectedIndices, newM.indices)
     }
 
@@ -45,30 +54,30 @@ class MeshTest {
         assertNotNull(m)
 
         val expectedVertices = listOf(
-                1.0F, -1.0F, -1.0F,
-                1.0F, -1.0F, 1.0F,
-                -1.0F, -1.0F, 1.0F,
-                -1.0F, -1.0F, -1.0F,
-                1.0F, 1.0F, -1.0F,
-                1.0F, 1.0F, 1.0F,
-                -1.0F, 1.0F, 1.0F,
-                -1.0F, 1.0F, -1.0F
+                Vector3f(1.0F, -1.0F, -1.0F),
+                Vector3f(1.0F, -1.0F, 1.0F),
+                Vector3f(-1.0F, -1.0F, 1.0F),
+                Vector3f(-1.0F, -1.0F, -1.0F),
+                Vector3f(1.0F, 1.0F, -1.0F),
+                Vector3f(1.0F, 1.0F, 1.0F),
+                Vector3f(-1.0F, 1.0F, 1.0F),
+                Vector3f(-1.0F, 1.0F, -1.0F)
         )
         assertEquals(expectedVertices, m.vertices)
 
         val expectedIndices = listOf(
-                1, 3, 0,
-                7, 5, 4,
-                4, 1, 0,
-                5, 2, 1,
-                2, 7, 3,
-                0, 7, 4,
-                1, 2, 3,
-                7, 6, 5,
-                4, 5, 1,
-                5, 6, 2,
-                2, 6, 7,
-                0, 3, 7
+                Vector3i(1, 3, 0),
+                Vector3i(7, 5, 4),
+                Vector3i(4, 1, 0),
+                Vector3i(5, 2, 1),
+                Vector3i(2, 7, 3),
+                Vector3i(0, 7, 4),
+                Vector3i(1, 2, 3),
+                Vector3i(7, 6, 5),
+                Vector3i(4, 5, 1),
+                Vector3i(5, 6, 2),
+                Vector3i(2, 6, 7),
+                Vector3i(0, 3, 7)
         )
         assertEquals(expectedIndices, m.indices)
     }
