@@ -1,5 +1,6 @@
 package de.yap.engine
 
+import org.joml.Vector2f
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.opengl.GL
@@ -13,6 +14,23 @@ class Window(private val title: String, var width: Int, var height: Int, private
     private var ups = 0.0F
     private var fps = 0.0F
 
+    var mousePosition = Vector2f(0.0F)
+        set(value) {
+            val aspectRatio = height.toFloat() / width.toFloat()
+            var xPos = value.x       // (-aspectRatio, aspectRatio) (left, right)
+            xPos *= aspectRatio      // (-1, 1)
+            xPos += 1.0F             // (0, 2)
+            xPos *= 0.5F             // (0, 1)
+            xPos *= width.toFloat()  // (0, width)
+            var yPos = value.y       // (-1, 1) (bottom, top)
+            yPos += 1.0F             // (0, 2)
+            yPos *= 0.5F             // (0, 1)
+            yPos *= -1.0F            // (0, -1)
+            yPos += 1.0F             // (1, 0)
+            yPos *= height.toFloat() // (height, 0)
+            GLFW.glfwSetCursorPos(windowHandle, xPos.toDouble(), yPos.toDouble())
+            field = value
+        }
     var isResized = true
 
     fun init() {
@@ -50,6 +68,10 @@ class Window(private val title: String, var width: Int, var height: Int, private
             }
         }
 
+        GLFW.glfwSetCursorPosCallback(windowHandle) { _: Long, xpos: Double, ypos: Double ->
+            updateMousePosition(xpos.toFloat(), ypos.toFloat())
+        }
+
         // Get the resolution of the primary monitor
         val vidmode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor())
         // Center our window
@@ -68,6 +90,36 @@ class Window(private val title: String, var width: Int, var height: Int, private
         GL.createCapabilities()
 
         setClearColor(0.0f, 0.0f, 0.0f, 0.0f)
+    }
+
+    /**
+     * Updates the mouse position with the given coordinates in pixel coordinates.
+     * The final mouse position is in OpenGL screen space coordinates.
+     *
+     * (-aspectRatio,1)          (aspectRatio,1)
+     *         +----------------------+
+     *         |                      |
+     *         |                      |
+     *         |                      |
+     *         |                      |
+     *         +----------------------+
+     * (-aspectRatio,-1)         (aspectRatio,-1)
+     */
+    private fun updateMousePosition(xPos: Float, yPos: Float) {
+        mousePosition = Vector2f(xPos, yPos)
+                .mul((1.0F / width), (1.0F / height))
+        // flip y axis (currently increases from top to bottom)
+        mousePosition.y -= 1.0F
+        mousePosition.y *= -1.0F
+
+        // adjust coordinate system to go from -1 to 1 in x and y
+        mousePosition
+                .mul(2.0F)
+                .sub(Vector2f(1.0F))
+
+        // scale x to match the aspect ratio of the window
+        val aspectRatio = width.toFloat() / height.toFloat()
+        mousePosition.x *= aspectRatio
     }
 
     fun setClearColor(r: Float, g: Float, b: Float, alpha: Float) {
