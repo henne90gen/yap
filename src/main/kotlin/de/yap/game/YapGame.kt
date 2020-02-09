@@ -4,6 +4,7 @@ import de.yap.engine.*
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
+import org.joml.Vector2f
 import org.joml.Vector3f
 import org.joml.Vector4f
 import org.lwjgl.glfw.GLFW
@@ -11,6 +12,7 @@ import org.lwjgl.opengl.GL20.glViewport
 
 
 class YapGame : IGameLogic {
+
     companion object {
         private val log: Logger = LogManager.getLogger(YapGame::class.java.name)
     }
@@ -24,12 +26,14 @@ class YapGame : IGameLogic {
     private var cameraRayResult = IntersectionResult()
     private var roomWireframe = false
 
+    private var mousePosition = Vector2f()
+    private val mouseSensitivity = -0.1F
+
     private lateinit var roomMesh: Mesh
     private val scale = 2.0F
     private val negativeScaleHalf = -0.5F * scale
     private val position = Vector3f(negativeScaleHalf)
     private val roomTransformation = Matrix4f().translate(position).scale(scale)
-
 
     override fun init() {
         renderer.init()
@@ -115,6 +119,9 @@ class YapGame : IGameLogic {
             }
         }
 
+        mousePosition = Vector2f(window.mousePosition)
+        window.mousePosition = Vector2f(0.0F)
+
         // TODO this is not good enough (boolean switches back and forth really fast)
         if (window.isKeyPressed(GLFW.GLFW_KEY_F)) {
             roomWireframe = !roomWireframe
@@ -129,10 +136,11 @@ class YapGame : IGameLogic {
         val tmp = Vector3f(direction).mul(cameraSpeed)
         camera.move(tmp)
 
-        val dir = Vector4f(0.0F, 0.0F, -1.0F, 0.0F)
-                .mul(camera.rotation)
-        val cameraDirection = Vector3f(dir.x, dir.y, dir.z)
+        val newCameraDirection = Vector3f(mousePosition.x, mousePosition.y, mouseSensitivity)
+        log.info("{}", newCameraDirection)
+        camera.rotate(newCameraDirection)
 
+        val cameraDirection = camera.direction()
         val startOffset = Vector3f(cameraDirection)
                 .add(0.0F, -0.1F, 0.0F) // move the start down a little
                 .normalize()

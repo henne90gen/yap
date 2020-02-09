@@ -16,7 +16,7 @@ data class Mesh(val vertices: List<Vector3f> = emptyList(), val indices: List<Ve
          v2 +----------+ v4
         */
 
-        val previousVertexCount = vertices.size
+        val preVertCount = vertices.size
         val newVertices = vertices.toMutableList()
         val newIndices = indices.toMutableList()
         newVertices.add(v1)
@@ -26,8 +26,8 @@ data class Mesh(val vertices: List<Vector3f> = emptyList(), val indices: List<Ve
         val v4 = Vector3f(v2).add(Vector3f(v3).sub(v1))
         newVertices.add(v4)
 
-        newIndices.add(Vector3i(previousVertexCount + 0, previousVertexCount + 1, previousVertexCount + 2))
-        newIndices.add(Vector3i(previousVertexCount + 1, previousVertexCount + 3, previousVertexCount + 2))
+        newIndices.add(Vector3i(preVertCount + 0, preVertCount + 1, preVertCount + 2))
+        newIndices.add(Vector3i(preVertCount + 1, preVertCount + 3, preVertCount + 2))
 
         return Mesh(newVertices, newIndices)
     }
