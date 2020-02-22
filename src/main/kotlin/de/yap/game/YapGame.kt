@@ -13,6 +13,8 @@ import org.joml.Vector2f
 import org.joml.Vector3f
 import org.joml.Vector4f
 import org.lwjgl.glfw.GLFW
+import org.lwjgl.opengl.GL11
+import org.lwjgl.opengl.GL13
 import org.lwjgl.opengl.GL20.glViewport
 
 
@@ -181,6 +183,9 @@ class YapGame : IGameLogic {
         if (mesh == null) {
             return
         }
+
+
+
         shader.setUniform("color", Vector4f(0.0F, 1.0F, 0.0F, 1.0F))
         renderer.mesh(shader, mesh, Matrix4f().translate(3.0F, 0.0F, 0.0F))
         shader.setUniform("color", Vector4f(0.0F, 0.0F, 0.0F, 1.0F))

@@ -41,6 +41,18 @@ class Shader(private val vertexShaderPath: String, private val fragmentShaderPat
         setUniform("projection", camera.projectionMatrix)
     }
 
+    fun setUniform(name: String, value: Int) {
+        bind()
+
+        val loc = glGetUniformLocation(programId, name)
+        if (loc < 0) {
+            log.warn("Could not find uniform '{}'", name)
+            return
+        }
+
+        glUniform1i(loc, value)
+    }
+
     fun setUniform(name: String, value: Vector4f) {
         bind()
 

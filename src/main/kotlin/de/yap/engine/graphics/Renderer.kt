@@ -29,6 +29,7 @@ class Renderer {
     fun mesh(shader: Shader, mesh: Mesh, transformation: Matrix4f = Matrix4f()) {
         shader.bind()
         shader.setUniform("model", transformation)
+        shader.setUniform("texture_sampler", 0)
 
         mesh.bind()
 

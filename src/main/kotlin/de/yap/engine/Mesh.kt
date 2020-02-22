@@ -81,23 +81,18 @@ data class Mesh(val vertices: List<Vector3f> = emptyList(), val indices: List<Ve
             try {
                 textCoordsBuffer = MemoryUtil.memAllocFloat(textCoords.size * 2)
                 textCoordsBuffer.put(textCoords.flatMap { v -> listOf(v.x, v.y) }.toFloatArray()).flip()
-                log.info("textcoords: ${textCoords.size}")
                 val tbo = GL20.glGenBuffers()
                 GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, tbo)
                 GL20.glBufferData(GL20.GL_ARRAY_BUFFER, textCoordsBuffer!!, GL20.GL_STATIC_DRAW)
-                GL20.glEnableVertexAttribArray(0)
-                GL20.glVertexAttribPointer(1, 2, GL20.GL_FLOAT, false, 0, 0)
             } finally {
                 if (buffer != null) {
                     MemoryUtil.memFree(textCoordsBuffer)
                 }
             }
-
-            // Activate first texture bank
-            GL13.glActiveTexture(GL13.GL_TEXTURE0)
-            // Bind the texture
-            GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture.getId())
         }
+
+        GL20.glEnableVertexAttribArray(0)
+        GL20.glVertexAttribPointer(1, 2, GL20.GL_FLOAT, false, 0, 0)
 
         var indexBuffer: IntBuffer? = null
         try {
