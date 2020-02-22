@@ -212,6 +212,8 @@ class YapGame : IGameLogic {
         if (cameraRayResult.hasValue()) {
             renderer.line(shader, cameraRayStart, cameraRayResult.point)
             renderer.cube(shader, Matrix4f().translate(cameraRayResult.point).scale(0.1F))
+        } else {
+            renderer.line(shader, cameraRayStart, camera.direction().mul(1000.0F))
         }
         shader.setUniform("color", Vector4f(1.0F, 1.0F, 1.0F, 1.0F))
     }

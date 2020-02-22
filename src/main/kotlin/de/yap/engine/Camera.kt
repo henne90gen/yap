@@ -7,7 +7,7 @@ import org.joml.Vector2f
 import org.joml.Vector3f
 import org.joml.Vector4f
 
-class Camera(val position: Vector3f) {
+class Camera(val position: Vector3f = Vector3f(0.0F)) {
 
     companion object {
         private val log: Logger = LogManager.getLogger(Camera::class.java.name)
@@ -61,7 +61,8 @@ class Camera(val position: Vector3f) {
     fun direction(): Vector3f {
         val dir = Vector4f(0.0F, 0.0F, -1.0F, 0.0F)
                 .mul(rotationMatrix())
-        return Vector3f(dir.x, dir.y, dir.z)
+        // FIXME This is a hack to get the direction to be correct, this might not work in all cases
+        return Vector3f(-1.0F * dir.x, -1.0F * dir.y, dir.z)
     }
 
     private fun rotationMatrix(): Matrix4f {
