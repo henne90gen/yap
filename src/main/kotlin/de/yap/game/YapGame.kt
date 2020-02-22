@@ -13,8 +13,6 @@ import org.joml.Vector2f
 import org.joml.Vector3f
 import org.joml.Vector4f
 import org.lwjgl.glfw.GLFW
-import org.lwjgl.opengl.GL11
-import org.lwjgl.opengl.GL13
 import org.lwjgl.opengl.GL20.glViewport
 
 
@@ -184,16 +182,15 @@ class YapGame : IGameLogic {
             return
         }
 
-
-
-        shader.setUniform("color", Vector4f(0.0F, 1.0F, 0.0F, 1.0F))
-        renderer.mesh(shader, mesh, Matrix4f().translate(3.0F, 0.0F, 0.0F))
-        shader.setUniform("color", Vector4f(0.0F, 0.0F, 0.0F, 1.0F))
+        val transformation = Matrix4f().translate(3.0F, 0.0F, 0.0F)
+        val color = Vector4f(1.0F, 1.0F, 1.0F, 1.0F)
+        renderer.mesh(shader, mesh, transformation, color)
     }
 
     private fun renderRoom() {
         renderer.wireframe(roomWireframe) {
-            renderer.mesh(shader, roomMesh, roomTransformation)
+            val color = Vector4f(1.0F, 1.0F, 1.0F, 1.0F)
+            renderer.mesh(shader, roomMesh, roomTransformation, color)
         }
     }
 
@@ -203,23 +200,22 @@ class YapGame : IGameLogic {
         renderer.cube(shader, Matrix4f().translate(Vector3f(0.0F, 1.0F, 0.0F)).scale(0.1F))
         renderer.cube(shader, Matrix4f().translate(Vector3f(0.0F, 0.0F, 1.0F)).scale(0.1F))
 
-        renderer.line(shader, Vector3f(0.0F, 0.0F, 0.0F), Vector3f(1.0F, 0.0F, 0.0F))
-        renderer.line(shader, Vector3f(0.0F, 0.0F, 0.0F), Vector3f(0.0F, 1.0F, 0.0F))
-        renderer.line(shader, Vector3f(0.0F, 0.0F, 0.0F), Vector3f(0.0F, 0.0F, 1.0F))
-
-        renderer.line(shader, Vector3f(0.0F, 0.0F, 1.0F), Vector3f(1.0F, 0.0F, 0.0F))
-        renderer.line(shader, Vector3f(0.0F, 1.0F, 0.0F), Vector3f(1.0F, 0.0F, 0.0F))
-        renderer.line(shader, Vector3f(0.0F, 1.0F, 0.0F), Vector3f(0.0F, 0.0F, 1.0F))
+        val color = Vector4f(1.0F, 1.0F, 1.0F, 1.0F)
+        renderer.line(shader, Vector3f(0.0F, 0.0F, 0.0F), Vector3f(1.0F, 0.0F, 0.0F), color)
+        renderer.line(shader, Vector3f(0.0F, 0.0F, 0.0F), Vector3f(0.0F, 1.0F, 0.0F), color)
+        renderer.line(shader, Vector3f(0.0F, 0.0F, 0.0F), Vector3f(0.0F, 0.0F, 1.0F), color)
+        renderer.line(shader, Vector3f(0.0F, 0.0F, 1.0F), Vector3f(1.0F, 0.0F, 0.0F), color)
+        renderer.line(shader, Vector3f(0.0F, 1.0F, 0.0F), Vector3f(1.0F, 0.0F, 0.0F), color)
+        renderer.line(shader, Vector3f(0.0F, 1.0F, 0.0F), Vector3f(0.0F, 0.0F, 1.0F), color)
     }
 
     private fun renderRayFromCamera() {
-        shader.setUniform("color", Vector4f(1.0F, 0.0F, 0.0F, 1.0F))
+        val color = Vector4f(1.0F, 0.0F, 0.0F, 1.0F)
         if (cameraRayResult.hasValue()) {
-            renderer.line(shader, cameraRayStart, cameraRayResult.point)
-            renderer.cube(shader, Matrix4f().translate(cameraRayResult.point).scale(0.1F))
+            renderer.line(shader, cameraRayStart, cameraRayResult.point, color)
+            renderer.cube(shader, Matrix4f().translate(cameraRayResult.point).scale(0.1F), color)
         } else {
-            renderer.line(shader, cameraRayStart, camera.direction().mul(1000.0F))
+            renderer.line(shader, cameraRayStart, camera.direction().mul(1000.0F), color)
         }
-        shader.setUniform("color", Vector4f(1.0F, 1.0F, 1.0F, 1.0F))
     }
 }

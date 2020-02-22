@@ -6,11 +6,15 @@ import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.joml.Vector3i
-import org.lwjgl.opengl.*
+import org.joml.Vector4f
+import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL11.*
+import org.lwjgl.opengl.GL13
+import org.lwjgl.opengl.GL20
+import org.lwjgl.opengl.GL30
 import org.lwjgl.system.MemoryUtil
+import java.nio.ByteBuffer
 import java.nio.FloatBuffer
-import java.nio.IntBuffer
 
 class Renderer {
 
@@ -20,16 +24,43 @@ class Renderer {
 
     fun init() {
         glEnable(GL_DEPTH_TEST)
+
+        val textureId = glGenTextures()
+        GL13.glActiveTexture(GL13.GL_TEXTURE0)
+        GL13.glBindTexture(GL13.GL_TEXTURE_2D, textureId)
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        var buf: ByteBuffer? = null
+        try {
+            val byte = (0xFF).toByte()
+            buf = MemoryUtil.memAlloc(4)
+                    .put(byte)
+                    .put(byte)
+                    .put(byte)
+                    .put(byte)
+                    .flip()
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, buf)
+        } finally {
+            MemoryUtil.memFree(buf)
+        }
     }
 
     fun clear() {
         glClear(GL11.GL_COLOR_BUFFER_BIT or GL11.GL_DEPTH_BUFFER_BIT)
     }
 
-    fun mesh(shader: Shader, mesh: Mesh, transformation: Matrix4f = Matrix4f()) {
+    fun mesh(shader: Shader, mesh: Mesh, transformation: Matrix4f = Matrix4f(), color: Vector4f = Vector4f(1.0F)) {
         shader.bind()
         shader.setUniform("model", transformation)
-        shader.setUniform("texture_sampler", 0)
+        shader.setUniform("color", color)
+
+        if (mesh.texture != null) {
+            shader.setUniform("textureSampler", 1)
+        } else {
+            shader.setUniform("textureSampler", 0)
+        }
 
         mesh.bind()
 
@@ -38,7 +69,7 @@ class Renderer {
         shader.unbind()
     }
 
-    fun quad(shader: Shader, transformation: Matrix4f = Matrix4f()) {
+    fun quad(shader: Shader, transformation: Matrix4f = Matrix4f(), color: Vector4f = Vector4f(1.0F)) {
         val vertices = listOf(
                 Vector3f(-1.0F, -1.0F, 0.0F),
                 Vector3f(1.0F, 1.0F, 0.0F),
@@ -50,10 +81,10 @@ class Renderer {
                 Vector3i(0, 3, 1)
         )
         val mesh = Mesh(vertices, indices)
-        this.mesh(shader, mesh, transformation)
+        this.mesh(shader, mesh, transformation, color)
     }
 
-    fun cube(shader: Shader, transformation: Matrix4f = Matrix4f()) {
+    fun cube(shader: Shader, transformation: Matrix4f = Matrix4f(), color: Vector4f = Vector4f(1.0F)) {
         val vertices = listOf(
                 // back
                 Vector3f(-0.5F, -0.5F, -0.5F), // 0
@@ -93,12 +124,14 @@ class Renderer {
                 Vector3i(4, 1, 0)
         )
         val mesh = Mesh(vertices, indices)
-        this.mesh(shader, mesh, transformation)
+        this.mesh(shader, mesh, transformation, color)
     }
 
-    fun line(shader: Shader, start: Vector3f, end: Vector3f) {
+    fun line(shader: Shader, start: Vector3f, end: Vector3f, color: Vector4f) {
         shader.bind()
         shader.setUniform("model", Matrix4f())
+        shader.setUniform("textureSampler", 0)
+        shader.setUniform("color", color)
 
         val vao = GL30.glGenVertexArrays()
         GL30.glBindVertexArray(vao)
