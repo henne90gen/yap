@@ -6,12 +6,11 @@ import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.joml.Vector3i
-import org.lwjgl.opengl.GL11
+import org.lwjgl.opengl.*
 import org.lwjgl.opengl.GL11.*
-import org.lwjgl.opengl.GL20
-import org.lwjgl.opengl.GL30
 import org.lwjgl.system.MemoryUtil
 import java.nio.FloatBuffer
+import java.nio.IntBuffer
 
 class Renderer {
 

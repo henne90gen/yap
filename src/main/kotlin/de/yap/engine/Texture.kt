@@ -52,7 +52,7 @@ data class Texture(val filePath: String) {
         // Tell OpenGL how to unpack the RGBA bytes. Each component is 1 byte size
         GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1)
 
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
         //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         // Upload the texture data

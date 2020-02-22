@@ -2,6 +2,7 @@ package de.yap.engine
 
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import org.joml.Vector2f
 import org.joml.Vector3f
 import org.joml.Vector3i
 import java.io.File
@@ -36,7 +37,7 @@ class ObjLoader : MeshLoader {
         vertices.add(Vector3f(floats[0], floats[1], floats[2]))
     }
 
-    private fun addTextureCoord(textCoords: MutableList<Vector3f>, line: String, lineNumber: Int) {
+    private fun addTextureCoord(textCoords: MutableList<Vector2f>, line: String, lineNumber: Int) {
         val floats = line.substring(2)
                 .split(" ")
                 .filter { s -> s.isNotEmpty() }
@@ -46,6 +47,7 @@ class ObjLoader : MeshLoader {
             log.warn("Malformed texture coordinate on line {}", lineNumber)
             return
         }
+        textCoords.add(Vector2f(floats[0], floats[1]))
     }
 
     private fun addFace(indices: MutableList<Vector3i>, line: String, lineNumber: Int) {
@@ -68,7 +70,7 @@ class ObjLoader : MeshLoader {
         val lines = file.readLines()
         val vertices = mutableListOf<Vector3f>()
         val indices = mutableListOf<Vector3i>()
-        val textCoords = mutableListOf<Vector3f>()
+        val textCoords = mutableListOf<Vector2f>()
         var lineNumber = 0
         for (line in lines) {
             lineNumber++
@@ -101,6 +103,7 @@ class ObjLoader : MeshLoader {
             }
             log.info(line)
         }
+
 
         val texture = Texture("src/main/resources/textures/grassblock.png")
         return Mesh(vertices, indices, texture, textCoords)

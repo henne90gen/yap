@@ -1,7 +1,9 @@
 package de.yap.engine
 
+import de.yap.engine.graphics.Renderer
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import org.joml.Vector2f
 import org.joml.Vector3f
 import org.joml.Vector3i
 import org.lwjgl.opengl.*
@@ -11,7 +13,7 @@ import java.nio.FloatBuffer
 import java.nio.IntBuffer
 
 data class Mesh(val vertices: List<Vector3f> = emptyList(), val indices: List<Vector3i> = emptyList(),
-                val texture: Texture? = null, val textCoords: List<Vector3f> = emptyList()) {
+                val texture: Texture? = null, val textCoords: List<Vector2f> = emptyList()) {
 
     private var vao: Int? = null
 
@@ -73,6 +75,29 @@ data class Mesh(val vertices: List<Vector3f> = emptyList(), val indices: List<Ve
 
         GL20.glEnableVertexAttribArray(0)
         GL20.glVertexAttribPointer(0, 3, GL20.GL_FLOAT, false, 0, 0)
+
+        var textCoordsBuffer: FloatBuffer? = null
+        if (texture != null) {
+            try {
+                textCoordsBuffer = MemoryUtil.memAllocFloat(textCoords.size * 2)
+                textCoordsBuffer.put(textCoords.flatMap { v -> listOf(v.x, v.y) }.toFloatArray()).flip()
+                log.info("textcoords: ${textCoords.size}")
+                val tbo = GL20.glGenBuffers()
+                GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, tbo)
+                GL20.glBufferData(GL20.GL_ARRAY_BUFFER, textCoordsBuffer!!, GL20.GL_STATIC_DRAW)
+                GL20.glEnableVertexAttribArray(0)
+                GL20.glVertexAttribPointer(1, 2, GL20.GL_FLOAT, false, 0, 0)
+            } finally {
+                if (buffer != null) {
+                    MemoryUtil.memFree(textCoordsBuffer)
+                }
+            }
+
+            // Activate first texture bank
+            GL13.glActiveTexture(GL13.GL_TEXTURE0)
+            // Bind the texture
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture.getId())
+        }
 
         var indexBuffer: IntBuffer? = null
         try {
