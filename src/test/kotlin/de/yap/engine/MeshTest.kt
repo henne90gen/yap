@@ -51,7 +51,7 @@ class MeshTest {
 
     @Test
     fun testMeshFromObjFile() {
-        val m = Mesh.fromFile("src/test/resources/cube.obj")
+        val m = Mesh.fromFile("src/test/resources/cube.obj")[0]
         assertNotNull(m)
 
         val expectedVertices = listOf(
@@ -81,5 +81,14 @@ class MeshTest {
                 Vector3i(0, 3, 7)
         )
         assertEquals(expectedIndices, m.indices)
+    }
+
+    @Test
+    fun testMeshWithMaterialFromObjFile() {
+        val meshes = Mesh.fromFile("src/test/resources/scene.obj")
+        assertEquals(4, meshes.size)
+
+        val m1 = meshes[0]
+        assertNotNull(m1.material)
     }
 }

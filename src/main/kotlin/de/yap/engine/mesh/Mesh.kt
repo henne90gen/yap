@@ -1,6 +1,5 @@
 package de.yap.engine.mesh
 
-import de.yap.engine.Texture
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Vector2f
@@ -18,7 +17,7 @@ data class Mesh(
         val vertices: List<Vector3f> = emptyList(),
         val textCoords: List<Vector2f> = emptyList(),
         val indices: List<Vector3i> = emptyList(),
-        val texture: Texture? = null
+        val material: Material? = null
 ) {
 
     private var vao: Int? = null
@@ -49,7 +48,7 @@ data class Mesh(
 
     fun bind() {
         bindVertexData()
-        bindTextures()
+        bindMaterial()
     }
 
     /**
@@ -82,18 +81,16 @@ data class Mesh(
         GL20.glEnableVertexAttribArray(0)
         GL20.glVertexAttribPointer(0, 3, GL20.GL_FLOAT, false, 0, 0)
 
-        if (texture != null) {
-            var textCoordsBuffer: FloatBuffer? = null
-            try {
-                textCoordsBuffer = MemoryUtil.memAllocFloat(textCoords.size * 2)
-                textCoordsBuffer.put(textCoords.flatMap { v -> listOf(v.x, v.y) }.toFloatArray()).flip()
-                val tbo = GL20.glGenBuffers()
-                GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, tbo)
-                GL20.glBufferData(GL20.GL_ARRAY_BUFFER, textCoordsBuffer!!, GL20.GL_STATIC_DRAW)
-            } finally {
-                if (buffer != null) {
-                    MemoryUtil.memFree(textCoordsBuffer)
-                }
+        var textCoordsBuffer: FloatBuffer? = null
+        try {
+            textCoordsBuffer = MemoryUtil.memAllocFloat(textCoords.size * 2)
+            textCoordsBuffer.put(textCoords.flatMap { v -> listOf(v.x, v.y) }.toFloatArray()).flip()
+            val tbo = GL20.glGenBuffers()
+            GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, tbo)
+            GL20.glBufferData(GL20.GL_ARRAY_BUFFER, textCoordsBuffer!!, GL20.GL_STATIC_DRAW)
+        } finally {
+            if (buffer != null) {
+                MemoryUtil.memFree(textCoordsBuffer)
             }
         }
 
@@ -115,22 +112,29 @@ data class Mesh(
         }
     }
 
-    private fun bindTextures() {
-        if (texture == null) {
+    private fun bindMaterial() {
+        if (material == null) {
             return
         }
 
-        texture.bind()
+        material.bind()
+    }
+
+    fun hasTexture(): Boolean {
+        if (material == null) {
+            return false
+        }
+        return material.hasTexture()
     }
 
     companion object {
         private val log: Logger = LogManager.getLogger(Mesh::class.java.name)
 
-        fun fromFile(filePath: String): Mesh? {
+        fun fromFile(filePath: String): List<Mesh> {
             val file = File(filePath)
             if (!file.exists()) {
                 log.warn("File '{}' does not exist", filePath)
-                return null
+                return emptyList()
             }
 
             for (loader in MESH_LOADERS) {
@@ -142,7 +146,7 @@ data class Mesh(
             }
 
             log.warn("Could not find a suitable loader for '{}'", filePath)
-            return null
+            return emptyList()
         }
     }
 }

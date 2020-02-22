@@ -12,7 +12,7 @@ val MESH_LOADERS: List<MeshLoader> = listOf(ObjLoader())
 
 interface MeshLoader {
     fun supports(file: File): Boolean
-    fun load(file: File): Mesh?
+    fun load(file: File): List<Mesh>
 }
 
 class ObjLoader : MeshLoader {
@@ -24,6 +24,69 @@ class ObjLoader : MeshLoader {
 
     override fun supports(file: File): Boolean {
         return file.path.endsWith(".obj")
+    }
+
+    override fun load(file: File): List<Mesh> {
+        val lines = file.readLines()
+        val meshes = mutableListOf<Mesh>()
+        val vertices = mutableListOf<Vector3f>()
+        val normals = mutableListOf<Vector3f>()
+        val textureCoords = mutableListOf<Vector2f>()
+        val faceIndices = mutableListOf<FaceIndices>()
+        var material: Material? = null
+        val materialLib = mutableMapOf<String, Material>()
+
+        var lineNumber = 0
+        for (line in lines) {
+            lineNumber++
+            if (line.startsWith("#")) {
+                // ignore comments
+                continue
+            }
+            if (line.startsWith("mtllib ")) {
+                loadMaterials(materialLib, getNeighborFile(file, line.substring(7)))
+                continue
+            }
+            if (line.startsWith("o ")) {
+                // new object
+                if (vertices.isEmpty()) {
+                    continue
+                }
+                val mesh = finishMesh(vertices, textureCoords, normals, faceIndices, material)
+                meshes.add(mesh)
+                continue
+            }
+            if (line.startsWith("usemtl ")) {
+                material = materialLib[line.substring(7)]
+                continue
+            }
+            if (line.startsWith("v ")) {
+                addVertex(vertices, line, lineNumber)
+                continue
+            }
+            if (line.startsWith("vt ")) {
+                addTextureCoord(textureCoords, line, lineNumber)
+                continue
+            }
+            if (line.startsWith("vn ")) {
+                addNormal(normals, line, lineNumber)
+                continue
+            }
+            if (line.startsWith("f ")) {
+                addFace(faceIndices, line, lineNumber)
+                continue
+            }
+            if (line.startsWith("s ")) {
+                // TODO what is this option
+                continue
+            }
+            log.info(line)
+        }
+
+        val mesh = finishMesh(vertices, textureCoords, normals, faceIndices, material)
+        meshes.add(mesh)
+
+        return meshes
     }
 
     private fun addVertex(vertices: MutableList<Vector3f>, line: String, lineNumber: Int) {
@@ -87,47 +150,13 @@ class ObjLoader : MeshLoader {
         ))
     }
 
-    override fun load(file: File): Mesh? {
-        val lines = file.readLines()
-        val vertices = mutableListOf<Vector3f>()
-        val normals = mutableListOf<Vector3f>()
-        val textureCoords = mutableListOf<Vector2f>()
-        val faceIndices = mutableListOf<FaceIndices>()
-
-        var lineNumber = 0
-        for (line in lines) {
-            lineNumber++
-            if (line.startsWith("#")) {
-                // ignore comments
-                continue
-            }
-            if (line.startsWith("o ")) {
-                // new object
-                continue
-            }
-            if (line.startsWith("v ")) {
-                addVertex(vertices, line, lineNumber)
-                continue
-            }
-            if (line.startsWith("vt ")) {
-                addTextureCoord(textureCoords, line, lineNumber)
-                continue
-            }
-            if (line.startsWith("vn ")) {
-                addNormal(normals, line, lineNumber)
-                continue
-            }
-            if (line.startsWith("f ")) {
-                addFace(faceIndices, line, lineNumber)
-                continue
-            }
-            if (line.startsWith("s ")) {
-                // TODO what is this option
-                continue
-            }
-            log.info(line)
-        }
-
+    private fun finishMesh(
+            vertices: MutableList<Vector3f>,
+            textureCoords: MutableList<Vector2f>,
+            normals: MutableList<Vector3f>,
+            faceIndices: MutableList<FaceIndices>,
+            material: Material?
+    ): Mesh {
         val finalVertexData = mutableListOf<Vector3f>()
         val finalTextureData = mutableListOf<Vector2f>()
         val finalNormalData = mutableListOf<Vector3f>()
@@ -149,7 +178,41 @@ class ObjLoader : MeshLoader {
             finalNormalData.add(normals[faceIdx.normal.z])
         }
 
-        val texture = Texture("src/main/resources/textures/grassblock.png")
-        return Mesh(finalVertexData, finalTextureData, finalIndices, texture)
+        return Mesh(finalVertexData, finalTextureData, finalIndices, material)
+    }
+
+    private fun getNeighborFile(file: File, fileName: String): File {
+        return File(file.parentFile, fileName)
+    }
+
+    private fun loadMaterials(materialLib: MutableMap<String, Material>, file: File) {
+        if (!file.exists()) {
+            log.warn("Could not load material library '{}'", file.absolutePath)
+            return
+        }
+
+        val lines = file.readLines()
+        var currentMaterial: Material? = null
+        for (line in lines) {
+            if (line.startsWith("#") || line.isEmpty()) {
+                continue
+            }
+            if (line.startsWith("newmtl ")) {
+                if (currentMaterial != null) {
+                    materialLib[currentMaterial.name] = currentMaterial
+                }
+                currentMaterial = Material(line.substring(7))
+                continue
+            }
+            if (line.startsWith("map_Kd ")) {
+                currentMaterial?.texture = Texture(getNeighborFile(file, line.substring(7)))
+                continue
+            }
+            log.info("Read line: {}", line)
+        }
+
+        if (currentMaterial != null) {
+            materialLib[currentMaterial.name] = currentMaterial
+        }
     }
 }

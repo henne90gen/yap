@@ -10,7 +10,7 @@ import org.lwjgl.system.MemoryStack
 import java.io.File
 import java.nio.ByteBuffer
 
-data class Texture(val filePath: String) {
+data class Texture(val file: File) {
 
     companion object {
         private val log: Logger = LogManager.getLogger(Texture::class.java.name)
@@ -28,10 +28,9 @@ data class Texture(val filePath: String) {
             val h = stack.mallocInt(1)
             val channels = stack.mallocInt(1)
 
-            val file = File(filePath)
             if (!file.exists()) {
-                log.warn("File '{}' does not exist", filePath)
-                throw Exception("Image file [" + filePath + "] not loaded: " + STBImage.stbi_failure_reason())
+                log.warn("File '{}' does not exist", file)
+                throw Exception("Image file [" + file + "] not loaded: " + STBImage.stbi_failure_reason())
             }
             val filePath = file.absolutePath
 
