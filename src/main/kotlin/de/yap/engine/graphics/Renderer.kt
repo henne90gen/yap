@@ -1,6 +1,6 @@
 package de.yap.engine.graphics
 
-import de.yap.engine.Mesh
+import de.yap.engine.mesh.Mesh
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
@@ -80,7 +80,7 @@ class Renderer {
                 Vector3i(0, 1, 2),
                 Vector3i(0, 3, 1)
         )
-        val mesh = Mesh(vertices, indices)
+        val mesh = Mesh(vertices = vertices, indices = indices)
         this.mesh(shader, mesh, transformation, color)
     }
 
@@ -123,7 +123,7 @@ class Renderer {
                 Vector3i(4, 5, 1),
                 Vector3i(4, 1, 0)
         )
-        val mesh = Mesh(vertices, indices)
+        val mesh = Mesh(vertices = vertices, indices = indices)
         this.mesh(shader, mesh, transformation, color)
     }
 

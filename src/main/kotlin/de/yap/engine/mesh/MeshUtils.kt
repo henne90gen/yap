@@ -1,5 +1,6 @@
-package de.yap.engine
+package de.yap.engine.mesh
 
+import de.yap.engine.Texture
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Vector2f

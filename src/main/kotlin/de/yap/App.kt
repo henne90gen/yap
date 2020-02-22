@@ -7,7 +7,7 @@ import kotlin.system.exitProcess
 class App {
     fun run() {
         try {
-            val vSync = false
+            val vSync = true
             val gameLogic = YapGame()
             val gameEngine = GameEngine("YAP", 1280, 720, vSync, gameLogic)
             gameEngine.start()

@@ -1,5 +1,6 @@
 package de.yap.engine
 
+import de.yap.engine.mesh.Mesh
 import org.joml.Vector3f
 import org.joml.Vector3i
 import org.junit.Test

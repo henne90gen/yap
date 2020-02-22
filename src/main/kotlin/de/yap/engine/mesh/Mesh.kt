@@ -1,5 +1,6 @@
-package de.yap.engine
+package de.yap.engine.mesh
 
+import de.yap.engine.Texture
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Vector2f
@@ -13,8 +14,12 @@ import java.io.File
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 
-data class Mesh(val vertices: List<Vector3f> = emptyList(), val indices: List<Vector3i> = emptyList(),
-                val texture: Texture? = null, val textCoords: List<Vector2f> = emptyList()) {
+data class Mesh(
+        val vertices: List<Vector3f> = emptyList(),
+        val textCoords: List<Vector2f> = emptyList(),
+        val indices: List<Vector3i> = emptyList(),
+        val texture: Texture? = null
+) {
 
     private var vao: Int? = null
 
@@ -39,7 +44,7 @@ data class Mesh(val vertices: List<Vector3f> = emptyList(), val indices: List<Ve
         newIndices.add(Vector3i(preVertCount + 0, preVertCount + 1, preVertCount + 2))
         newIndices.add(Vector3i(preVertCount + 1, preVertCount + 3, preVertCount + 2))
 
-        return Mesh(newVertices, newIndices, null)
+        return Mesh(vertices = newVertices, indices = newIndices)
     }
 
     fun bind() {

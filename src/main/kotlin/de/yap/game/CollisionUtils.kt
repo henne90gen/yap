@@ -1,6 +1,6 @@
 package de.yap.game
 
-import de.yap.engine.Mesh
+import de.yap.engine.mesh.Mesh
 import org.joml.Intersectionf
 import org.joml.Matrix4f
 import org.joml.Vector3f

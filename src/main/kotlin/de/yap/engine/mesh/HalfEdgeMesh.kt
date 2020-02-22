@@ -1,4 +1,4 @@
-package de.yap.engine
+package de.yap.engine.mesh
 
 import org.joml.Vector3f
 import org.joml.Vector3i
