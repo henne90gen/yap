@@ -138,15 +138,15 @@ class ObjLoader : MeshLoader {
 
             finalVertexData.add(vertices[faceIdx.vertex.x])
             finalTextureData.add(textureCoords[faceIdx.texture.x])
-            finalNormalData.add(normals[faceIdx.texture.x])
+            finalNormalData.add(normals[faceIdx.normal.x])
 
             finalVertexData.add(vertices[faceIdx.vertex.y])
             finalTextureData.add(textureCoords[faceIdx.texture.y])
-            finalNormalData.add(normals[faceIdx.texture.y])
+            finalNormalData.add(normals[faceIdx.normal.y])
 
             finalVertexData.add(vertices[faceIdx.vertex.z])
             finalTextureData.add(textureCoords[faceIdx.texture.z])
-            finalNormalData.add(normals[faceIdx.texture.z])
+            finalNormalData.add(normals[faceIdx.normal.z])
         }
 
         val texture = Texture("src/main/resources/textures/grassblock.png")
