@@ -26,7 +26,14 @@ class Camera(val position: Vector3f = Vector3f(0.0F)) {
     var projectionMatrix = calcProjectionMatrix()
 
     fun move(offset: Vector3f) {
-        position.add(offset)
+        val rotMat = Matrix4f()
+        rotMat.rotate(-1.0F * pitch, X_AXIS)
+        rotMat.rotate(-1.0F * yaw, Y_AXIS)
+
+        val rotatedOffset = Vector4f(offset.x, offset.y, offset.z, 0.0F)
+                .mul(rotMat)
+
+        position.add(Vector3f(rotatedOffset.x, rotatedOffset.y, rotatedOffset.z))
         viewMatrix = calcViewMatrix()
     }
 
@@ -51,11 +58,13 @@ class Camera(val position: Vector3f = Vector3f(0.0F)) {
         position.x = point.x
         position.y = point.y
         position.z = point.z
+        viewMatrix = calcViewMatrix()
     }
 
     fun rotate(rot: Vector2f) {
         this.pitch -= rot.y
         this.yaw += rot.x
+        viewMatrix = calcViewMatrix()
     }
 
     fun direction(): Vector3f {
