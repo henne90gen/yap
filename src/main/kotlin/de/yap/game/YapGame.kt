@@ -23,6 +23,7 @@ class YapGame : IGameLogic {
     }
 
     private val direction = Vector3f(0.0f, 0.0f, 0.0f)
+    private val rotation = Vector3f(0.0f, 0.0f, 0.0f)
     private val renderer: Renderer = Renderer()
     private val shader = Shader("src/main/glsl/vertex.glsl", "src/main/glsl/fragment.glsl")
     private val camera = Camera(Vector3f(0.5F, 0.0F, 3.0F))
@@ -90,6 +91,16 @@ class YapGame : IGameLogic {
                 0.0F
             }
         }
+        rotation.z = when {
+            window.isKeyPressed(GLFW.GLFW_KEY_Z) -> {
+                -0.05F
+            }
+            window.isKeyPressed(GLFW.GLFW_KEY_X) -> {
+                0.05F
+            } else -> {
+                0.0F
+            }
+        }
 
         mousePosition = Vector2f(window.mousePosition)
         window.mousePosition = Vector2f(0.0F)
@@ -108,9 +119,9 @@ class YapGame : IGameLogic {
         val tmp = Vector3f(direction).mul(cameraSpeed)
         camera.move(tmp)
 
-        val rot = Vector2f(mousePosition.x, mousePosition.y)
+        val mouseRot = Vector3f(mousePosition.x, mousePosition.y, 0.0F)
                 .mul(mouseSensitivity)
-        camera.rotate(rot)
+        camera.rotate(Vector3f(rotation.x + mouseRot.x, rotation.y + mouseRot.y, rotation.z))
 
         val cameraDirection = camera.direction()
         val startOffset = Vector3f(cameraDirection)

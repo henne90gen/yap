@@ -13,6 +13,7 @@ class Camera(val position: Vector3f = Vector3f(0.0F)) {
         private val log: Logger = LogManager.getLogger(Camera::class.java.name)
         private val X_AXIS = Vector3f(1.0F, 0.0F, 0.0F)
         private val Y_AXIS = Vector3f(0.0F, 1.0F, 0.0F)
+        private val Z_AXIS = Vector3f(0.0F, 0.0F, 1.0F)
     }
 
     private val zFar = 1000.0f
@@ -21,17 +22,14 @@ class Camera(val position: Vector3f = Vector3f(0.0F)) {
 
     private var pitch = 0.0F
     private var yaw = 0.0F
+    private var roll = 0.0F
 
     var viewMatrix = calcViewMatrix()
     var projectionMatrix = calcProjectionMatrix()
 
     fun move(offset: Vector3f) {
-        val rotMat = Matrix4f()
-        rotMat.rotate(-1.0F * pitch, X_AXIS)
-        rotMat.rotate(-1.0F * yaw, Y_AXIS)
-
         val rotatedOffset = Vector4f(offset.x, offset.y, offset.z, 0.0F)
-                .mul(rotMat)
+                .mul(rotationMatrix().invert())
 
         position.add(Vector3f(rotatedOffset.x, rotatedOffset.y, rotatedOffset.z))
         viewMatrix = calcViewMatrix()
@@ -61,21 +59,23 @@ class Camera(val position: Vector3f = Vector3f(0.0F)) {
         viewMatrix = calcViewMatrix()
     }
 
-    fun rotate(rot: Vector2f) {
+    fun rotate(rot: Vector3f) {
         this.pitch -= rot.y
         this.yaw += rot.x
+        this.roll += rot.z
         viewMatrix = calcViewMatrix()
     }
 
     fun direction(): Vector3f {
         val dir = Vector4f(0.0F, 0.0F, -1.0F, 0.0F)
-                .mul(rotationMatrix())
-        // FIXME This is a hack to get the direction to be correct, this might not work in all cases
-        return Vector3f(-1.0F * dir.x, -1.0F * dir.y, dir.z)
+                .mul(rotationMatrix().invert())
+        return Vector3f(dir.x, dir.y, dir.z)
     }
 
     private fun rotationMatrix(): Matrix4f {
         val result = Matrix4f()
+        // order matters!
+        result.rotate(roll, Z_AXIS)
         result.rotate(pitch, X_AXIS)
         result.rotate(yaw, Y_AXIS)
         return result
