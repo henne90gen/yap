@@ -6,11 +6,8 @@ import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.joml.Vector3i
-import org.lwjgl.opengl.GL11
+import org.lwjgl.opengl.*
 import org.lwjgl.opengl.GL11.*
-import org.lwjgl.opengl.GL15
-import org.lwjgl.opengl.GL20
-import org.lwjgl.opengl.GL30
 import org.lwjgl.system.MemoryUtil
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
@@ -32,6 +29,13 @@ class Renderer {
     fun mesh(shader: Shader, mesh: Mesh, transformation: Matrix4f = Matrix4f()) {
         shader.bind()
         shader.setUniform("model", transformation)
+
+        if (mesh.texture != null) {
+            // Activate firs texture bank
+            GL13.glActiveTexture(GL13.GL_TEXTURE0)
+            // Bind the texture
+            glBindTexture(GL_TEXTURE_2D, mesh.texture.getId())
+        }
 
         val vao = GL30.glGenVertexArrays()
         GL30.glBindVertexArray(vao)

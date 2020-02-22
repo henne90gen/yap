@@ -6,7 +6,8 @@ import org.joml.Vector3f
 import org.joml.Vector3i
 import java.io.File
 
-data class Mesh(val vertices: List<Vector3f> = emptyList(), val indices: List<Vector3i> = emptyList()) {
+data class Mesh(val vertices: List<Vector3f> = emptyList(), val indices: List<Vector3i> = emptyList(),
+                val texture: Texture? = null, val textCoords: List<Vector3f> = emptyList()) {
 
     fun withQuad(v1: Vector3f, v2: Vector3f, v3: Vector3f): Mesh {
         /*
@@ -29,7 +30,7 @@ data class Mesh(val vertices: List<Vector3f> = emptyList(), val indices: List<Ve
         newIndices.add(Vector3i(preVertCount + 0, preVertCount + 1, preVertCount + 2))
         newIndices.add(Vector3i(preVertCount + 1, preVertCount + 3, preVertCount + 2))
 
-        return Mesh(newVertices, newIndices)
+        return Mesh(newVertices, newIndices, null)
     }
 
     companion object {

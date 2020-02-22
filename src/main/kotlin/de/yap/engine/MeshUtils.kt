@@ -36,6 +36,18 @@ class ObjLoader : MeshLoader {
         vertices.add(Vector3f(floats[0], floats[1], floats[2]))
     }
 
+    private fun addTextureCoord(textCoords: MutableList<Vector3f>, line: String, lineNumber: Int) {
+        val floats = line.substring(2)
+                .split(" ")
+                .filter { s -> s.isNotEmpty() }
+                .map { s -> s.toFloat() }
+
+        if (floats.size != 2) {
+            log.warn("Malformed texture coordinate on line {}", lineNumber)
+            return
+        }
+    }
+
     private fun addFace(indices: MutableList<Vector3i>, line: String, lineNumber: Int) {
         val ints = line.substring(2)
                 .split(" ")
@@ -56,6 +68,7 @@ class ObjLoader : MeshLoader {
         val lines = file.readLines()
         val vertices = mutableListOf<Vector3f>()
         val indices = mutableListOf<Vector3i>()
+        val textCoords = mutableListOf<Vector3f>()
         var lineNumber = 0
         for (line in lines) {
             lineNumber++
@@ -71,6 +84,9 @@ class ObjLoader : MeshLoader {
                 addVertex(vertices, line, lineNumber)
                 continue
             }
+            if (line.startsWith("vt ")) {
+                addTextureCoord(textCoords, line, lineNumber)
+            }
             if (line.startsWith("vn ")) {
                 // new vertex normal
                 continue
@@ -85,6 +101,11 @@ class ObjLoader : MeshLoader {
             }
             log.info(line)
         }
-        return Mesh(vertices, indices)
+
+
+
+
+        val texture = Texture("src/main/resources/textures/grassblock.png")
+        return Mesh(vertices, indices, texture, textCoords)
     }
 }

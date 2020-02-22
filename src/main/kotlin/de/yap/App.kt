@@ -1,7 +1,6 @@
 package de.yap
 
 import de.yap.engine.GameEngine
-import de.yap.engine.IGameLogic
 import de.yap.game.YapGame
 import kotlin.system.exitProcess
 
