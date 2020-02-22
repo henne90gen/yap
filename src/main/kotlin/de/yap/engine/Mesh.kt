@@ -78,8 +78,8 @@ data class Mesh(val vertices: List<Vector3f> = emptyList(), val indices: List<Ve
         GL20.glEnableVertexAttribArray(0)
         GL20.glVertexAttribPointer(0, 3, GL20.GL_FLOAT, false, 0, 0)
 
-        var textCoordsBuffer: FloatBuffer? = null
         if (texture != null) {
+            var textCoordsBuffer: FloatBuffer? = null
             try {
                 textCoordsBuffer = MemoryUtil.memAllocFloat(textCoords.size * 2)
                 textCoordsBuffer.put(textCoords.flatMap { v -> listOf(v.x, v.y) }.toFloatArray()).flip()
@@ -115,6 +115,7 @@ data class Mesh(val vertices: List<Vector3f> = emptyList(), val indices: List<Ve
         if (texture == null) {
             return
         }
+
         texture.bind()
     }
 

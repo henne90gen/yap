@@ -45,6 +45,7 @@ data class Texture(val filePath: String) {
 
         val textureId = GL11.glGenTextures()
 
+        GL30.glActiveTexture(GL30.GL_TEXTURE1)
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureId)
         // Tell OpenGL how to unpack the RGBA bytes. Each component is 1 byte size
         GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1)
@@ -68,11 +69,7 @@ data class Texture(val filePath: String) {
             id = load()
         }
 
-        GL13.glActiveTexture(GL13.GL_TEXTURE0)
+        GL13.glActiveTexture(GL13.GL_TEXTURE1)
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, id!!)
     }
-
-//    fun getId(): Int {
-//        return id
-//    }
 }

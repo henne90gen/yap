@@ -96,6 +96,7 @@ class ObjLoader : MeshLoader {
             }
             if (line.startsWith("vt ")) {
                 addTextureCoord(textCoords, line, lineNumber)
+                continue
             }
             if (line.startsWith("vn ")) {
                 // new vertex normal
@@ -111,7 +112,6 @@ class ObjLoader : MeshLoader {
             }
             log.info(line)
         }
-
 
         val texture = Texture("src/main/resources/textures/grassblock.png")
         return Mesh(vertices, vertIndices, texture, textCoords, texIndices)
