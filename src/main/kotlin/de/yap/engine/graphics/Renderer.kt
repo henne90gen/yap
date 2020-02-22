@@ -56,7 +56,7 @@ class Renderer {
         shader.setUniform("model", transformation)
         shader.setUniform("color", color)
 
-        if (mesh.hasTexture() != null) {
+        if (mesh.hasTexture()) {
             shader.setUniform("textureSampler", 1)
         } else {
             shader.setUniform("textureSampler", 0)

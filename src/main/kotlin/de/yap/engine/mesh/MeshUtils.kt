@@ -208,7 +208,7 @@ class ObjLoader : MeshLoader {
                 currentMaterial?.texture = Texture(getNeighborFile(file, line.substring(7)))
                 continue
             }
-            log.info("Read line: {}", line)
+            log.info(line)
         }
 
         if (currentMaterial != null) {
