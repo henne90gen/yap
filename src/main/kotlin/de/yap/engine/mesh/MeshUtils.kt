@@ -20,6 +20,8 @@ class ObjLoader : MeshLoader {
         private val log: Logger = LogManager.getLogger(ObjLoader::class.java.name)
     }
 
+    data class FaceIndices(val vertex: Vector3i, val texture: Vector3i, val normal: Vector3i)
+
     override fun supports(file: File): Boolean {
         return file.path.endsWith(".obj")
     }
@@ -38,6 +40,20 @@ class ObjLoader : MeshLoader {
         vertices.add(Vector3f(floats[0], floats[1], floats[2]))
     }
 
+    private fun addNormal(normals: MutableList<Vector3f>, line: String, lineNumber: Int) {
+        val floats = line.substring(2)
+                .split(" ")
+                .filter { s -> s.isNotEmpty() }
+                .map { s -> s.toFloat() }
+
+        if (floats.size != 3) {
+            log.warn("Malformed normal on line {}", lineNumber)
+            return
+        }
+
+        normals.add(Vector3f(floats[0], floats[1], floats[2]))
+    }
+
     private fun addTextureCoord(textCoords: MutableList<Vector2f>, line: String, lineNumber: Int) {
         val floats = line.substring(2)
                 .split(" ")
@@ -51,8 +67,6 @@ class ObjLoader : MeshLoader {
         textCoords.add(Vector2f(floats[0], floats[1]))
     }
 
-    data class FaceIndices(val vertex: Vector3i, val texture: Vector3i, val normal: Vector3i)
-
     private fun addFace(faceIndices: MutableList<FaceIndices>, line: String, lineNumber: Int) {
         val ints = line.substring(2)
                 .split(" ")
@@ -60,8 +74,6 @@ class ObjLoader : MeshLoader {
                 .flatMap { s -> s.split("/") }
                 .map { s -> s.toInt() }
                 .map { i -> i - 1 }
-
-        log.info("ints: $ints")
 
         if (ints.size != 9) {
             log.warn("Malformed face on line {}", lineNumber)
@@ -75,13 +87,13 @@ class ObjLoader : MeshLoader {
         ))
     }
 
-
     override fun load(file: File): Mesh? {
         val lines = file.readLines()
         val vertices = mutableListOf<Vector3f>()
+        val normals = mutableListOf<Vector3f>()
+        val textureCoords = mutableListOf<Vector2f>()
         val faceIndices = mutableListOf<FaceIndices>()
 
-        val textCoords = mutableListOf<Vector2f>()
         var lineNumber = 0
         for (line in lines) {
             lineNumber++
@@ -98,11 +110,11 @@ class ObjLoader : MeshLoader {
                 continue
             }
             if (line.startsWith("vt ")) {
-                addTextureCoord(textCoords, line, lineNumber)
+                addTextureCoord(textureCoords, line, lineNumber)
                 continue
             }
             if (line.startsWith("vn ")) {
-                // new vertex normal
+                addNormal(normals, line, lineNumber)
                 continue
             }
             if (line.startsWith("f ")) {
@@ -121,19 +133,23 @@ class ObjLoader : MeshLoader {
         val finalNormalData = mutableListOf<Vector3f>()
         val finalIndices = mutableListOf<Vector3i>()
         for (faceIdx in faceIndices) {
-            val elementCount = finalVertexData.size
-            finalIndices.add(Vector3i(elementCount, elementCount + 1, elementCount + 2))
+            val size = finalVertexData.size
+            finalIndices.add(Vector3i(size, size + 1, size + 2))
 
-            // Todo add normals finalNormalData.add()
             finalVertexData.add(vertices[faceIdx.vertex.x])
-            finalTextureData.add(textCoords[faceIdx.texture.x])
+            finalTextureData.add(textureCoords[faceIdx.texture.x])
+            finalNormalData.add(normals[faceIdx.texture.x])
+
             finalVertexData.add(vertices[faceIdx.vertex.y])
-            finalTextureData.add(textCoords[faceIdx.texture.y])
+            finalTextureData.add(textureCoords[faceIdx.texture.y])
+            finalNormalData.add(normals[faceIdx.texture.y])
+
             finalVertexData.add(vertices[faceIdx.vertex.z])
-            finalTextureData.add(textCoords[faceIdx.texture.z])
+            finalTextureData.add(textureCoords[faceIdx.texture.z])
+            finalNormalData.add(normals[faceIdx.texture.z])
         }
 
         val texture = Texture("src/main/resources/textures/grassblock.png")
-        return Mesh(finalVertexData, finalIndices, texture, finalTextureData)
+        return Mesh(finalVertexData, finalTextureData, finalIndices, texture)
     }
 }
