@@ -34,7 +34,7 @@ class YapGame : IGameLogic {
     private var mousePosition = Vector2f()
     private val mouseSensitivity = 0.5F
 
-    private lateinit var roomMesh: Mesh
+    private var roomMesh: Mesh? = null
     private val scale = 2.0F
     private val negativeScaleHalf = -0.5F * scale
     private val position = Vector3f(negativeScaleHalf)
@@ -84,6 +84,7 @@ class YapGame : IGameLogic {
                         Vector3f(1.0F, 0.0F, 0.0F)
                 )
         cubeMesh = Mesh.fromFile("src/test/resources/cube.obj")
+        roomMesh = Mesh.fromFile("src/main/resources/textures/scene.obj")
     }
 
     /**
@@ -156,7 +157,9 @@ class YapGame : IGameLogic {
         cameraRayStart = Vector3f(camera.position)
                 .add(startOffset)
 
-        cameraRayResult = intersects(cameraRayStart, cameraDirection, roomMesh, roomTransformation)
+        if (roomMesh != null) {
+            cameraRayResult = intersects(cameraRayStart, cameraDirection, roomMesh!!, roomTransformation)
+        }
     }
 
     override fun render(window: Window) {
@@ -171,9 +174,9 @@ class YapGame : IGameLogic {
         shader.apply(camera)
         shader.setUniform("color", Vector4f(1.0F, 1.0F, 1.0F, 1.0F))
 
-        //renderRayFromCamera()
-        //renderCoordinateSystemAxis()
-        //renderRoom()
+        renderRayFromCamera()
+        renderCoordinateSystemAxis()
+        renderRoom()
         renderObjMesh(cubeMesh)
     }
 
@@ -189,8 +192,10 @@ class YapGame : IGameLogic {
 
     private fun renderRoom() {
         renderer.wireframe(roomWireframe) {
-            val color = Vector4f(1.0F, 1.0F, 1.0F, 1.0F)
-            renderer.mesh(shader, roomMesh, roomTransformation, color)
+            if (roomMesh != null) {
+                val color = Vector4f(1.0F, 1.0F, 1.0F, 1.0F)
+                renderer.mesh(shader, roomMesh!!, roomTransformation, color)
+            }
         }
     }
 
