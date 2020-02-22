@@ -1,12 +1,13 @@
 package de.yap.engine
 
-import de.yap.engine.graphics.Renderer
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Vector2f
 import org.joml.Vector3f
 import org.joml.Vector3i
-import org.lwjgl.opengl.*
+import org.lwjgl.opengl.GL15
+import org.lwjgl.opengl.GL20
+import org.lwjgl.opengl.GL30
 import org.lwjgl.system.MemoryUtil
 import java.io.File
 import java.nio.FloatBuffer
@@ -113,9 +114,7 @@ data class Mesh(val vertices: List<Vector3f> = emptyList(), val indices: List<Ve
         if (texture == null) {
             return
         }
-
-        GL13.glActiveTexture(GL13.GL_TEXTURE0)
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture.getId())
+        texture.bind()
     }
 
     companion object {

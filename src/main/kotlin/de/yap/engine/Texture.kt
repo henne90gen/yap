@@ -3,6 +3,7 @@ package de.yap.engine
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.lwjgl.opengl.GL11
+import org.lwjgl.opengl.GL13
 import org.lwjgl.opengl.GL30
 import org.lwjgl.stb.STBImage
 import org.lwjgl.system.MemoryStack
@@ -15,15 +16,11 @@ data class Texture(val filePath: String) {
         private val log: Logger = LogManager.getLogger(Texture::class.java.name)
     }
 
-    private var id = -1
-
-    init {
-        id = load()
-    }
+    private var id: Int? = null
+    private var width: Int = 0
+    private var height: Int = 0
 
     private fun load(): Int {
-        var width = 0
-        var height = 0
         var buf: ByteBuffer? = null
         // Load Texture file
         MemoryStack.stackPush().use { stack ->
@@ -53,7 +50,7 @@ data class Texture(val filePath: String) {
         GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1)
 
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
 
         // Upload the texture data
         GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, width, height, 0,
@@ -66,8 +63,16 @@ data class Texture(val filePath: String) {
         return textureId
     }
 
-    fun getId(): Int {
-        return id
+    fun bind() {
+        if (id == null) {
+            id = load()
+        }
+
+        GL13.glActiveTexture(GL13.GL_TEXTURE0)
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, id!!)
     }
 
+//    fun getId(): Int {
+//        return id
+//    }
 }
