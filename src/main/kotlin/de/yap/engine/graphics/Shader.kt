@@ -1,5 +1,6 @@
-package de.yap.engine
+package de.yap.engine.graphics
 
+import de.yap.engine.Camera
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
