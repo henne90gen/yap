@@ -1,6 +1,11 @@
 package de.yap.game
 
-import de.yap.engine.*
+import de.yap.engine.Camera
+import de.yap.engine.IGameLogic
+import de.yap.engine.Mesh
+import de.yap.engine.Window
+import de.yap.engine.graphics.Renderer
+import de.yap.engine.graphics.Shader
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
@@ -20,14 +25,14 @@ class YapGame : IGameLogic {
     private val direction = Vector3f(0.0f, 0.0f, 0.0f)
     private val renderer: Renderer = Renderer()
     private val shader = Shader("src/main/glsl/vertex.glsl", "src/main/glsl/fragment.glsl")
-    private val camera = Camera(Vector3f(0.5F, 0.0F, 3.0F), Matrix4f())
+    private val camera = Camera(Vector3f(0.5F, 0.0F, 3.0F))
     private val cameraSpeed = 0.1F
     private var cameraRayStart = Vector3f()
     private var cameraRayResult = IntersectionResult()
     private var roomWireframe = false
 
     private var mousePosition = Vector2f()
-    private val mouseSensitivity = -0.1F
+    private val mouseSensitivity = 0.5F
 
     private lateinit var roomMesh: Mesh
     private val scale = 2.0F
@@ -81,7 +86,7 @@ class YapGame : IGameLogic {
     /**
      * Controls:
      *  - W,A,S,D - move in the x-z-plane
-     *  - q,E - move along the y-axis
+     *  - Q,E - move along the y-axis
      *  - SPACE - teleport to point of intersection
      */
     override fun input(window: Window) {
@@ -136,9 +141,9 @@ class YapGame : IGameLogic {
         val tmp = Vector3f(direction).mul(cameraSpeed)
         camera.move(tmp)
 
-        val newCameraDirection = Vector3f(mousePosition.x, mousePosition.y, mouseSensitivity)
-        log.info("{}", newCameraDirection)
-        camera.rotate(newCameraDirection)
+        val rot = Vector2f(mousePosition.x, mousePosition.y)
+                .mul(mouseSensitivity)
+        camera.rotate(rot)
 
         val cameraDirection = camera.direction()
         val startOffset = Vector3f(cameraDirection)

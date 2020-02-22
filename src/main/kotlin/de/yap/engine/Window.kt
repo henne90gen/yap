@@ -68,6 +68,8 @@ class Window(private val title: String, var width: Int, var height: Int, private
             }
         }
 
+        // Setup the mouse
+        GLFW.glfwSetInputMode(windowHandle, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
         GLFW.glfwSetCursorPosCallback(windowHandle) { _: Long, xpos: Double, ypos: Double ->
             updateMousePosition(xpos.toFloat(), ypos.toFloat())
         }
@@ -106,8 +108,9 @@ class Window(private val title: String, var width: Int, var height: Int, private
      * (-aspectRatio,-1)         (aspectRatio,-1)
      */
     private fun updateMousePosition(xPos: Float, yPos: Float) {
-        mousePosition = Vector2f(xPos, yPos)
-                .mul((1.0F / width), (1.0F / height))
+        mousePosition.x = xPos * (1.0F / width)
+        mousePosition.y = yPos * (1.0F / height)
+
         // flip y axis (currently increases from top to bottom)
         mousePosition.y -= 1.0F
         mousePosition.y *= -1.0F
