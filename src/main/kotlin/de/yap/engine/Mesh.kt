@@ -4,10 +4,16 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Vector3f
 import org.joml.Vector3i
+import org.lwjgl.opengl.*
+import org.lwjgl.system.MemoryUtil
 import java.io.File
+import java.nio.FloatBuffer
+import java.nio.IntBuffer
 
 data class Mesh(val vertices: List<Vector3f> = emptyList(), val indices: List<Vector3i> = emptyList(),
                 val texture: Texture? = null, val textCoords: List<Vector3f> = emptyList()) {
+
+    private var vao: Int? = null
 
     fun withQuad(v1: Vector3f, v2: Vector3f, v3: Vector3f): Mesh {
         /*
@@ -31,6 +37,65 @@ data class Mesh(val vertices: List<Vector3f> = emptyList(), val indices: List<Ve
         newIndices.add(Vector3i(preVertCount + 1, preVertCount + 3, preVertCount + 2))
 
         return Mesh(newVertices, newIndices, null)
+    }
+
+    fun bind() {
+        bindVertexData()
+        bindTextures()
+    }
+
+    /**
+     * Only uploads the models vertex data once and then reuses the VAO
+     * TODO make it possible to change vertex data, while also reusing buffers on the GPU
+     */
+    private fun bindVertexData() {
+        if (vao != null) {
+            GL30.glBindVertexArray(vao!!)
+            return
+        }
+
+        vao = GL30.glGenVertexArrays()
+        GL30.glBindVertexArray(vao!!)
+
+        var buffer: FloatBuffer? = null
+        try {
+            buffer = MemoryUtil.memAllocFloat(vertices.size * 3)
+            buffer.put(vertices.flatMap { v -> listOf(v.x, v.y, v.z) }.toFloatArray()).flip()
+
+            val vbo = GL20.glGenBuffers()
+            GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vbo)
+            GL20.glBufferData(GL20.GL_ARRAY_BUFFER, buffer!!, GL20.GL_STATIC_DRAW)
+        } finally {
+            if (buffer != null) {
+                MemoryUtil.memFree(buffer)
+            }
+        }
+
+        GL20.glEnableVertexAttribArray(0)
+        GL20.glVertexAttribPointer(0, 3, GL20.GL_FLOAT, false, 0, 0)
+
+        var indexBuffer: IntBuffer? = null
+        try {
+            indexBuffer = MemoryUtil.memAllocInt(indices.size * 3)
+            indexBuffer.put(indices.flatMap { i -> listOf(i.x, i.y, i.z) }.toIntArray()).flip()
+
+            val ibo = GL15.glGenBuffers()
+            GL20.glBindBuffer(GL20.GL_ELEMENT_ARRAY_BUFFER, ibo)
+            GL20.glBufferData(GL20.GL_ELEMENT_ARRAY_BUFFER, indexBuffer!!, GL20.GL_STATIC_DRAW)
+        } finally {
+            if (indexBuffer != null) {
+                MemoryUtil.memFree(indexBuffer)
+            }
+        }
+    }
+
+    private fun bindTextures() {
+        if (texture == null) {
+            return
+        }
+
+        GL13.glActiveTexture(GL13.GL_TEXTURE0)
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture.getId())
     }
 
     companion object {

@@ -6,11 +6,12 @@ import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.joml.Vector3i
-import org.lwjgl.opengl.*
+import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL11.*
+import org.lwjgl.opengl.GL20
+import org.lwjgl.opengl.GL30
 import org.lwjgl.system.MemoryUtil
 import java.nio.FloatBuffer
-import java.nio.IntBuffer
 
 class Renderer {
 
@@ -30,46 +31,7 @@ class Renderer {
         shader.bind()
         shader.setUniform("model", transformation)
 
-        if (mesh.texture != null) {
-            // Activate firs texture bank
-            GL13.glActiveTexture(GL13.GL_TEXTURE0)
-            // Bind the texture
-            glBindTexture(GL_TEXTURE_2D, mesh.texture.getId())
-        }
-
-        val vao = GL30.glGenVertexArrays()
-        GL30.glBindVertexArray(vao)
-
-        var buffer: FloatBuffer? = null
-        try {
-            buffer = MemoryUtil.memAllocFloat(mesh.vertices.size * 3)
-            buffer.put(mesh.vertices.flatMap { v -> listOf(v.x, v.y, v.z) }.toFloatArray()).flip()
-
-            val vbo = GL20.glGenBuffers()
-            GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vbo)
-            GL20.glBufferData(GL20.GL_ARRAY_BUFFER, buffer!!, GL20.GL_STATIC_DRAW)
-        } finally {
-            if (buffer != null) {
-                MemoryUtil.memFree(buffer)
-            }
-        }
-
-        GL20.glEnableVertexAttribArray(0)
-        GL20.glVertexAttribPointer(0, 3, GL20.GL_FLOAT, false, 0, 0)
-
-        var indexBuffer: IntBuffer? = null
-        try {
-            indexBuffer = MemoryUtil.memAllocInt(mesh.indices.size * 3)
-            indexBuffer.put(mesh.indices.flatMap { i -> listOf(i.x, i.y, i.z) }.toIntArray()).flip()
-
-            val ibo = GL15.glGenBuffers()
-            GL20.glBindBuffer(GL20.GL_ELEMENT_ARRAY_BUFFER, ibo)
-            GL20.glBufferData(GL20.GL_ELEMENT_ARRAY_BUFFER, indexBuffer!!, GL20.GL_STATIC_DRAW)
-        } finally {
-            if (indexBuffer != null) {
-                MemoryUtil.memFree(indexBuffer)
-            }
-        }
+        mesh.bind()
 
         glDrawElements(GL_TRIANGLES, mesh.indices.size * 3, GL_UNSIGNED_INT, 0)
 

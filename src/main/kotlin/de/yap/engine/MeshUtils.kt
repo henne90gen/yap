@@ -102,9 +102,6 @@ class ObjLoader : MeshLoader {
             log.info(line)
         }
 
-
-
-
         val texture = Texture("src/main/resources/textures/grassblock.png")
         return Mesh(vertices, indices, texture, textCoords)
     }
