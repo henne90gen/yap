@@ -3,7 +3,7 @@ package de.yap.engine
 class GameEngine(windowTitle: String?, width: Int, height: Int, vSync: Boolean, private val gameLogic: IGameLogic) : Runnable {
 
     companion object {
-        const val TARGET_FPS = 75
+        const val TARGET_FPS = 7500
         const val TARGET_UPS = 30
     }
 

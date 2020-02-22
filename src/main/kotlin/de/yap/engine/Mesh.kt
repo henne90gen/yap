@@ -14,8 +14,7 @@ import java.nio.FloatBuffer
 import java.nio.IntBuffer
 
 data class Mesh(val vertices: List<Vector3f> = emptyList(), val indices: List<Vector3i> = emptyList(),
-                val texture: Texture? = null, val textCoords: List<Vector2f> = emptyList(),
-                val texIndices: List<Vector3i> = emptyList()) {
+                val texture: Texture? = null, val textCoords: List<Vector2f> = emptyList()) {
 
     private var vao: Int? = null
 
@@ -93,7 +92,7 @@ data class Mesh(val vertices: List<Vector3f> = emptyList(), val indices: List<Ve
             }
         }
 
-        GL20.glEnableVertexAttribArray(0)
+        GL20.glEnableVertexAttribArray(1)
         GL20.glVertexAttribPointer(1, 2, GL20.GL_FLOAT, false, 0, 0)
 
         var indexBuffer: IntBuffer? = null

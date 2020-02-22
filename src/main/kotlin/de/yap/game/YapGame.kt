@@ -171,9 +171,9 @@ class YapGame : IGameLogic {
         shader.apply(camera)
         shader.setUniform("color", Vector4f(1.0F, 1.0F, 1.0F, 1.0F))
 
-        renderRayFromCamera()
-        renderCoordinateSystemAxis()
-        renderRoom()
+        //renderRayFromCamera()
+        //renderCoordinateSystemAxis()
+        //renderRoom()
         renderObjMesh(cubeMesh)
     }
 
