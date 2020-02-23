@@ -6,6 +6,9 @@ import org.joml.Matrix4f
 import org.joml.Vector2f
 import org.joml.Vector3f
 import org.joml.Vector4f
+import java.lang.Float.max
+import kotlin.math.PI
+import kotlin.math.abs
 
 class Camera(val position: Vector3f = Vector3f(0.0F)) {
 
@@ -16,6 +19,11 @@ class Camera(val position: Vector3f = Vector3f(0.0F)) {
         private val Z_AXIS = Vector3f(0.0F, 0.0F, 1.0F)
     }
 
+    enum class UpDirection {
+        X_AXIS, Y_AXIS, Z_AXIS,
+        NEG_X_AXIS, NEG_Y_AXIS, NEG_Z_AXIS;
+    }
+
     private val zFar = 1000.0f
     private val zNear = 0.01f
     private var aspectRatio = 1.0f
@@ -23,6 +31,8 @@ class Camera(val position: Vector3f = Vector3f(0.0F)) {
     private var pitch = 0.0F
     private var yaw = 0.0F
     private var roll = 0.0F
+
+    private var upDirection = UpDirection.Y_AXIS
 
     var viewMatrix = calcViewMatrix()
     var projectionMatrix = calcProjectionMatrix()
@@ -52,17 +62,17 @@ class Camera(val position: Vector3f = Vector3f(0.0F)) {
                 .perspective(Math.toRadians(45.0).toFloat(), aspectRatio, zNear, zFar)
     }
 
-    fun teleport(point: Vector3f) {
+    fun teleport(point: Vector3f, normal: Vector3f) {
         position.x = point.x
         position.y = point.y
         position.z = point.z
+        upDirection = getUpDirection(normal)
         viewMatrix = calcViewMatrix()
     }
 
-    fun rotate(rot: Vector3f) {
+    fun rotate(rot: Vector2f) {
         this.pitch -= rot.y
         this.yaw += rot.x
-        this.roll += rot.z
         viewMatrix = calcViewMatrix()
     }
 
@@ -73,11 +83,76 @@ class Camera(val position: Vector3f = Vector3f(0.0F)) {
     }
 
     private fun rotationMatrix(): Matrix4f {
-        val result = Matrix4f()
-        // order matters!
-        result.rotate(roll, Z_AXIS)
-        result.rotate(pitch, X_AXIS)
-        result.rotate(yaw, Y_AXIS)
-        return result
+        return when (upDirection) {
+            UpDirection.X_AXIS -> {
+                Matrix4f()
+                        .rotate(PI.toFloat() / 2.0F, Z_AXIS)
+                        .rotate(-1.0F * pitch, Y_AXIS)
+                        .rotate(yaw, X_AXIS)
+            }
+            UpDirection.Y_AXIS -> {
+                Matrix4f()
+                        .rotate(pitch, X_AXIS)
+                        .rotate(yaw, Y_AXIS)
+            }
+            UpDirection.Z_AXIS -> {
+                Matrix4f()
+                        .rotate(pitch, X_AXIS)
+                        .rotate(yaw, Z_AXIS)
+            }
+            UpDirection.NEG_X_AXIS -> {
+                Matrix4f()
+                        .rotate(-PI.toFloat() / 2.0F, Z_AXIS)
+                        .rotate(-1.0F * pitch, Y_AXIS)
+                        .rotate(-yaw, X_AXIS)
+            }
+            UpDirection.NEG_Y_AXIS -> {
+                Matrix4f()
+                        .rotate(pitch, X_AXIS)
+                        .rotate(-yaw, Y_AXIS) // Todo
+            }
+            UpDirection.NEG_Z_AXIS -> {
+                Matrix4f()
+                        .rotate(pitch, X_AXIS)
+                        .rotate(yaw, Z_AXIS) // Todo
+            }
+        }
+    }
+
+    private fun getUpDirection(normalDirection: Vector3f): UpDirection {
+        val angleToX = normalDirection.dot(X_AXIS)
+        val angleToY = normalDirection.dot(Y_AXIS)
+        val angleToZ = normalDirection.dot(Z_AXIS)
+
+        val absAngleToX = abs(angleToX)
+        val absAngleToY = abs(angleToY)
+        val absAngleToZ = abs(angleToZ)
+
+        log.info("angles x: $angleToX y: $angleToY z: $angleToZ")
+        val upDir = when {
+            absAngleToX > max(absAngleToY, absAngleToZ) -> {
+                if (angleToX < 0) {
+                    UpDirection.NEG_X_AXIS
+                } else {
+                    UpDirection.X_AXIS
+                }
+            }
+            absAngleToY > max(absAngleToX, absAngleToZ) -> {
+                if (angleToY < 0) {
+                    UpDirection.NEG_Y_AXIS
+                } else {
+                    UpDirection.Y_AXIS
+                }
+            }
+            else -> {
+                if (angleToZ < 0) {
+                    UpDirection.NEG_Z_AXIS
+                } else {
+                    UpDirection.Z_AXIS
+                }
+            }
+        }
+        log.info("upDir: $upDir")
+        return upDir
     }
 }

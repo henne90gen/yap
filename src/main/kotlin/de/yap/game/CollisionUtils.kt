@@ -6,7 +6,7 @@ import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.joml.Vector4f
 
-data class IntersectionResult(val point: Vector3f = Vector3f(), val distanceSquared: Float = Float.MAX_VALUE) {
+data class IntersectionResult(val point: Vector3f = Vector3f(), val distanceSquared: Float = Float.MAX_VALUE, val normal: Vector3f = Vector3f()) {
     fun hasValue(): Boolean {
         return distanceSquared != Float.MAX_VALUE
     }
@@ -49,5 +49,8 @@ fun intersects(rayStart: Vector3f, direction: Vector3f, vec1: Vector3f, vec2: Ve
             .normalize()
             .mul(t)
     val point = Vector3f(rayStart).add(dir)
-    return IntersectionResult(point, dir.lengthSquared())
+    val edge1 = Vector3f(vec2).sub(vec1)
+    val edge2 = Vector3f(vec3).sub(vec1)
+    val normal = edge1.cross(edge2)
+    return IntersectionResult(point, dir.lengthSquared(), normal)
 }

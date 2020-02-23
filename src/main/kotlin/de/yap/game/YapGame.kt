@@ -23,7 +23,6 @@ class YapGame : IGameLogic {
     }
 
     private val direction = Vector3f(0.0f, 0.0f, 0.0f)
-    private val rotation = Vector3f(0.0f, 0.0f, 0.0f)
     private val renderer: Renderer = Renderer()
     private val shader = Shader("src/main/glsl/vertex.glsl", "src/main/glsl/fragment.glsl")
     private val camera = Camera(Vector3f(0.5F, 0.0F, 3.0F))
@@ -91,16 +90,6 @@ class YapGame : IGameLogic {
                 0.0F
             }
         }
-        rotation.z = when {
-            window.isKeyPressed(GLFW.GLFW_KEY_Z) -> {
-                -0.05F
-            }
-            window.isKeyPressed(GLFW.GLFW_KEY_X) -> {
-                0.05F
-            } else -> {
-                0.0F
-            }
-        }
 
         mousePosition = Vector2f(window.mousePosition)
         window.mousePosition = Vector2f(0.0F)
@@ -110,8 +99,9 @@ class YapGame : IGameLogic {
             roomWireframe = !roomWireframe
         }
 
-        if (window.isKeyPressed(GLFW.GLFW_KEY_SPACE) && cameraRayResult.hasValue()) {
-            camera.teleport(cameraRayResult.point)
+
+        if (window.isMousePressed(GLFW.GLFW_MOUSE_BUTTON_LEFT) && cameraRayResult.hasValue()) {
+            camera.teleport(cameraRayResult.point, cameraRayResult.normal)
         }
     }
 
@@ -119,10 +109,9 @@ class YapGame : IGameLogic {
         val tmp = Vector3f(direction).mul(cameraSpeed)
         camera.move(tmp)
 
-        val mouseRot = Vector3f(mousePosition.x, mousePosition.y, 0.0F)
+        val mouseRot = Vector2f(mousePosition.x, mousePosition.y)
                 .mul(mouseSensitivity)
-        camera.rotate(Vector3f(rotation.x + mouseRot.x, rotation.y + mouseRot.y, rotation.z))
-
+        camera.rotate(mouseRot)
         val cameraDirection = camera.direction()
         val startOffset = Vector3f(cameraDirection)
                 .add(0.0F, -0.1F, 0.0F) // move the start down a little
