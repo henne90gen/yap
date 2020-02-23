@@ -87,7 +87,7 @@ class Camera(val position: Vector3f = Vector3f(0.0F)) {
             UpDirection.X_AXIS -> {
                 Matrix4f()
                         .rotate(PI.toFloat() / 2.0F, Z_AXIS)
-                        .rotate(-1.0F * pitch, Y_AXIS)
+                        .rotate(-pitch, Y_AXIS)
                         .rotate(yaw, X_AXIS)
             }
             UpDirection.Y_AXIS -> {
@@ -103,18 +103,19 @@ class Camera(val position: Vector3f = Vector3f(0.0F)) {
             UpDirection.NEG_X_AXIS -> {
                 Matrix4f()
                         .rotate(-PI.toFloat() / 2.0F, Z_AXIS)
-                        .rotate(-1.0F * pitch, Y_AXIS)
+                        .rotate(pitch, Y_AXIS)
                         .rotate(-yaw, X_AXIS)
             }
             UpDirection.NEG_Y_AXIS -> {
                 Matrix4f()
-                        .rotate(pitch, X_AXIS)
-                        .rotate(-yaw, Y_AXIS) // Todo
+                        .rotate(PI.toFloat(), Z_AXIS)
+                        .rotate(-pitch, X_AXIS)
+                        .rotate(-yaw, Y_AXIS)
             }
             UpDirection.NEG_Z_AXIS -> {
                 Matrix4f()
                         .rotate(pitch, X_AXIS)
-                        .rotate(yaw, Z_AXIS) // Todo
+                        .rotate(-yaw, Z_AXIS)
             }
         }
     }
@@ -128,7 +129,6 @@ class Camera(val position: Vector3f = Vector3f(0.0F)) {
         val absAngleToY = abs(angleToY)
         val absAngleToZ = abs(angleToZ)
 
-        log.info("angles x: $angleToX y: $angleToY z: $angleToZ")
         val upDir = when {
             absAngleToX > max(absAngleToY, absAngleToZ) -> {
                 if (angleToX < 0) {
@@ -152,6 +152,8 @@ class Camera(val position: Vector3f = Vector3f(0.0F)) {
                 }
             }
         }
+        log.info("normal: {}", normalDirection)
+        log.info("angles x: $angleToX y: $angleToY z: $angleToZ")
         log.info("upDir: $upDir")
         return upDir
     }
