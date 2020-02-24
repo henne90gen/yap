@@ -147,6 +147,15 @@ class YapGame : IGameLogic {
         renderRayFromCamera()
         renderCoordinateSystemAxis()
         renderRoom()
+        renderCameras()
+    }
+
+    private fun renderCameras() {
+        if (selectedCamera == 0) {
+            renderer.cube(shader, Matrix4f().translate(secondCamera.position).scale(0.4F), Vector4f(1.0F, 1.0F, 0.0F, 1.0F))
+        } else {
+            renderer.cube(shader, Matrix4f().translate(camera.position).scale(0.4F), Vector4f(1.0F, 0.0F, 1.0F, 1.0F))
+        }
     }
 
     private fun renderRoom() {
