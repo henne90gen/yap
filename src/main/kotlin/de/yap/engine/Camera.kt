@@ -1,5 +1,6 @@
 package de.yap.engine
 
+import de.yap.game.YapGame
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
@@ -30,14 +31,16 @@ class Camera(val position: Vector3f = Vector3f(0.0F)) {
 
     private var pitch = 0.0F
     private var yaw = 0.0F
-    private var roll = 0.0F
+
+    private val movementSpeed = 0.1F
+    private val mouseSensitivity = 0.5F
 
     private var upDirection = UpDirection.Y_AXIS
 
     var viewMatrix = calcViewMatrix()
     var projectionMatrix = calcProjectionMatrix()
 
-    fun move(offset: Vector3f) {
+    private fun move(offset: Vector3f) {
         val rotatedOffset = Vector4f(offset.x, offset.y, offset.z, 0.0F)
                 .mul(rotationMatrix().invert())
 
@@ -156,5 +159,17 @@ class Camera(val position: Vector3f = Vector3f(0.0F)) {
         log.info("angles x: $angleToX y: $angleToY z: $angleToZ")
         log.info("upDir: $upDir")
         return upDir
+    }
+
+    fun update(direction: Vector3f, mousePosition: Vector2f) {
+        val tmp = Vector3f(direction).mul(movementSpeed)
+        move(tmp)
+
+        val mouseRot = Vector2f(mousePosition.x, mousePosition.y)
+                .mul(mouseSensitivity)
+        rotate(mouseRot)
+        if (mouseRot.x != 0.0F || mouseRot.y != 0.0F) {
+            log.info("MouseRot: {}, MousePosition: {}", mouseRot, mousePosition)
+        }
     }
 }

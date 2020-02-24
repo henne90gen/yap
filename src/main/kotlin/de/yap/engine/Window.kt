@@ -1,5 +1,7 @@
 package de.yap.engine
 
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import org.joml.Vector2f
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
@@ -7,8 +9,11 @@ import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
 import org.lwjgl.system.MemoryUtil
 
-// TODO setting vSync to 'false' has no effect
 class Window(private val title: String, var width: Int, var height: Int, private var vSync: Boolean) {
+
+    companion object {
+        private val log: Logger = LogManager.getLogger(Window::class.java.name)
+    }
 
     private var windowHandle: Long = 0
     private var ups = 0.0F
@@ -16,6 +21,7 @@ class Window(private val title: String, var width: Int, var height: Int, private
 
     var mousePosition = Vector2f(0.0F)
         set(value) {
+//            log.info("Setting MousePosition: {}", value)
             val aspectRatio = height.toFloat() / width.toFloat()
             var xPos = value.x       // (-aspectRatio, aspectRatio) (left, right)
             xPos *= aspectRatio      // (-1, 1)
@@ -31,7 +37,11 @@ class Window(private val title: String, var width: Int, var height: Int, private
             GLFW.glfwSetCursorPos(windowHandle, xPos.toDouble(), yPos.toDouble())
             field = value
         }
-    var isResized = true
+        get() {
+//            log.info("Getting MousePosition: {}", field)
+            return field
+        }
+    var hasResized = true
 
     fun init() {
         // Setup an error callback. The default implementation
@@ -58,7 +68,7 @@ class Window(private val title: String, var width: Int, var height: Int, private
         GLFW.glfwSetFramebufferSizeCallback(windowHandle) { _: Long, width: Int, height: Int ->
             this.width = width
             this.height = height
-            isResized = true
+            hasResized = true
         }
 
         // Setup a key callback
@@ -69,6 +79,7 @@ class Window(private val title: String, var width: Int, var height: Int, private
         }
 
         // Setup the mouse
+        mousePosition = Vector2f(0.0F)
         GLFW.glfwSetInputMode(windowHandle, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
         GLFW.glfwSetCursorPosCallback(windowHandle) { _: Long, xpos: Double, ypos: Double ->
             updateMousePosition(xpos.toFloat(), ypos.toFloat())

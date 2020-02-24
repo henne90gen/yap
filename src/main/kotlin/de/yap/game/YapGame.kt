@@ -26,13 +26,15 @@ class YapGame : IGameLogic {
     private val renderer: Renderer = Renderer()
     private val shader = Shader("src/main/glsl/vertex.glsl", "src/main/glsl/fragment.glsl")
     private val camera = Camera(Vector3f(0.5F, 0.0F, 3.0F))
-    private val cameraSpeed = 0.1F
+    private val secondCamera = Camera()
+    private var selectedCamera = 0
+
     private var cameraRayStart = Vector3f()
     private var cameraRayResult = IntersectionResult()
+
     private var roomWireframe = false
 
     private var mousePosition = Vector2f()
-    private val mouseSensitivity = 0.5F
 
     private var roomMeshes: List<Mesh> = emptyList()
     private val scale = 2.0F
@@ -99,19 +101,26 @@ class YapGame : IGameLogic {
             roomWireframe = !roomWireframe
         }
 
-
+        // TODO this should only teleport as soon as the player lets go of the teleport button
         if (window.isMousePressed(GLFW.GLFW_MOUSE_BUTTON_LEFT) && cameraRayResult.hasValue()) {
-            camera.teleport(cameraRayResult.point, cameraRayResult.normal)
+            val point = cameraRayResult.point
+            point.add(
+                    Vector3f(cameraRayResult.normal)
+                            .normalize()
+                            .mul(0.5F)
+            )
+            camera.teleport(point, cameraRayResult.normal)
+        }
+
+        // TODO this should only happen once when the key has been released
+        if (window.isKeyPressed(GLFW.GLFW_KEY_SPACE)) {
+            switchToNextCamera(window)
         }
     }
 
     override fun update(interval: Float) {
-        val tmp = Vector3f(direction).mul(cameraSpeed)
-        camera.move(tmp)
+        currentCamera().update(direction, mousePosition)
 
-        val mouseRot = Vector2f(mousePosition.x, mousePosition.y)
-                .mul(mouseSensitivity)
-        camera.rotate(mouseRot)
         val cameraDirection = camera.direction()
         val startOffset = Vector3f(cameraDirection)
                 .add(0.0F, -0.1F, 0.0F) // move the start down a little
@@ -125,21 +134,19 @@ class YapGame : IGameLogic {
 
     override fun render(window: Window) {
         renderer.clear()
-        if (window.isResized) {
+        if (window.hasResized) {
             glViewport(0, 0, window.width, window.height)
-            window.isResized = false
+            window.hasResized = false
             val aspectRatio = window.width.toFloat() / window.height.toFloat()
-            camera.aspectRatioChanged(aspectRatio)
+            currentCamera().aspectRatioChanged(aspectRatio)
         }
 
-        shader.apply(camera)
+        shader.apply(currentCamera())
         shader.setUniform("color", Vector4f(1.0F, 1.0F, 1.0F, 1.0F))
 
         renderRayFromCamera()
         renderCoordinateSystemAxis()
         renderRoom()
-
-        renderer.cube(shader, Matrix4f().translate(Vector3f(0.0F, 2.0F, 0.0F)), Vector4f(0.5F, 0.5F, 0.0F, 1.0F))
     }
 
     private fun renderRoom() {
@@ -171,5 +178,20 @@ class YapGame : IGameLogic {
         } else {
             renderer.line(shader, cameraRayStart, camera.direction().mul(1000.0F), color)
         }
+    }
+
+    private fun currentCamera(): Camera {
+        return if (selectedCamera == 0) {
+            camera
+        } else {
+            secondCamera
+        }
+    }
+
+    private fun switchToNextCamera(window: Window) {
+        selectedCamera++
+        selectedCamera %= 2
+        val aspectRatio = window.width.toFloat() / window.height.toFloat()
+        currentCamera().aspectRatioChanged(aspectRatio)
     }
 }
