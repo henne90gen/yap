@@ -1,6 +1,5 @@
 package de.yap.engine
 
-import de.yap.game.YapGame
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
@@ -168,8 +167,5 @@ class Camera(val position: Vector3f = Vector3f(0.0F)) {
         val mouseRot = Vector2f(mousePosition.x, mousePosition.y)
                 .mul(mouseSensitivity)
         rotate(mouseRot)
-        if (mouseRot.x != 0.0F || mouseRot.y != 0.0F) {
-            log.info("MouseRot: {}, MousePosition: {}", mouseRot, mousePosition)
-        }
     }
 }

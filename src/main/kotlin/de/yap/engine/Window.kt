@@ -22,9 +22,8 @@ class Window(private val title: String, var width: Int, var height: Int, private
     var mousePosition = Vector2f(0.0F)
         set(value) {
 //            log.info("Setting MousePosition: {}", value)
-            val aspectRatio = height.toFloat() / width.toFloat()
             var xPos = value.x       // (-aspectRatio, aspectRatio) (left, right)
-            xPos *= aspectRatio      // (-1, 1)
+            xPos *= aspectRatio()      // (-1, 1)
             xPos += 1.0F             // (0, 2)
             xPos *= 0.5F             // (0, 1)
             xPos *= width.toFloat()  // (0, width)
@@ -132,8 +131,7 @@ class Window(private val title: String, var width: Int, var height: Int, private
                 .sub(Vector2f(1.0F))
 
         // scale x to match the aspect ratio of the window
-        val aspectRatio = width.toFloat() / height.toFloat()
-        mousePosition.x *= aspectRatio
+        mousePosition.x *= aspectRatio()
     }
 
     fun setClearColor(r: Float, g: Float, b: Float, alpha: Float) {
@@ -186,5 +184,9 @@ class Window(private val title: String, var width: Int, var height: Int, private
         val formattedFps = "%.4f".format(fps)
         val formattedUps = "%.4f".format(ups)
         GLFW.glfwSetWindowTitle(windowHandle, "$title (fps: $formattedFps, ups: $formattedUps)")
+    }
+
+    fun aspectRatio(): Float {
+        return width.toFloat() / height.toFloat()
     }
 }
