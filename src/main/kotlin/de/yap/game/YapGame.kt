@@ -25,6 +25,8 @@ class YapGame : IGameLogic {
     private val direction = Vector3f(0.0f, 0.0f, 0.0f)
     private val renderer: Renderer = Renderer()
     private val shader = Shader("src/main/glsl/vertex.glsl", "src/main/glsl/fragment.glsl")
+    private val fontShader = Shader("src/main/glsl/font_vertex.glsl", "src/main/glsl/font_fragment.glsl")
+
     private val camera = Camera(Vector3f(0.5F, 0.0F, 3.0F))
     private val secondCamera = Camera()
     private var selectedCamera = 0
@@ -47,6 +49,7 @@ class YapGame : IGameLogic {
     override fun init() {
         renderer.init()
         shader.compile()
+        fontShader.compile()
 
         cubeMesh = Mesh.fromFile("src/test/resources/cube.obj")
         roomMeshes = Mesh.fromFile("src/main/resources/textures/scene.obj")
@@ -134,23 +137,45 @@ class YapGame : IGameLogic {
 
     override fun render(window: Window) {
         renderer.clear()
-        if (window.hasResized) {
-            glViewport(0, 0, window.width, window.height)
-            window.hasResized = false
-            val aspectRatio = window.width.toFloat() / window.height.toFloat()
-            currentCamera().aspectRatioChanged(aspectRatio)
-        }
+        handleWindowResize(window)
 
         shader.apply(currentCamera())
-        shader.setUniform("color", Vector4f(1.0F, 1.0F, 1.0F, 1.0F))
+        shader.setUniform("color", Vector4f(1.0F))
+        fontShader.setUniform("color", Vector4f(1.0F))
 
         renderRayFromCamera()
         renderCoordinateSystemAxis()
         renderRoom()
         renderCameras()
+        renderText()
+    }
+
+    private fun handleWindowResize(window: Window) {
+        if (!window.hasResized) {
+            return
+        }
+
+        glViewport(0, 0, window.width, window.height)
+        window.hasResized = false
+        val aspectRatio = window.width.toFloat() / window.height.toFloat()
+        currentCamera().aspectRatioChanged(aspectRatio)
+
+        fontShader.setUniform("view", Matrix4f().scale(1.0F / aspectRatio, 1.0F, 1.0F))
+    }
+
+    private fun renderText() {
+        val color = Vector4f(0.5F, 0.75F, 0.0F, 1.0F)
+        for (i in 0..9) {
+            for (j in 0..9) {
+                val offset = Vector3f(-1.5F, -0.8F, 0.0f)
+                        .add(0.3F * j, 0.15F * i, 0.0F)
+                renderer.text(fontShader, "${i}x$j", Matrix4f().translate(offset), color)
+            }
+        }
     }
 
     private fun renderCameras() {
+        // TODO show "up" axis of camera
         if (selectedCamera == 0) {
             renderer.cube(shader, Matrix4f().translate(secondCamera.position).scale(0.4F), Vector4f(1.0F, 1.0F, 0.0F, 1.0F))
         } else {

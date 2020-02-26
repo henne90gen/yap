@@ -1,6 +1,8 @@
 package de.yap.engine
 
 import de.yap.engine.mesh.Mesh
+import de.yap.engine.mesh.MeshUtils
+import org.joml.Vector2f
 import org.joml.Vector3f
 import org.joml.Vector3i
 import org.junit.Test
@@ -90,5 +92,21 @@ class MeshTest {
 
         val m1 = meshes[0]
         assertNotNull(m1.material)
+    }
+
+    @Test
+    fun testWithMesh() {
+        val mesh = MeshUtils.quad()
+        val result = mesh.withMesh(MeshUtils.quad(Vector2f(-1.0F), Vector2f(0.0F), Vector2f(0.25F), Vector2f(0.75F)))
+        assertNull(result.material)
+        val expectedIndices = listOf(
+                Vector3i(0, 1, 2),
+                Vector3i(0, 3, 1),
+                Vector3i(4, 5, 6),
+                Vector3i(4, 7, 5)
+        )
+        assertEquals(expectedIndices, result.indices)
+        assertEquals(8, result.vertices.size)
+        assertEquals(8, result.texCoords.size)
     }
 }

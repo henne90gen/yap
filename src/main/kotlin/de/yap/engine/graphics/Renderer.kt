@@ -1,20 +1,22 @@
 package de.yap.engine.graphics
 
+import de.yap.engine.Font
 import de.yap.engine.mesh.Mesh
+import de.yap.engine.mesh.MeshUtils
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
 import org.joml.Vector3f
-import org.joml.Vector3i
 import org.joml.Vector4f
 import org.lwjgl.opengl.GL11
-import org.lwjgl.opengl.GL11.*
-import org.lwjgl.opengl.GL13
+import org.lwjgl.opengl.GL13.*
 import org.lwjgl.opengl.GL20
 import org.lwjgl.opengl.GL30
 import org.lwjgl.system.MemoryUtil
+import java.io.File
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
+
 
 class Renderer {
 
@@ -22,12 +24,20 @@ class Renderer {
         private val log: Logger = LogManager.getLogger(Renderer::class.java.name)
     }
 
+    private lateinit var font: Font
+
     fun init() {
         glEnable(GL_DEPTH_TEST)
 
+        create1x1WhiteTexture()
+
+        font = Font.fromFile(File("src/main/resources/fonts/RobotoMono/RobotoMono-Regular.ttf"))
+    }
+
+    private fun create1x1WhiteTexture() {
         val textureId = glGenTextures()
-        GL13.glActiveTexture(GL13.GL_TEXTURE0)
-        GL13.glBindTexture(GL13.GL_TEXTURE_2D, textureId)
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D, textureId)
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -69,61 +79,17 @@ class Renderer {
         shader.unbind()
     }
 
-    fun quad(shader: Shader, transformation: Matrix4f = Matrix4f(), color: Vector4f = Vector4f(1.0F)) {
-        val vertices = listOf(
-                Vector3f(-1.0F, -1.0F, 0.0F),
-                Vector3f(1.0F, 1.0F, 0.0F),
-                Vector3f(-1.0F, 1.0F, 0.0F),
-                Vector3f(1.0F, -1.0F, 0.0F)
-        )
-        val indices = listOf(
-                Vector3i(0, 1, 2),
-                Vector3i(0, 3, 1)
-        )
-        val mesh = Mesh(vertices = vertices, indices = indices)
+    fun quad(
+            shader: Shader,
+            transformation: Matrix4f = Matrix4f(),
+            color: Vector4f = Vector4f(1.0F)
+    ) {
+        val mesh = MeshUtils.quad()
         this.mesh(shader, mesh, transformation, color)
     }
 
     fun cube(shader: Shader, transformation: Matrix4f = Matrix4f(), color: Vector4f = Vector4f(1.0F)) {
-        val vertices = listOf(
-                // back
-                Vector3f(-0.5F, -0.5F, -0.5F), // 0
-                Vector3f(0.5F, -0.5F, -0.5F),  // 1
-                Vector3f(0.5F, 0.5F, -0.5F),   // 2
-                Vector3f(-0.5F, 0.5F, -0.5F),  // 3
-
-                // front
-                Vector3f(-0.5F, -0.5F, 0.5F),  // 4
-                Vector3f(0.5F, -0.5F, 0.5F),   // 5
-                Vector3f(0.5F, 0.5F, 0.5F),    // 6
-                Vector3f(-0.5F, 0.5F, 0.5F)    // 7
-        )
-        val indices = listOf(
-                // front
-                Vector3i(0, 1, 2),
-                Vector3i(0, 2, 3),
-
-                // back
-                Vector3i(4, 5, 6),
-                Vector3i(4, 6, 7),
-
-                // right
-                Vector3i(5, 1, 2),
-                Vector3i(5, 2, 6),
-
-                // left
-                Vector3i(0, 4, 7),
-                Vector3i(0, 7, 3),
-
-                // top
-                Vector3i(7, 6, 2),
-                Vector3i(7, 2, 3),
-
-                // bottom
-                Vector3i(4, 5, 1),
-                Vector3i(4, 1, 0)
-        )
-        val mesh = Mesh(vertices = vertices, indices = indices)
+        val mesh = MeshUtils.unitCube()
         this.mesh(shader, mesh, transformation, color)
     }
 
@@ -171,5 +137,10 @@ class Renderer {
         if (activate) {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
         }
+    }
+
+    fun text(shader: Shader, text: String, transformation: Matrix4f, color: Vector4f = Vector4f(1.0F)) {
+        val mesh = MeshUtils.text(text, font)
+        this.mesh(shader, mesh, transformation, color)
     }
 }

@@ -15,7 +15,7 @@ import java.nio.IntBuffer
 
 data class Mesh(
         val vertices: List<Vector3f> = emptyList(),
-        val textCoords: List<Vector2f> = emptyList(),
+        val texCoords: List<Vector2f> = emptyList(),
         val indices: List<Vector3i> = emptyList(),
         val material: Material? = null
 ) {
@@ -43,7 +43,27 @@ data class Mesh(
         newIndices.add(Vector3i(preVertCount + 0, preVertCount + 1, preVertCount + 2))
         newIndices.add(Vector3i(preVertCount + 1, preVertCount + 3, preVertCount + 2))
 
-        return Mesh(vertices = newVertices, indices = newIndices)
+        // TODO take care of texCoords as well
+        return Mesh(vertices = newVertices, indices = newIndices, material = material)
+    }
+
+    /**
+     * Merges the given mesh with this mesh and returns the result.
+     * The material of this mesh will be used.
+     */
+    fun withMesh(mesh: Mesh): Mesh {
+        val newVertices = vertices.toMutableList()
+        val newTexCoords = texCoords.toMutableList()
+        val newIndices = indices.toMutableList()
+
+        newVertices.addAll(mesh.vertices)
+        newTexCoords.addAll(mesh.texCoords)
+        val offset = Vector3i(vertices.size)
+        for (index in mesh.indices) {
+            newIndices.add(Vector3i(index).add(offset))
+        }
+
+        return Mesh(vertices = newVertices, texCoords = newTexCoords, indices = newIndices, material = material)
     }
 
     fun bind() {
@@ -83,8 +103,8 @@ data class Mesh(
 
         var textCoordsBuffer: FloatBuffer? = null
         try {
-            textCoordsBuffer = MemoryUtil.memAllocFloat(textCoords.size * 2)
-            textCoordsBuffer.put(textCoords.flatMap { v -> listOf(v.x, v.y) }.toFloatArray()).flip()
+            textCoordsBuffer = MemoryUtil.memAllocFloat(texCoords.size * 2)
+            textCoordsBuffer.put(texCoords.flatMap { v -> listOf(v.x, v.y) }.toFloatArray()).flip()
             val tbo = GL20.glGenBuffers()
             GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, tbo)
             GL20.glBufferData(GL20.GL_ARRAY_BUFFER, textCoordsBuffer!!, GL20.GL_STATIC_DRAW)
