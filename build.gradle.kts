@@ -1,3 +1,4 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.internal.os.OperatingSystem
 
 plugins {
@@ -6,6 +7,7 @@ plugins {
 
     // Apply the application plugin to add support for building a CLI application.
     application
+    id("com.github.johnrengelman.shadow") version "5.2.0"
 }
 
 repositories {
@@ -83,4 +85,12 @@ dependencies {
 application {
     // Define the main class for the application.
     mainClassName = "de.yap.AppKt"
+}
+
+tasks.withType<ShadowJar> {
+    manifest.attributes.apply {
+        put("Implementation-Title", "Yet Another Portal")
+        put("Implementation-Version", project.version)
+        put("Main-Class", "de.yap.AppKt")
+    }
 }

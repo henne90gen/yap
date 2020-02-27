@@ -22,6 +22,9 @@ class Texture(
         private val log: Logger = LogManager.getLogger(Texture::class.java.name)
 
         fun fromFile(file: File): Texture {
+            check(file.exists()) { "File '$file' does not exist" }
+            val filePath = file.absolutePath
+
             var buf: ByteBuffer? = null
             var width = 0
             var height = 0
@@ -30,9 +33,6 @@ class Texture(
                 val w = stack.mallocInt(1)
                 val h = stack.mallocInt(1)
                 val c = stack.mallocInt(1)
-
-                check(file.exists()) { "File '$file' does not exist" }
-                val filePath = file.absolutePath
 
                 buf = STBImage.stbi_load(filePath, w, h, c, 4)
                 checkNotNull(buf) { "Image file [" + file + "] not loaded: " + STBImage.stbi_failure_reason() }

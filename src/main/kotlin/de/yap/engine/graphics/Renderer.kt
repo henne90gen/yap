@@ -13,7 +13,6 @@ import org.lwjgl.opengl.GL13.*
 import org.lwjgl.opengl.GL20
 import org.lwjgl.opengl.GL30
 import org.lwjgl.system.MemoryUtil
-import java.io.File
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 
@@ -31,7 +30,7 @@ class Renderer {
 
         create1x1WhiteTexture()
 
-        font = Font.fromFile(File("src/main/resources/fonts/RobotoMono/RobotoMono-Regular.ttf"))
+        font = Font.fromInternalFile("fonts/RobotoMono/RobotoMono-Regular.ttf")
     }
 
     private fun create1x1WhiteTexture() {

@@ -209,7 +209,8 @@ class ObjLoader : MeshLoader {
                 continue
             }
             if (line.startsWith("map_Kd ")) {
-                currentMaterial?.texture = Texture.fromFile(getNeighborFile(file, line.substring(7)))
+                val neighborFile = getNeighborFile(file, line.substring(7))
+                currentMaterial?.texture = Texture.fromFile(neighborFile)
                 continue
             }
             log.info(line)

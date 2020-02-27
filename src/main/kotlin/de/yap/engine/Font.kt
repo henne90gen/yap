@@ -9,10 +9,7 @@ import org.lwjgl.stb.STBTTBakedChar
 import org.lwjgl.stb.STBTTFontinfo
 import org.lwjgl.stb.STBTruetype
 import org.lwjgl.system.MemoryStack
-import java.io.File
-import java.nio.ByteBuffer
 import java.nio.FloatBuffer
-import java.nio.file.Files
 
 class Font(
         val material: Material,
@@ -24,8 +21,8 @@ class Font(
 ) {
 
     companion object {
-        fun fromFile(file: File): Font {
-            val ttf = loadResource(file)
+        fun fromInternalFile(file: String): Font {
+            val ttf = IOUtils.loadInternalResource(file)
             checkNotNull(ttf) { "Could not load font!" }
 
             val info: STBTTFontinfo = STBTTFontinfo.create()
@@ -72,29 +69,6 @@ class Font(
                     ascent, descent, lineGap,
                     firstChar, cdata
             )
-        }
-
-        private fun loadResource(file: File): ByteBuffer? {
-            var buffer: ByteBuffer? = null
-
-            val path = file.toPath()
-            if (!Files.isReadable(path)) {
-                return null
-            }
-
-            buffer = Files.newByteChannel(path).use { fc ->
-                val buf = BufferUtils.createByteBuffer(fc.size().toInt() + 1)
-                while (fc.read(buf) != -1) {
-                }
-                buf
-            }
-
-            if (buffer == null) {
-                return null
-            }
-
-            buffer.flip()
-            return buffer.slice()
         }
     }
 

@@ -1,17 +1,14 @@
 package de.yap.engine.graphics
 
 import de.yap.engine.Camera
+import de.yap.engine.IOUtils
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
 import org.joml.Vector4f
 import org.lwjgl.opengl.GL20.*
 import org.lwjgl.system.MemoryUtil
-import java.io.BufferedReader
-import java.io.File
-import java.io.FileReader
 import java.nio.FloatBuffer
-import java.util.stream.Collectors
 
 class Shader(private val vertexShaderPath: String, private val fragmentShaderPath: String) {
 
@@ -88,14 +85,7 @@ class Shader(private val vertexShaderPath: String, private val fragmentShaderPat
     }
 
     private fun compilePartial(type: Int, filePath: String): Int {
-        if (!File(filePath).exists()) {
-            log.warn("Could not find {}", filePath)
-            return 0
-        }
-
-        val lines = BufferedReader(FileReader(filePath))
-                .lines()
-                .collect(Collectors.toList())
+        val lines = IOUtils.loadInternalTextFile(filePath)
 
         val shaderId = glCreateShader(type)
         val shaderSource = lines.joinToString("\n")

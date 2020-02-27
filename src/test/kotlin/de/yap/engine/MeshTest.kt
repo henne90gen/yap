@@ -42,45 +42,34 @@ class MeshTest {
     @Test
     fun testMeshFromNonExistentFile() {
         val m = Mesh.fromFile("non-existent.file")
-        assertNull(m)
+        assertEquals(0, m.size)
     }
 
     @Test
     fun testMeshFromUnsupportedFile() {
         val m = Mesh.fromFile("unsupported.file")
-        assertNull(m)
+        assertEquals(0, m.size)
     }
 
     @Test
     fun testMeshFromObjFile() {
         val m = Mesh.fromFile("src/test/resources/cube.obj")[0]
         assertNotNull(m)
-
-        val expectedVertices = listOf(
-                Vector3f(1.0F, -1.0F, -1.0F),
-                Vector3f(1.0F, -1.0F, 1.0F),
-                Vector3f(-1.0F, -1.0F, 1.0F),
-                Vector3f(-1.0F, -1.0F, -1.0F),
-                Vector3f(1.0F, 1.0F, -1.0F),
-                Vector3f(1.0F, 1.0F, 1.0F),
-                Vector3f(-1.0F, 1.0F, 1.0F),
-                Vector3f(-1.0F, 1.0F, -1.0F)
-        )
-        assertEquals(expectedVertices, m.vertices)
+        assertEquals(36, m.vertices.size)
 
         val expectedIndices = listOf(
-                Vector3i(1, 3, 0),
-                Vector3i(7, 5, 4),
-                Vector3i(4, 1, 0),
-                Vector3i(5, 2, 1),
-                Vector3i(2, 7, 3),
-                Vector3i(0, 7, 4),
-                Vector3i(1, 2, 3),
-                Vector3i(7, 6, 5),
-                Vector3i(4, 5, 1),
-                Vector3i(5, 6, 2),
-                Vector3i(2, 6, 7),
-                Vector3i(0, 3, 7)
+                Vector3i(0, 1, 2),
+                Vector3i(3, 4, 5),
+                Vector3i(6, 7, 8),
+                Vector3i(9, 10, 11),
+                Vector3i(12, 13, 14),
+                Vector3i(15, 16, 17),
+                Vector3i(18, 19, 20),
+                Vector3i(21, 22, 23),
+                Vector3i(24, 25, 26),
+                Vector3i(27, 28, 29),
+                Vector3i(30, 31, 32),
+                Vector3i(33, 34, 35)
         )
         assertEquals(expectedIndices, m.indices)
     }

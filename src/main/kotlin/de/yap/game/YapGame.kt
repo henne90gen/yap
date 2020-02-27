@@ -24,8 +24,8 @@ class YapGame : IGameLogic {
 
     private val direction = Vector3f(0.0f, 0.0f, 0.0f)
     private val renderer: Renderer = Renderer()
-    private val shader = Shader("src/main/glsl/vertex.glsl", "src/main/glsl/fragment.glsl")
-    private val fontShader = Shader("src/main/glsl/vertex.glsl", "src/main/glsl/font_fragment.glsl")
+    private val shader = Shader("shaders/vertex.glsl", "shaders/fragment.glsl")
+    private val fontShader = Shader("shaders/vertex.glsl", "shaders/font_fragment.glsl")
 
     private val camera = Camera(Vector3f(0.5F, 0.0F, 3.0F))
     private val secondCamera = Camera()
@@ -44,15 +44,12 @@ class YapGame : IGameLogic {
     private val position = Vector3f(negativeScaleHalf)
     private val roomTransformation = Matrix4f().translate(position).scale(scale)
 
-    private var cubeMesh: List<Mesh> = emptyList()
-
     override fun init() {
         renderer.init()
         shader.compile()
         fontShader.compile()
 
-        cubeMesh = Mesh.fromFile("src/test/resources/cube.obj")
-        roomMeshes = Mesh.fromFile("src/main/resources/textures/scene.obj")
+        roomMeshes = Mesh.fromFile("models/scene.obj")
     }
 
     /**
