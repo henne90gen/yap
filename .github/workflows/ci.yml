@@ -7,9 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: OrangeLabs-moe/gradle-actions@v5.0-openjdk-13
-      with:
-        args: test
+    - shell: bash
+      run: ./gradlew test
   build:
     strategy:
       matrix:
@@ -17,9 +16,11 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
     - uses: actions/checkout@v2
-    - uses: OrangeLabs-moe/gradle-actions@v5.0-openjdk-13
-      with:
-        args: distZip
+    - shell: bash
+      run: ./gradlew distZip
+#    - uses: OrangeLabs-moe/gradle-actions@v5.0-openjdk-13
+#      with:
+#        args: distZip
     - name: Archive artifacts
       uses: actions/upload-artifact@v1
       with:
