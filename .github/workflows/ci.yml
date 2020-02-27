@@ -17,7 +17,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - shell: bash
-      run: sudo apt install openjdk-13-jdk
+      run: sudo apt-get update && sudo apt-get install openjdk-13-jdk
     - shell: bash
       run: ./gradlew distZip
 #    - uses: OrangeLabs-moe/gradle-actions@v5.0-openjdk-13
