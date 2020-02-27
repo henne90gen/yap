@@ -7,22 +7,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - shell: bash
-      run: sudo apt-get update && sudo apt-get install openjdk-13-jdk
-    - shell: bash
-      run: ./gradlew test
-  build-linux:
-#    platform: [ubuntu-latest, macos-latest, windows-latest]
+    - uses: OrangeLabs-moe/gradle-actions@v5.0-openjdk-13
+      with:
+        args: test
+  build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - shell: bash
-      run: sudo apt-get update && sudo apt-get install openjdk-13-jdk
-    - shell: bash
-      run: ./gradlew distZip
-#    - uses: OrangeLabs-moe/gradle-actions@v5.0-openjdk-13
-#      with:
-#        args: distZip
+    - uses: OrangeLabs-moe/gradle-actions@v5.0-openjdk-13
+      with:
+        args: distZip
     - name: Archive artifacts
       uses: actions/upload-artifact@v1
       with:
