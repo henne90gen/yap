@@ -13,6 +13,7 @@ import org.joml.Vector2f
 import org.joml.Vector3f
 import org.joml.Vector4f
 import org.lwjgl.glfw.GLFW
+import org.lwjgl.glfw.GLFW.glfwSetKeyCallback
 import org.lwjgl.opengl.GL20.glViewport
 
 
@@ -21,6 +22,8 @@ class YapGame : IGameLogic {
     companion object {
         private val log: Logger = LogManager.getLogger(YapGame::class.java.name)
     }
+
+    private lateinit var window: Window
 
     private val direction = Vector3f(0.0f, 0.0f, 0.0f)
     private val renderer: Renderer = Renderer()
@@ -44,12 +47,42 @@ class YapGame : IGameLogic {
     private val position = Vector3f(negativeScaleHalf)
     private val roomTransformation = Matrix4f().translate(position).scale(scale)
 
-    override fun init() {
+    override fun init(window: Window) {
         renderer.init()
         shader.compile()
         fontShader.compile()
 
         roomMeshes = Mesh.fromFile("models/scene.obj")
+
+        this.window = window
+        window.setKeyCallback(::keyCallback)
+        window.setMouseCallback(::mouseCallback)
+    }
+
+    private fun keyCallback(windowHandle: Long, key: Int, scancode: Int, action: Int, mods: Int) {
+        if (key == GLFW.GLFW_KEY_ESCAPE && action == GLFW.GLFW_RELEASE) {
+            GLFW.glfwSetWindowShouldClose(windowHandle, true) // We will detect this in the rendering loop
+        }
+
+        if (key == GLFW.GLFW_KEY_F && action == GLFW.GLFW_RELEASE) {
+            roomWireframe = !roomWireframe
+        }
+
+        if (key == GLFW.GLFW_KEY_SPACE && action == GLFW.GLFW_RELEASE) {
+            switchToNextCamera(window)
+        }
+    }
+
+    private fun mouseCallback(windowHandle: Long, button: Int, action: Int, mods: Int) {
+        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && action == GLFW.GLFW_RELEASE && cameraRayResult.hasValue()) {
+            val point = cameraRayResult.point
+            point.add(
+                    Vector3f(cameraRayResult.normal)
+                            .normalize()
+                            .mul(0.5F)
+            )
+            camera.teleport(point, cameraRayResult.normal)
+        }
     }
 
     /**
@@ -58,7 +91,7 @@ class YapGame : IGameLogic {
      *  - Q,E - move along the y-axis
      *  - SPACE - teleport to point of intersection
      */
-    override fun input(window: Window) {
+    override fun input() {
         direction.x = when {
             window.isKeyPressed(GLFW.GLFW_KEY_D) -> {
                 1.0F
@@ -95,27 +128,6 @@ class YapGame : IGameLogic {
 
         mousePosition = Vector2f(window.mousePosition)
         window.mousePosition = Vector2f(0.0F)
-
-        // TODO this is not good enough (boolean switches back and forth really fast)
-        if (window.isKeyPressed(GLFW.GLFW_KEY_F)) {
-            roomWireframe = !roomWireframe
-        }
-
-        // TODO this should only teleport as soon as the player lets go of the teleport button
-        if (window.isMousePressed(GLFW.GLFW_MOUSE_BUTTON_LEFT) && cameraRayResult.hasValue()) {
-            val point = cameraRayResult.point
-            point.add(
-                    Vector3f(cameraRayResult.normal)
-                            .normalize()
-                            .mul(0.5F)
-            )
-            camera.teleport(point, cameraRayResult.normal)
-        }
-
-        // TODO this should only happen once when the key has been released
-        if (window.isKeyPressed(GLFW.GLFW_KEY_SPACE)) {
-            switchToNextCamera(window)
-        }
     }
 
     override fun update(interval: Float) {
@@ -132,7 +144,7 @@ class YapGame : IGameLogic {
         cameraRayResult = intersects(cameraRayStart, cameraDirection, roomMeshes, roomTransformation)
     }
 
-    override fun render(window: Window) {
+    override fun render() {
         renderer.clear()
         handleWindowResize(window)
 

@@ -32,7 +32,7 @@ class GameEngine(windowTitle: String?, width: Int, height: Int, vSync: Boolean, 
     private fun init() {
         window.init()
         timer.init()
-        gameLogic.init()
+        gameLogic.init(window)
     }
 
     private fun gameLoop() {
@@ -74,7 +74,7 @@ class GameEngine(windowTitle: String?, width: Int, height: Int, vSync: Boolean, 
     }
 
     private fun input() {
-        gameLogic.input(window)
+        gameLogic.input()
     }
 
     private fun update(interval: Float) {
@@ -82,7 +82,7 @@ class GameEngine(windowTitle: String?, width: Int, height: Int, vSync: Boolean, 
     }
 
     private fun render() {
-        gameLogic.render(window)
+        gameLogic.render()
         window.update()
     }
 }

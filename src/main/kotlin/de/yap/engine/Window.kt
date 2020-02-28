@@ -146,6 +146,14 @@ class Window(private val title: String, var width: Int, var height: Int, private
         return GLFW.glfwGetMouseButton(windowHandle, mouseButtonCode) == GLFW.GLFW_PRESS
     }
 
+    fun setKeyCallback(callback: (Long, Int, Int, Int, Int) -> Unit) {
+        GLFW.glfwSetKeyCallback(windowHandle, callback)
+    }
+
+    fun setMouseCallback(callback: (Long, Int, Int, Int) -> Unit) {
+        GLFW.glfwSetMouseButtonCallback(windowHandle, callback)
+    }
+
     fun windowShouldClose(): Boolean {
         return GLFW.glfwWindowShouldClose(windowHandle)
     }
