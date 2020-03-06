@@ -24,6 +24,8 @@ class Renderer {
     }
 
     private lateinit var font: Font
+    private lateinit var quadMesh: Mesh
+    private lateinit var cubeMesh: Mesh
 
     fun init() {
         glEnable(GL_DEPTH_TEST)
@@ -31,6 +33,8 @@ class Renderer {
         create1x1WhiteTexture()
 
         font = Font.fromInternalFile("fonts/RobotoMono/RobotoMono-Regular.ttf")
+        quadMesh = MeshUtils.quad()
+        cubeMesh = MeshUtils.unitCube()
     }
 
     private fun create1x1WhiteTexture() {
@@ -83,13 +87,11 @@ class Renderer {
             transformation: Matrix4f = Matrix4f(),
             color: Vector4f = Vector4f(1.0F)
     ) {
-        val mesh = MeshUtils.quad()
-        this.mesh(shader, mesh, transformation, color)
+        this.mesh(shader, quadMesh, transformation, color)
     }
 
     fun cube(shader: Shader, transformation: Matrix4f = Matrix4f(), color: Vector4f = Vector4f(1.0F)) {
-        val mesh = MeshUtils.unitCube()
-        this.mesh(shader, mesh, transformation, color)
+        this.mesh(shader, cubeMesh, transformation, color)
     }
 
     fun line(shader: Shader, start: Vector3f, end: Vector3f, color: Vector4f) {

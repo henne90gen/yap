@@ -26,6 +26,8 @@ class GameEngine(windowTitle: String?, width: Int, height: Int, vSync: Boolean, 
             gameLoop()
         } catch (e: Exception) {
             e.printStackTrace()
+        } finally {
+            cleanUp()
         }
     }
 
@@ -33,6 +35,10 @@ class GameEngine(windowTitle: String?, width: Int, height: Int, vSync: Boolean, 
         window.init()
         timer.init()
         gameLogic.init(window)
+    }
+
+    private fun cleanUp() {
+        window.cleanUp()
     }
 
     private fun gameLoop() {

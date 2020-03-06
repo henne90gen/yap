@@ -3,11 +3,14 @@ package de.yap.engine
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Vector2f
-import org.lwjgl.glfw.GLFW
+import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
+import org.lwjgl.opengl.GLUtil
+import org.lwjgl.system.Callback
 import org.lwjgl.system.MemoryUtil
+
 
 class Window(private val title: String, var width: Int, var height: Int, private var vSync: Boolean) {
 
@@ -16,6 +19,7 @@ class Window(private val title: String, var width: Int, var height: Int, private
     }
 
     private var windowHandle: Long = 0
+    private var debugCallback: Callback? = null
     private var ups = 0.0F
     private var fps = 0.0F
 
@@ -33,7 +37,7 @@ class Window(private val title: String, var width: Int, var height: Int, private
             yPos *= -1.0F            // (0, -1)
             yPos += 1.0F             // (1, 0)
             yPos *= height.toFloat() // (height, 0)
-            GLFW.glfwSetCursorPos(windowHandle, xPos.toDouble(), yPos.toDouble())
+            glfwSetCursorPos(windowHandle, xPos.toDouble(), yPos.toDouble())
             field = value
         }
         get() {
@@ -48,60 +52,69 @@ class Window(private val title: String, var width: Int, var height: Int, private
         GLFWErrorCallback.createPrint(System.err).set()
 
         // Initialize GLFW. Most GLFW functions will not work before doing this.
-        check(GLFW.glfwInit()) { "Unable to initialize GLFW" }
-        GLFW.glfwDefaultWindowHints() // optional, the current window hints are already the default
-        GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GL11.GL_FALSE) // the window will stay hidden after creation
-        GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GL11.GL_TRUE) // the window will be resizable
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3)
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 2)
-        GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE)
-        GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT, GL11.GL_TRUE)
+        check(glfwInit()) { "Unable to initialize GLFW" }
+        glfwDefaultWindowHints() // optional, the current window hints are already the default
+        glfwWindowHint(GLFW_VISIBLE, GL11.GL_FALSE) // the window will stay hidden after creation
+        glfwWindowHint(GLFW_RESIZABLE, GL11.GL_TRUE) // the window will be resizable
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3)
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2)
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL11.GL_TRUE)
 
         // Create the window
-        windowHandle = GLFW.glfwCreateWindow(width, height, title, MemoryUtil.NULL, MemoryUtil.NULL)
+        windowHandle = glfwCreateWindow(width, height, title, MemoryUtil.NULL, MemoryUtil.NULL)
         if (windowHandle == MemoryUtil.NULL) {
             throw RuntimeException("Failed to create the GLFW window")
         }
 
         // Setup resize callback
-        GLFW.glfwSetFramebufferSizeCallback(windowHandle) { _: Long, width: Int, height: Int ->
+        glfwSetFramebufferSizeCallback(windowHandle) { _: Long, width: Int, height: Int ->
             this.width = width
             this.height = height
             hasResized = true
         }
 
         // Setup a key callback
-        GLFW.glfwSetKeyCallback(windowHandle) { window: Long, key: Int, _: Int, action: Int, _: Int ->
-            if (key == GLFW.GLFW_KEY_ESCAPE && action == GLFW.GLFW_RELEASE) {
-                GLFW.glfwSetWindowShouldClose(window, true) // We will detect this in the rendering loop
+        glfwSetKeyCallback(windowHandle) { window: Long, key: Int, _: Int, action: Int, _: Int ->
+            if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+                glfwSetWindowShouldClose(window, true) // We will detect this in the rendering loop
             }
         }
 
         // Setup the mouse
         mousePosition = Vector2f(0.0F)
-        GLFW.glfwSetInputMode(windowHandle, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-        GLFW.glfwSetCursorPosCallback(windowHandle) { _: Long, xpos: Double, ypos: Double ->
+        glfwSetInputMode(windowHandle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetCursorPosCallback(windowHandle) { _: Long, xpos: Double, ypos: Double ->
             updateMousePosition(xpos.toFloat(), ypos.toFloat())
         }
 
         // Get the resolution of the primary monitor
-        val vidmode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor())
+        val vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor())
         // Center our window
-        GLFW.glfwSetWindowPos(
+        glfwSetWindowPos(
                 windowHandle,
                 (vidmode!!.width() - width) / 2,
                 (vidmode.height() - height) / 2
         )
 
+        // enabling debug mode
+        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+
         // Make the OpenGL context current
-        GLFW.glfwMakeContextCurrent(windowHandle)
+        glfwMakeContextCurrent(windowHandle)
         setVSync(vSync)
 
         // Make the window visible
-        GLFW.glfwShowWindow(windowHandle)
+        glfwShowWindow(windowHandle)
         GL.createCapabilities()
 
+        debugCallback = GLUtil.setupDebugMessageCallback() // may return null if the debug mode is not available
+
         setClearColor(0.0f, 0.0f, 0.0f, 0.0f)
+    }
+
+    fun cleanUp() {
+        debugCallback?.free()
     }
 
     /**
@@ -139,23 +152,23 @@ class Window(private val title: String, var width: Int, var height: Int, private
     }
 
     fun isKeyPressed(keyCode: Int): Boolean {
-        return GLFW.glfwGetKey(windowHandle, keyCode) == GLFW.GLFW_PRESS
+        return glfwGetKey(windowHandle, keyCode) == GLFW_PRESS
     }
 
     fun isMousePressed(mouseButtonCode: Int): Boolean {
-        return GLFW.glfwGetMouseButton(windowHandle, mouseButtonCode) == GLFW.GLFW_PRESS
+        return glfwGetMouseButton(windowHandle, mouseButtonCode) == GLFW_PRESS
     }
 
     fun setKeyCallback(callback: (Long, Int, Int, Int, Int) -> Unit) {
-        GLFW.glfwSetKeyCallback(windowHandle, callback)
+        glfwSetKeyCallback(windowHandle, callback)
     }
 
     fun setMouseCallback(callback: (Long, Int, Int, Int) -> Unit) {
-        GLFW.glfwSetMouseButtonCallback(windowHandle, callback)
+        glfwSetMouseButtonCallback(windowHandle, callback)
     }
 
     fun windowShouldClose(): Boolean {
-        return GLFW.glfwWindowShouldClose(windowHandle)
+        return glfwWindowShouldClose(windowHandle)
     }
 
     fun isVSync(): Boolean {
@@ -166,16 +179,16 @@ class Window(private val title: String, var width: Int, var height: Int, private
         this.vSync = vSync
         if (vSync) {
             // Enable v-sync
-            GLFW.glfwSwapInterval(1)
+            glfwSwapInterval(1)
         } else {
             // Disable v-sync
-            GLFW.glfwSwapInterval(0)
+            glfwSwapInterval(0)
         }
     }
 
     fun update() {
-        GLFW.glfwSwapBuffers(windowHandle)
-        GLFW.glfwPollEvents()
+        glfwSwapBuffers(windowHandle)
+        glfwPollEvents()
     }
 
     fun setUps(ups: Float) {
@@ -191,7 +204,7 @@ class Window(private val title: String, var width: Int, var height: Int, private
     private fun updateWindowTitle() {
         val formattedFps = "%.4f".format(fps)
         val formattedUps = "%.4f".format(ups)
-        GLFW.glfwSetWindowTitle(windowHandle, "$title (fps: $formattedFps, ups: $formattedUps)")
+        glfwSetWindowTitle(windowHandle, "$title (fps: $formattedFps, ups: $formattedUps)")
     }
 
     fun aspectRatio(): Float {
