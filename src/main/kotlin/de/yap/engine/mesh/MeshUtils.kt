@@ -296,8 +296,10 @@ class MeshUtils {
 
         /**
          * https://github.com/LWJGL/lwjgl3/blob/18975883e844d9dc53874836ec45257da13085d9/modules/samples/src/test/java/org/lwjgl/demo/stb/Truetype.java
+         *
+         * FIXME this method has a memory leak in it. Use with caution
          */
-        fun text(value: String, font: Font): Mesh {
+        fun text(font: Font, value: String): Mesh {
             var mesh = Mesh(material = font.material)
 
             val lineOffset = font.lineOffset()

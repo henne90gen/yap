@@ -117,9 +117,7 @@ class Renderer {
             GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vbo)
             GL20.glBufferData(GL20.GL_ARRAY_BUFFER, buffer!!, GL20.GL_STATIC_DRAW)
         } finally {
-            if (buffer != null) {
-                MemoryUtil.memFree(buffer)
-            }
+            MemoryUtil.memFree(buffer)
         }
 
         GL20.glEnableVertexAttribArray(0)
@@ -141,7 +139,13 @@ class Renderer {
     }
 
     fun text(shader: Shader, text: String, transformation: Matrix4f, color: Vector4f = Vector4f(1.0F)) {
-        val mesh = MeshUtils.text(text, font)
+        val mesh = MeshUtils.text(font, text)
         this.mesh(shader, mesh, transformation, color)
+    }
+
+    fun disableDepthTest(function: () -> Unit) {
+        glDisable(GL_DEPTH_TEST)
+        function()
+        glEnable(GL_DEPTH_TEST)
     }
 }

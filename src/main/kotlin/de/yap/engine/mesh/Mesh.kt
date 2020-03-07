@@ -93,9 +93,7 @@ data class Mesh(
             GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vbo)
             GL20.glBufferData(GL20.GL_ARRAY_BUFFER, buffer!!, GL20.GL_STATIC_DRAW)
         } finally {
-            if (buffer != null) {
-                MemoryUtil.memFree(buffer)
-            }
+            MemoryUtil.memFree(buffer)
         }
 
         GL20.glEnableVertexAttribArray(0)
@@ -109,9 +107,7 @@ data class Mesh(
             GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, tbo)
             GL20.glBufferData(GL20.GL_ARRAY_BUFFER, textCoordsBuffer!!, GL20.GL_STATIC_DRAW)
         } finally {
-            if (buffer != null) {
-                MemoryUtil.memFree(textCoordsBuffer)
-            }
+            MemoryUtil.memFree(textCoordsBuffer)
         }
 
         GL20.glEnableVertexAttribArray(1)
@@ -126,9 +122,7 @@ data class Mesh(
             GL20.glBindBuffer(GL20.GL_ELEMENT_ARRAY_BUFFER, ibo)
             GL20.glBufferData(GL20.GL_ELEMENT_ARRAY_BUFFER, indexBuffer!!, GL20.GL_STATIC_DRAW)
         } finally {
-            if (indexBuffer != null) {
-                MemoryUtil.memFree(indexBuffer)
-            }
+            MemoryUtil.memFree(indexBuffer)
         }
     }
 

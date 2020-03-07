@@ -1,6 +1,7 @@
 package de.yap.game
 
 import de.yap.engine.Camera
+import de.yap.engine.DebugInterface
 import de.yap.engine.IGameLogic
 import de.yap.engine.Window
 import de.yap.engine.graphics.Renderer
@@ -13,7 +14,6 @@ import org.joml.Vector2f
 import org.joml.Vector3f
 import org.joml.Vector4f
 import org.lwjgl.glfw.GLFW
-import org.lwjgl.glfw.GLFW.glfwSetKeyCallback
 import org.lwjgl.opengl.GL20.glViewport
 
 
@@ -26,7 +26,8 @@ class YapGame : IGameLogic {
     private lateinit var window: Window
 
     private val direction = Vector3f(0.0f, 0.0f, 0.0f)
-    private val renderer: Renderer = Renderer()
+    private val renderer = Renderer()
+    private val debugInterface = DebugInterface()
     private val shader = Shader("shaders/vertex.glsl", "shaders/fragment.glsl")
     private val fontShader = Shader("shaders/vertex.glsl", "shaders/font_fragment.glsl")
 
@@ -48,13 +49,15 @@ class YapGame : IGameLogic {
     private val roomTransformation = Matrix4f().translate(position).scale(scale)
 
     override fun init(window: Window) {
+        this.window = window
+
         renderer.init()
+        debugInterface.init()
         shader.compile()
         fontShader.compile()
 
         roomMeshes = Mesh.fromFile("models/scene.obj")
 
-        this.window = window
         window.setKeyCallback(::keyCallback)
         window.setMouseCallback(::mouseCallback)
     }
@@ -92,6 +95,8 @@ class YapGame : IGameLogic {
      *  - SPACE - teleport to point of intersection
      */
     override fun input() {
+        debugInterface.input()
+
         direction.x = when {
             window.isKeyPressed(GLFW.GLFW_KEY_D) -> {
                 1.0F
@@ -131,6 +136,8 @@ class YapGame : IGameLogic {
     }
 
     override fun update(interval: Float) {
+        debugInterface.update(interval)
+
         currentCamera().update(direction, mousePosition)
 
         val cameraDirection = camera.direction()
@@ -146,6 +153,7 @@ class YapGame : IGameLogic {
 
     override fun render() {
         renderer.clear()
+
         handleWindowResize(window)
 
         shader.apply(currentCamera())
@@ -156,8 +164,10 @@ class YapGame : IGameLogic {
         renderCoordinateSystemAxis()
         renderRoom()
         renderCameras()
-        renderTextInScene()
-        renderText(window)
+//        renderTextInScene()
+//        renderText(window)
+
+        debugInterface.render(window, renderer, shader)
     }
 
     private fun handleWindowResize(window: Window) {

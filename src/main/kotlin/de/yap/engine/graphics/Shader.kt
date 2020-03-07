@@ -78,9 +78,7 @@ class Shader(private val vertexShaderPath: String, private val fragmentShaderPat
 
             glUniformMatrix4fv(loc, false, buffer!!)
         } finally {
-            if (buffer != null) {
-                MemoryUtil.memFree(buffer)
-            }
+            MemoryUtil.memFree(buffer)
         }
     }
 
