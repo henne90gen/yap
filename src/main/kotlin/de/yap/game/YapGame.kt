@@ -158,6 +158,8 @@ class YapGame : IGameLogic {
 
         shader.apply(currentCamera())
         shader.setUniform("color", Vector4f(1.0F))
+        shader.setUniform("lightPos", Vector3f(2.0f, 0.0f, 4.0f))
+        shader.setUniform("lightColor", Vector3f(0.5f, 0.3f, 0.2f))
         fontShader.setUniform("color", Vector4f(1.0F))
 
         renderRayFromCamera()

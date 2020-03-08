@@ -16,6 +16,7 @@ import java.nio.IntBuffer
 data class Mesh(
         val vertices: List<Vector3f> = emptyList(),
         val texCoords: List<Vector2f> = emptyList(),
+        val normals: List<Vector3f> = emptyList(),
         val indices: List<Vector3i> = emptyList(),
         val material: Material? = null
 ) {
@@ -112,6 +113,20 @@ data class Mesh(
 
         GL20.glEnableVertexAttribArray(1)
         GL20.glVertexAttribPointer(1, 2, GL20.GL_FLOAT, false, 0, 0)
+
+        var normalBuffer: FloatBuffer? = null
+        try {
+            normalBuffer = MemoryUtil.memAllocFloat(normals.size * 3)
+            normalBuffer.put(normals.flatMap { v -> listOf(v.x, v.y, v.z) }.toFloatArray()).flip()
+            val nbo = GL20.glGenBuffers()
+            GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, nbo)
+            GL20.glBufferData(GL20.GL_ARRAY_BUFFER, normalBuffer!!, GL20.GL_STATIC_DRAW)
+        } finally {
+            MemoryUtil.memFree(normalBuffer)
+        }
+
+        GL20.glEnableVertexAttribArray(2)
+        GL20.glVertexAttribPointer(2, 3, GL20.GL_FLOAT, false, 0, 0)
 
         var indexBuffer: IntBuffer? = null
         try {

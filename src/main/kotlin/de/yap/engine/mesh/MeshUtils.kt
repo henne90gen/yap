@@ -182,7 +182,7 @@ class ObjLoader : MeshLoader {
             finalNormalData.add(normals[faceIdx.normal.z])
         }
 
-        return Mesh(finalVertexData, finalTextureData, finalIndices, material)
+        return Mesh(finalVertexData, finalTextureData, finalNormalData, finalIndices, material)
     }
 
     private fun getNeighborFile(file: File, fileName: String): File {

@@ -5,6 +5,7 @@ import de.yap.engine.IOUtils
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
+import org.joml.Vector3f
 import org.joml.Vector4f
 import org.lwjgl.opengl.GL20.*
 import org.lwjgl.system.MemoryUtil
@@ -60,6 +61,18 @@ class Shader(private val vertexShaderPath: String, private val fragmentShaderPat
         }
 
         glUniform4f(loc, value.x, value.y, value.z, value.w)
+    }
+
+    fun setUniform(name: String, value: Vector3f) {
+        bind()
+
+        val loc = glGetUniformLocation(programId, name)
+        if (loc < 0) {
+            log.warn("Could not find uniform '{}", name)
+            return
+        }
+
+        glUniform3f(loc, value.x, value.y, value.z)
     }
 
     fun setUniform(name: String, value: Matrix4f) {
