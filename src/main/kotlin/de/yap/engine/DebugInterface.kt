@@ -2,10 +2,13 @@ package de.yap.engine
 
 import de.yap.engine.graphics.Renderer
 import de.yap.engine.graphics.Shader
+import de.yap.engine.mesh.Mesh
+import de.yap.engine.mesh.MeshUtils
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
 import org.joml.Vector4f
+import org.lwjgl.glfw.GLFW
 import java.lang.management.ManagementFactory
 
 
@@ -14,6 +17,33 @@ class DebugInterface {
     companion object {
         private val log: Logger = LogManager.getLogger(DebugInterface::class.java.name)
         private const val MEMORY_BAR_HEIGHT = 0.05F
+        private val physicalTextTransformation = Matrix4f()
+                .translate(-1.45F, 1.0F - MEMORY_BAR_HEIGHT, 0.0F)
+                .scale(0.3F)
+        private val virtualTextTransformation = Matrix4f()
+                .translate(-1.42F, 1.0F - MEMORY_BAR_HEIGHT * 2.0F, 0.0F)
+                .scale(0.3F)
+        private val jvmTextTransformation = Matrix4f()
+                .translate(-1.315F, 1.0F - MEMORY_BAR_HEIGHT * 3.0F, 0.0F)
+                .scale(0.3F)
+
+        private const val yOffsetPhysical = 1.0F - MEMORY_BAR_HEIGHT / 2F
+        private const val yOffsetVirtual = 1.0F - MEMORY_BAR_HEIGHT * 1.5F
+        private const val yOffsetJvm = 1.0F - MEMORY_BAR_HEIGHT * 2.5F
+
+        private val totalPhysicalMemoryBarTransformation = calculateTotalMemoryBarTransformation(yOffsetPhysical)
+        private val totalVirtualMemoryBarTransformation = calculateTotalMemoryBarTransformation(yOffsetVirtual)
+        private val totalJvmMemoryBarTransformation = calculateTotalMemoryBarTransformation(yOffsetJvm)
+
+        private fun calculateTotalMemoryBarTransformation(yOffset: Float): Matrix4f {
+            val xScale = 1.0F
+            val yScale = MEMORY_BAR_HEIGHT
+            val xOffset = -0.5F
+            val zOffset = -0.1F // move it a bit further to the front than the rest of the rendered stuff
+            return Matrix4f()
+                    .translate(xOffset, yOffset, zOffset)
+                    .scale(xScale, yScale, 1.0F)
+        }
     }
 
     var enabled = true
@@ -26,20 +56,27 @@ class DebugInterface {
     private var totalJvmMemoryInBytes: Long = 0
     private var freeJvmMemoryInBytes: Long = 0
 
-    fun init() {
+    private var physicalMemoryMesh: Mesh? = null
+    private var virtualMemoryMesh: Mesh? = null
+    private var jvmMemoryMesh: Mesh? = null
+
+    fun init(renderer: Renderer) {
         if (!enabled) {
             return
         }
 
         updateMemoryStatistics()
         usedPhysicalMemoryAtStartInBytes = totalPhysicalMemoryInBytes - freePhysicalMemoryInBytes
+
+        physicalMemoryMesh = MeshUtils.text(renderer.font, "Physical Memory:")
+        virtualMemoryMesh = MeshUtils.text(renderer.font, "Virtual Memory:")
+        jvmMemoryMesh = MeshUtils.text(renderer.font, "JVM Memory:")
     }
 
     fun input() {
         if (!enabled) {
             return
         }
-
     }
 
     fun update(interval: Float) {
@@ -60,45 +97,36 @@ class DebugInterface {
         committedVirtualMemoryInBytes = systemMXBean.committedVirtualMemorySize
     }
 
-    fun render(window: Window, renderer: Renderer, shader: Shader) {
+    fun render(window: Window, renderer: Renderer, shader: Shader, fontShader: Shader) {
         if (!enabled) {
             return
         }
 
-        // TODO add descriptive text for physical memory usage
-        // TODO add descriptive text for jvm memory usage
-
         renderer.disableDepthTest {
+            renderer.uiText(fontShader, window.aspectRatio(), physicalMemoryMesh!!, physicalTextTransformation)
+            renderer.uiText(fontShader, window.aspectRatio(), virtualMemoryMesh!!, virtualTextTransformation)
+            renderer.uiText(fontShader, window.aspectRatio(), jvmMemoryMesh!!, jvmTextTransformation)
+
             shader.setUniform("projection", Matrix4f())
             shader.setUniform("view", Matrix4f().scale(1.0F / window.aspectRatio(), 1.0F, 1.0F))
 
             val usedJvmMemoryInBytes = totalJvmMemoryInBytes - freeJvmMemoryInBytes
             val usedPhysicalMemoryInBytes = totalPhysicalMemoryInBytes - freePhysicalMemoryInBytes
 
-            val yOffsetPhysical = 1.0F - MEMORY_BAR_HEIGHT / 2F
-            renderTotalMemory(renderer, shader, yOffsetPhysical)
+            renderTotalMemory(renderer, shader, totalPhysicalMemoryBarTransformation)
             renderUsedMemory(renderer, shader, yOffsetPhysical, usedPhysicalMemoryInBytes, totalPhysicalMemoryInBytes)
             renderUsedMemory(renderer, shader, yOffsetPhysical, usedPhysicalMemoryAtStartInBytes, totalPhysicalMemoryInBytes, true)
 
-            val yOffsetVirtual = 1.0F - MEMORY_BAR_HEIGHT * 1.5F
-            renderTotalMemory(renderer, shader, yOffsetVirtual)
+            renderTotalMemory(renderer, shader, totalVirtualMemoryBarTransformation)
             renderUsedMemory(renderer, shader, yOffsetVirtual, committedVirtualMemoryInBytes, totalPhysicalMemoryInBytes)
 
-            val yOffsetJvm = 1.0F - MEMORY_BAR_HEIGHT * 2.5F
-            renderTotalMemory(renderer, shader, yOffsetJvm)
+            renderTotalMemory(renderer, shader, totalJvmMemoryBarTransformation)
             renderUsedMemory(renderer, shader, yOffsetJvm, usedJvmMemoryInBytes, totalJvmMemoryInBytes)
         }
     }
 
-    private fun renderTotalMemory(renderer: Renderer, shader: Shader, yOffset: Float) {
-        val xScale = 1.0F
-        val yScale = MEMORY_BAR_HEIGHT
-        val xOffset = -0.5F
-        val zOffset = -0.1F // move it a bit further to the front than the rest of the rendered stuff
+    private fun renderTotalMemory(renderer: Renderer, shader: Shader, transformation: Matrix4f) {
         val color = Vector4f(0.0F, 1.0F, 0.0F, 1.0F)
-        val transformation = Matrix4f()
-                .translate(xOffset, yOffset, zOffset)
-                .scale(xScale, yScale, 1.0F)
         renderer.quad(shader, transformation, color)
     }
 
@@ -116,5 +144,11 @@ class DebugInterface {
                 .translate(xOffset, yOffset, zOffset)
                 .scale(xScale, yScale, 1.0F)
         renderer.quad(shader, transformation, color)
+    }
+
+    fun keyCallback(windowHandle: Long, key: Int, scancode: Int, action: Int, mods: Int) {
+        if (key == GLFW.GLFW_KEY_F1 && action == GLFW.GLFW_RELEASE) {
+            enabled = !enabled
+        }
     }
 }

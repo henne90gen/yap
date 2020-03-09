@@ -55,7 +55,7 @@ class YapGame : IGameLogic {
         this.window = window
 
         renderer.init()
-        debugInterface.init()
+        debugInterface.init(renderer)
         shader.compile()
         fontShader.compile()
 
@@ -85,6 +85,8 @@ class YapGame : IGameLogic {
         if (key == GLFW.GLFW_KEY_SPACE && action == GLFW.GLFW_RELEASE) {
             switchToNextCamera(window)
         }
+
+        debugInterface.keyCallback(windowHandle, key, scancode, action, mods)
     }
 
     private fun mouseCallback(windowHandle: Long, button: Int, action: Int, mods: Int) {
@@ -178,9 +180,8 @@ class YapGame : IGameLogic {
         renderRoom()
         renderCameras()
         renderTextInScene(textMesh)
-        renderText(window, textMesh)
 
-        debugInterface.render(window, renderer, shader)
+        debugInterface.render(window, renderer, shader, fontShader)
     }
 
     private fun handleWindowResize(window: Window) {
@@ -198,10 +199,8 @@ class YapGame : IGameLogic {
             return
         }
 
-        fontShader.setUniform("projection", Matrix4f())
-        fontShader.setUniform("view", Matrix4f().scale(1.0F / window.aspectRatio(), 1.0F, 1.0F))
         val color = Vector4f(0.5F, 0.75F, 0.0F, 1.0F)
-        renderer.mesh(fontShader, textMesh, Matrix4f().translate(-window.aspectRatio(), 0.85F, 0.0F), color)
+        renderer.uiText(fontShader, window.aspectRatio(), textMesh, Matrix4f().translate(-window.aspectRatio(), 0.85F, 0.0F), color)
     }
 
     private fun renderTextInScene(textMesh: Mesh?) {

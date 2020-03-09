@@ -138,14 +138,15 @@ class Renderer {
         }
     }
 
-    fun text(shader: Shader, text: String, transformation: Matrix4f, color: Vector4f = Vector4f(1.0F)) {
-        val mesh = MeshUtils.text(font, text)
-        this.mesh(shader, mesh, transformation, color)
-    }
-
     fun disableDepthTest(function: () -> Unit) {
         glDisable(GL_DEPTH_TEST)
         function()
         glEnable(GL_DEPTH_TEST)
+    }
+
+    fun uiText(shader: Shader, aspectRatio: Float, mesh: Mesh, transformation: Matrix4f, color: Vector4f = Vector4f(1.0F)) {
+        shader.setUniform("projection", Matrix4f())
+        shader.setUniform("view", Matrix4f().scale(1.0F / aspectRatio, 1.0F, 1.0F))
+        mesh(shader, mesh, transformation, color)
     }
 }
