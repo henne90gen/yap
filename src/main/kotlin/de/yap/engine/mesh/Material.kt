@@ -7,10 +7,6 @@ class Material(val name: String) {
     var texture: Texture? = null
 
     fun bind() {
-        if (texture == null) {
-            return
-        }
-
         texture?.bind()
     }
 

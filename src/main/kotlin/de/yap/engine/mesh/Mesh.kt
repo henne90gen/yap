@@ -14,16 +14,16 @@ import java.nio.FloatBuffer
 import java.nio.IntBuffer
 
 data class Mesh(
-        val vertices: List<Vector3f> = emptyList(),
-        val texCoords: List<Vector2f> = emptyList(),
-        val normals: List<Vector3f> = emptyList(),
-        val indices: List<Vector3i> = emptyList(),
+        val vertices: MutableList<Vector3f> = mutableListOf(),
+        val texCoords: MutableList<Vector2f> = mutableListOf(),
+        val normals: MutableList<Vector3f> = mutableListOf(),
+        val indices: MutableList<Vector3i> = mutableListOf(),
         val material: Material? = null
 ) {
 
     private var vao: Int? = null
 
-    fun withQuad(v1: Vector3f, v2: Vector3f, v3: Vector3f): Mesh {
+    fun withQuad(v1: Vector3f, v2: Vector3f, v3: Vector3f, texMin: Vector2f, texMax: Vector2f): Mesh {
         /*
          v1 +----------+ v3
             |          |
@@ -32,20 +32,22 @@ data class Mesh(
         */
 
         val preVertCount = vertices.size
-        val newVertices = vertices.toMutableList()
-        val newIndices = indices.toMutableList()
-        newVertices.add(v1)
-        newVertices.add(v2)
-        newVertices.add(v3)
+        vertices.add(v1)
+        vertices.add(v2)
+        vertices.add(v3)
 
         val v4 = Vector3f(v2).add(Vector3f(v3).sub(v1))
-        newVertices.add(v4)
+        vertices.add(v4)
 
-        newIndices.add(Vector3i(preVertCount + 0, preVertCount + 1, preVertCount + 2))
-        newIndices.add(Vector3i(preVertCount + 1, preVertCount + 3, preVertCount + 2))
+        texCoords.add(Vector2f(texMin.x, texMin.y)) // v1
+        texCoords.add(Vector2f(texMin.x, texMax.y)) // v2
+        texCoords.add(Vector2f(texMax.x, texMin.y)) // v3
+        texCoords.add(Vector2f(texMax.x, texMax.y)) // v4
 
-        // TODO take care of texCoords as well
-        return Mesh(vertices = newVertices, indices = newIndices, material = material)
+        indices.add(Vector3i(preVertCount + 0, preVertCount + 1, preVertCount + 2))
+        indices.add(Vector3i(preVertCount + 1, preVertCount + 3, preVertCount + 2))
+
+        return this
     }
 
     /**
@@ -53,18 +55,13 @@ data class Mesh(
      * The material of this mesh will be used.
      */
     fun withMesh(mesh: Mesh): Mesh {
-        val newVertices = vertices.toMutableList()
-        val newTexCoords = texCoords.toMutableList()
-        val newIndices = indices.toMutableList()
-
-        newVertices.addAll(mesh.vertices)
-        newTexCoords.addAll(mesh.texCoords)
         val offset = Vector3i(vertices.size)
+        vertices.addAll(mesh.vertices)
+        texCoords.addAll(mesh.texCoords)
         for (index in mesh.indices) {
-            newIndices.add(Vector3i(index).add(offset))
+            indices.add(Vector3i(index).add(offset))
         }
-
-        return Mesh(vertices = newVertices, texCoords = newTexCoords, indices = newIndices, material = material)
+        return this
     }
 
     fun bind() {

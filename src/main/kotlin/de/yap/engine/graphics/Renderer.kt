@@ -23,7 +23,7 @@ class Renderer {
         private val log: Logger = LogManager.getLogger(Renderer::class.java.name)
     }
 
-    private lateinit var font: Font
+    lateinit var font: Font
     private lateinit var quadMesh: Mesh
     private lateinit var cubeMesh: Mesh
 
@@ -33,7 +33,7 @@ class Renderer {
         create1x1WhiteTexture()
 
         font = Font.fromInternalFile("fonts/RobotoMono/RobotoMono-Regular.ttf")
-        quadMesh = MeshUtils.quad()
+        quadMesh = MeshUtils.quad2D()
         cubeMesh = MeshUtils.unitCube()
     }
 

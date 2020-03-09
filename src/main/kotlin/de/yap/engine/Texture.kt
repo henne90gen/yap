@@ -86,9 +86,6 @@ class Texture(
 
         GL30.glGenerateMipmap(GL_TEXTURE_2D)
 
-        // FIXME we are not always loading textures from an image
-//        STBImage.stbi_image_free(data)
-
         return textureId
     }
 

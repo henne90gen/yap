@@ -20,10 +20,11 @@ class MeshTest {
 
     @Test
     fun testMeshWithQuad() {
-        val m = Mesh()
-        val newM = m.withQuad(Vector3f(0.0F, 1.0F, 0.0F), Vector3f(), Vector3f(1.0F, 1.0F, 0.0F))
-        assertEquals(0, m.vertices.size)
-        assertEquals(0, m.indices.size)
+        val mesh = Mesh()
+        val newMesh = mesh.withQuad(
+                Vector3f(0.0F, 1.0F, 0.0F), Vector3f(), Vector3f(1.0F, 1.0F, 0.0F),
+                Vector2f(0.0F), Vector2f(1.0F)
+        )
 
         val expectedVertices = listOf(
                 Vector3f(0.0F, 1.0F, 0.0F),
@@ -31,12 +32,16 @@ class MeshTest {
                 Vector3f(1.0F, 1.0F, 0.0F),
                 Vector3f(1.0F, 0.0F, 0.0F)
         )
-        assertEquals(expectedVertices, newM.vertices)
         val expectedIndices = listOf(
                 Vector3i(0, 1, 2),
                 Vector3i(1, 3, 2)
         )
-        assertEquals(expectedIndices, newM.indices)
+
+        assertEquals(expectedVertices, mesh.vertices)
+        assertEquals(expectedIndices, mesh.indices)
+
+        assertEquals(expectedVertices, newMesh.vertices)
+        assertEquals(expectedIndices, newMesh.indices)
     }
 
     @Test
@@ -85,17 +90,17 @@ class MeshTest {
 
     @Test
     fun testWithMesh() {
-        val mesh = MeshUtils.quad()
-        val result = mesh.withMesh(MeshUtils.quad(Vector2f(-1.0F), Vector2f(0.0F), Vector2f(0.25F), Vector2f(0.75F)))
-        assertNull(result.material)
+        val mesh = MeshUtils.quad2D()
+        val newMesh = mesh.withMesh(MeshUtils.quad2D(Vector2f(-1.0F), Vector2f(0.0F), Vector2f(0.25F), Vector2f(0.75F)))
+        assertNull(newMesh.material)
         val expectedIndices = listOf(
                 Vector3i(0, 1, 2),
                 Vector3i(0, 3, 1),
                 Vector3i(4, 5, 6),
                 Vector3i(4, 7, 5)
         )
-        assertEquals(expectedIndices, result.indices)
-        assertEquals(8, result.vertices.size)
-        assertEquals(8, result.texCoords.size)
+        assertEquals(expectedIndices, newMesh.indices)
+        assertEquals(8, newMesh.vertices.size)
+        assertEquals(8, newMesh.texCoords.size)
     }
 }

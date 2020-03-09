@@ -50,7 +50,7 @@ class DebugInterface {
         updateMemoryStatistics()
     }
 
-    fun updateMemoryStatistics() {
+    private fun updateMemoryStatistics() {
         totalJvmMemoryInBytes = Runtime.getRuntime().totalMemory()
         freeJvmMemoryInBytes = Runtime.getRuntime().freeMemory()
 
@@ -80,7 +80,11 @@ class DebugInterface {
             renderUsedMemory(renderer, shader, yOffsetPhysical, usedPhysicalMemoryInBytes, totalPhysicalMemoryInBytes)
             renderUsedMemory(renderer, shader, yOffsetPhysical, usedPhysicalMemoryAtStartInBytes, totalPhysicalMemoryInBytes, true)
 
-            val yOffsetJvm = 1.0F - MEMORY_BAR_HEIGHT * 1.5F
+            val yOffsetVirtual = 1.0F - MEMORY_BAR_HEIGHT * 1.5F
+            renderTotalMemory(renderer, shader, yOffsetVirtual)
+            renderUsedMemory(renderer, shader, yOffsetVirtual, committedVirtualMemoryInBytes, totalPhysicalMemoryInBytes)
+
+            val yOffsetJvm = 1.0F - MEMORY_BAR_HEIGHT * 2.5F
             renderTotalMemory(renderer, shader, yOffsetJvm)
             renderUsedMemory(renderer, shader, yOffsetJvm, usedJvmMemoryInBytes, totalJvmMemoryInBytes)
         }

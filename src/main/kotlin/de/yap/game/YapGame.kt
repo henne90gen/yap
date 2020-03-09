@@ -7,6 +7,7 @@ import de.yap.engine.Window
 import de.yap.engine.graphics.Renderer
 import de.yap.engine.graphics.Shader
 import de.yap.engine.mesh.Mesh
+import de.yap.engine.mesh.MeshUtils
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
@@ -48,6 +49,8 @@ class YapGame : IGameLogic {
     private val position = Vector3f(negativeScaleHalf)
     private val roomTransformation = Matrix4f().translate(position).scale(scale)
 
+    private var textMesh: Mesh? = null
+
     override fun init(window: Window) {
         this.window = window
 
@@ -58,8 +61,16 @@ class YapGame : IGameLogic {
 
         roomMeshes = Mesh.fromFile("models/scene.obj")
 
+        textMesh = createTextMesh()
+
         window.setKeyCallback(::keyCallback)
         window.setMouseCallback(::mouseCallback)
+    }
+
+    private fun createTextMesh(): Mesh {
+        var text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas vitae purus dolor. Mauris pellentesque commodo nulla, sit amet euismod sapien viverra ut. Cras commodo euismod turpis, ac lobortis augue. Nam consequat sodales quam ac porttitor. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc non est iaculis, posuere diam a, suscipit nibh. Fusce nec erat vel sapien dictum pulvinar eu porttitor leo. Nulla finibus dolor turpis, eu sagittis risus tincidunt sed. Ut convallis augue massa, vel dapibus mauris scelerisque eget. Duis sollicitudin vulputate augue, tincidunt ornare dolor feugiat at."
+        text = text.replace(". ", ".\n")
+        return MeshUtils.text(renderer.font, text)
     }
 
     private fun keyCallback(windowHandle: Long, key: Int, scancode: Int, action: Int, mods: Int) {
@@ -166,8 +177,8 @@ class YapGame : IGameLogic {
         renderCoordinateSystemAxis()
         renderRoom()
         renderCameras()
-//        renderTextInScene()
-//        renderText(window)
+        renderTextInScene(textMesh)
+        renderText(window, textMesh)
 
         debugInterface.render(window, renderer, shader)
     }
@@ -182,29 +193,25 @@ class YapGame : IGameLogic {
         currentCamera().aspectRatioChanged(window.aspectRatio())
     }
 
-    private fun renderText(window: Window) {
+    private fun renderText(window: Window, textMesh: Mesh?) {
+        if (textMesh == null) {
+            return
+        }
+
         fontShader.setUniform("projection", Matrix4f())
         fontShader.setUniform("view", Matrix4f().scale(1.0F / window.aspectRatio(), 1.0F, 1.0F))
         val color = Vector4f(0.5F, 0.75F, 0.0F, 1.0F)
-        for (i in 0..9) {
-            for (j in 0..9) {
-                val offset = Vector3f(-1.5F, -0.8F, 0.0f)
-                        .add(0.3F * j, 0.15F * i, 0.0F)
-                renderer.text(fontShader, "${i}x$j", Matrix4f().translate(offset), color)
-            }
-        }
+        renderer.mesh(fontShader, textMesh, Matrix4f().translate(-window.aspectRatio(), 0.85F, 0.0F), color)
     }
 
-    private fun renderTextInScene() {
+    private fun renderTextInScene(textMesh: Mesh?) {
+        if (textMesh == null) {
+            return
+        }
+
         fontShader.apply(currentCamera())
         val color = Vector4f(0.0F, 0.5F, 0.75F, 1.0F)
-        for (i in 0..9) {
-            for (j in 0..9) {
-                val offset = Vector3f(-1.5F, -0.8F, 0.0f)
-                        .add(0.5F * j, 0.5F * i, 0.0F)
-                renderer.text(fontShader, "${i}x$j", Matrix4f().translate(offset), color)
-            }
-        }
+        renderer.mesh(fontShader, textMesh, Matrix4f().translate(-2.0F, 2.0F, 0.0F), color)
     }
 
     private fun renderCameras() {

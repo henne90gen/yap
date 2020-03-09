@@ -1,7 +1,8 @@
 package de.yap.engine
 
 import de.yap.engine.mesh.Material
-import org.lwjgl.BufferUtils
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL13
 import org.lwjgl.stb.STBTTAlignedQuad
@@ -9,6 +10,8 @@ import org.lwjgl.stb.STBTTBakedChar
 import org.lwjgl.stb.STBTTFontinfo
 import org.lwjgl.stb.STBTruetype
 import org.lwjgl.system.MemoryStack
+import org.lwjgl.system.MemoryUtil
+import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 
 class Font(
@@ -21,6 +24,8 @@ class Font(
 ) {
 
     companion object {
+        private val log: Logger = LogManager.getLogger(Font::class.java.name)
+
         fun fromInternalFile(file: String): Font {
             val ttf = IOUtils.loadInternalResource(file)
             checkNotNull(ttf) { "Could not load font!" }
@@ -49,26 +54,34 @@ class Font(
             val fontHeight = 100.0F
             val bitmapWidth = 512
             val bitmapHeight = 512
-            val bitmap = BufferUtils.createByteBuffer((bitmapWidth * bitmapHeight))
-            val firstChar = 32
-            STBTruetype.stbtt_BakeFontBitmap(ttf, fontHeight, bitmap, bitmapWidth, bitmapHeight, firstChar, cdata)
+            var bitmap: ByteBuffer? = null
+            try {
+                bitmap = MemoryUtil.memAlloc(bitmapWidth * bitmapHeight)
+                checkNotNull(bitmap) { "Failed to initialize bitmap for font $file." }
 
-            GL13.glEnable(GL13.GL_TEXTURE_2D)
-            GL13.glEnable(GL13.GL_BLEND)
-            GL13.glBlendFunc(GL13.GL_SRC_ALPHA, GL13.GL_ONE_MINUS_SRC_ALPHA)
+                val firstChar = 32
+                STBTruetype.stbtt_BakeFontBitmap(ttf, fontHeight, bitmap, bitmapWidth, bitmapHeight, firstChar, cdata)
 
-            val scaleForPixelHeight = STBTruetype.stbtt_ScaleForPixelHeight(info, fontHeight)
+                GL13.glEnable(GL13.GL_BLEND)
+                GL13.glBlendFunc(GL13.GL_SRC_ALPHA, GL13.GL_ONE_MINUS_SRC_ALPHA)
 
-            val material = Material("Font")
-            material.texture = Texture(bitmapWidth, bitmapHeight, bitmap, GL11.GL_ALPHA)
-            return Font(
-                    material,
-                    fontHeight,
-                    bitmapWidth, bitmapHeight,
-                    scaleForPixelHeight,
-                    ascent, descent, lineGap,
-                    firstChar, cdata
-            )
+                val scaleForPixelHeight = STBTruetype.stbtt_ScaleForPixelHeight(info, fontHeight)
+
+                val material = Material("Font")
+                val texture = Texture(bitmapWidth, bitmapHeight, bitmap, GL11.GL_ALPHA)
+                texture.bind() // binding the texture once, so that it is uploaded to the GPU
+                material.texture = texture
+                return Font(
+                        material,
+                        fontHeight,
+                        bitmapWidth, bitmapHeight,
+                        scaleForPixelHeight,
+                        ascent, descent, lineGap,
+                        firstChar, cdata
+                )
+            } finally {
+                MemoryUtil.memFree(bitmap)
+            }
         }
     }
 

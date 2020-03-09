@@ -226,26 +226,26 @@ class MeshUtils {
     companion object {
         private val log: Logger = LogManager.getLogger(MeshUtils::class.java.name)
 
-        fun quad(
+        fun quad2D(
                 posMin: Vector2f = Vector2f(-0.5F),
                 posMax: Vector2f = Vector2f(0.5F),
                 texMin: Vector2f = Vector2f(0.0F),
                 texMax: Vector2f = Vector2f(1.0F),
                 material: Material? = null
         ): Mesh {
-            val vertices = listOf(
+            val vertices = mutableListOf(
                     Vector3f(posMin.x, posMin.y, 0.0F),
                     Vector3f(posMax.x, posMax.y, 0.0F),
                     Vector3f(posMin.x, posMax.y, 0.0F),
                     Vector3f(posMax.x, posMin.y, 0.0F)
             )
-            val texCoords = listOf(
+            val texCoords = mutableListOf(
                     Vector2f(texMin.x, texMax.y),
                     Vector2f(texMax.x, texMin.y),
                     Vector2f(texMin.x, texMin.y),
                     Vector2f(texMax.x, texMax.y)
             )
-            val indices = listOf(
+            val indices = mutableListOf(
                     Vector3i(0, 1, 2),
                     Vector3i(0, 3, 1)
             )
@@ -253,7 +253,7 @@ class MeshUtils {
         }
 
         fun unitCube(): Mesh {
-            val vertices = listOf(
+            val vertices = mutableListOf(
                     // back
                     Vector3f(-0.5F, -0.5F, -0.5F), // 0
                     Vector3f(0.5F, -0.5F, -0.5F),  // 1
@@ -266,7 +266,7 @@ class MeshUtils {
                     Vector3f(0.5F, 0.5F, 0.5F),    // 6
                     Vector3f(-0.5F, 0.5F, 0.5F)    // 7
             )
-            val indices = listOf(
+            val indices = mutableListOf(
                     // front
                     Vector3i(0, 1, 2),
                     Vector3i(0, 2, 3),
@@ -300,7 +300,7 @@ class MeshUtils {
          * FIXME this method has a memory leak in it. Use with caution
          */
         fun text(font: Font, value: String): Mesh {
-            var mesh = Mesh(material = font.material)
+            val mesh = Mesh(material = font.material)
 
             val lineOffset = font.lineOffset()
             MemoryStack.stackPush().use { stack ->
@@ -338,16 +338,13 @@ class MeshUtils {
                     val x1 = quad.x1()
                     val y1 = -quad.y0()
 
-                    val posMin = Vector2f(x0 / font.bitmapWidth, y0 / font.bitmapHeight)
-                    val posMax = Vector2f(x1 / font.bitmapWidth, y1 / font.bitmapHeight)
+                    val posMin = Vector3f(x0 / font.bitmapWidth, y0 / font.bitmapHeight, 0.0F)
+                    val posMax = Vector3f(x1 / font.bitmapWidth, y1 / font.bitmapHeight, 0.0F)
                     val texMin = Vector2f(quad.s0(), quad.t0())
                     val texMax = Vector2f(quad.s1(), quad.t1())
-                    mesh = mesh.withMesh(
-                            quad(
-                                    posMin = posMin, posMax = posMax,
-                                    texMin = texMin, texMax = texMax,
-                                    material = null
-                            )
+                    mesh.withQuad(
+                            v1 = Vector3f(posMin.x, posMax.y, 0.0F), v2 = posMin, v3 = posMax,
+                            texMin = texMin, texMax = texMax
                     )
                 }
             }
