@@ -1,5 +1,6 @@
-package de.yap.engine
+package de.yap.engine.debug
 
+import de.yap.engine.Window
 import de.yap.engine.graphics.Renderer
 import de.yap.engine.graphics.Shader
 import de.yap.engine.mesh.Mesh
@@ -8,14 +9,12 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
 import org.joml.Vector4f
-import org.lwjgl.glfw.GLFW
 import java.lang.management.ManagementFactory
 
-
-class DebugInterface {
-
+class DebugMemory {
     companion object {
-        private val log: Logger = LogManager.getLogger(DebugInterface::class.java.name)
+        private val log: Logger = LogManager.getLogger(DebugMemory::class.java.name)
+
         private const val MEMORY_BAR_HEIGHT = 0.05F
         private val physicalTextTransformation = Matrix4f()
                 .translate(-1.45F, 1.0F - MEMORY_BAR_HEIGHT, 0.0F)
@@ -46,8 +45,6 @@ class DebugInterface {
         }
     }
 
-    var enabled = true
-
     private var totalPhysicalMemoryInBytes: Long = 0
     private var freePhysicalMemoryInBytes: Long = 0
     private var usedPhysicalMemoryAtStartInBytes: Long = 0
@@ -61,11 +58,8 @@ class DebugInterface {
     private var jvmMemoryMesh: Mesh? = null
 
     fun init(renderer: Renderer) {
-        if (!enabled) {
-            return
-        }
+        update(0.0F)
 
-        updateMemoryStatistics()
         usedPhysicalMemoryAtStartInBytes = totalPhysicalMemoryInBytes - freePhysicalMemoryInBytes
 
         physicalMemoryMesh = MeshUtils.text(renderer.font, "Physical Memory:")
@@ -74,20 +68,9 @@ class DebugInterface {
     }
 
     fun input() {
-        if (!enabled) {
-            return
-        }
     }
 
     fun update(interval: Float) {
-        if (!enabled) {
-            return
-        }
-
-        updateMemoryStatistics()
-    }
-
-    private fun updateMemoryStatistics() {
         totalJvmMemoryInBytes = Runtime.getRuntime().totalMemory()
         freeJvmMemoryInBytes = Runtime.getRuntime().freeMemory()
 
@@ -98,10 +81,6 @@ class DebugInterface {
     }
 
     fun render(window: Window, renderer: Renderer, shader: Shader, fontShader: Shader) {
-        if (!enabled) {
-            return
-        }
-
         renderer.disableDepthTest {
             renderer.uiText(fontShader, window.aspectRatio(), physicalMemoryMesh!!, physicalTextTransformation)
             renderer.uiText(fontShader, window.aspectRatio(), virtualMemoryMesh!!, virtualTextTransformation)
@@ -144,11 +123,5 @@ class DebugInterface {
                 .translate(xOffset, yOffset, zOffset)
                 .scale(xScale, yScale, 1.0F)
         renderer.quad(shader, transformation, color)
-    }
-
-    fun keyCallback(windowHandle: Long, key: Int, scancode: Int, action: Int, mods: Int) {
-        if (key == GLFW.GLFW_KEY_F1 && action == GLFW.GLFW_RELEASE) {
-            enabled = !enabled
-        }
     }
 }

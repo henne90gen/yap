@@ -1,9 +1,9 @@
 package de.yap.game
 
 import de.yap.engine.Camera
-import de.yap.engine.DebugInterface
 import de.yap.engine.IGameLogic
 import de.yap.engine.Window
+import de.yap.engine.debug.DebugInterface
 import de.yap.engine.graphics.Renderer
 import de.yap.engine.graphics.Shader
 import de.yap.engine.mesh.Mesh
