@@ -2,6 +2,7 @@ package de.yap.engine.mesh
 
 import de.yap.engine.Font
 import de.yap.engine.Texture
+import de.yap.engine.graphics.FontRenderer
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Vector2f
@@ -292,6 +293,11 @@ class MeshUtils {
                     Vector3i(4, 1, 0)
             )
             return Mesh(vertices = vertices, indices = indices)
+        }
+
+        fun text(fontRenderer: FontRenderer, value: String): Mesh {
+            val font = fontRenderer.font
+            return text(font, value)
         }
 
         /**

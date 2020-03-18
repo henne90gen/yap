@@ -1,6 +1,5 @@
 package de.yap.engine.graphics
 
-import de.yap.engine.Font
 import de.yap.engine.mesh.Mesh
 import de.yap.engine.mesh.MeshUtils
 import org.apache.logging.log4j.LogManager
@@ -23,16 +22,17 @@ class Renderer {
         private val log: Logger = LogManager.getLogger(Renderer::class.java.name)
     }
 
-    lateinit var font: Font
     private lateinit var quadMesh: Mesh
     private lateinit var cubeMesh: Mesh
 
+    val shader3D = Shader("shaders/vertex.glsl", "shaders/fragment.glsl")
+
     fun init() {
         glEnable(GL_DEPTH_TEST)
+        shader3D.compile()
 
         create1x1WhiteTexture()
 
-        font = Font.fromInternalFile("fonts/RobotoMono/RobotoMono-Regular.ttf")
         quadMesh = MeshUtils.quad2D()
         cubeMesh = MeshUtils.unitCube()
     }
@@ -64,41 +64,37 @@ class Renderer {
         glClear(GL11.GL_COLOR_BUFFER_BIT or GL11.GL_DEPTH_BUFFER_BIT)
     }
 
-    fun mesh(shader: Shader, mesh: Mesh, transformation: Matrix4f = Matrix4f(), color: Vector4f = Vector4f(1.0F)) {
-        shader.bind()
-        shader.setUniform("model", transformation)
-        shader.setUniform("color", color)
+    fun mesh(mesh: Mesh, transformation: Matrix4f = Matrix4f(), color: Vector4f = Vector4f(1.0F)) {
+        shader3D.bind()
+        shader3D.setUniform("model", transformation)
+        shader3D.setUniform("color", color)
 
         if (mesh.hasTexture()) {
-            shader.setUniform("textureSampler", 1)
+            shader3D.setUniform("textureSampler", 1)
         } else {
-            shader.setUniform("textureSampler", 0)
+            shader3D.setUniform("textureSampler", 0)
         }
 
         mesh.bind()
 
         glDrawElements(GL_TRIANGLES, mesh.indices.size * 3, GL_UNSIGNED_INT, 0)
 
-        shader.unbind()
+        shader3D.unbind()
     }
 
-    fun quad(
-            shader: Shader,
-            transformation: Matrix4f = Matrix4f(),
-            color: Vector4f = Vector4f(1.0F)
-    ) {
-        this.mesh(shader, quadMesh, transformation, color)
+    fun quad(transformation: Matrix4f = Matrix4f(), color: Vector4f = Vector4f(1.0F)) {
+        this.mesh(quadMesh, transformation, color)
     }
 
-    fun cube(shader: Shader, transformation: Matrix4f = Matrix4f(), color: Vector4f = Vector4f(1.0F)) {
-        this.mesh(shader, cubeMesh, transformation, color)
+    fun cube(transformation: Matrix4f = Matrix4f(), color: Vector4f = Vector4f(1.0F)) {
+        this.mesh(cubeMesh, transformation, color)
     }
 
-    fun line(shader: Shader, start: Vector3f, end: Vector3f, color: Vector4f) {
-        shader.bind()
-        shader.setUniform("model", Matrix4f())
-        shader.setUniform("textureSampler", 0)
-        shader.setUniform("color", color)
+    fun line(start: Vector3f, end: Vector3f, color: Vector4f) {
+        shader3D.bind()
+        shader3D.setUniform("model", Matrix4f())
+        shader3D.setUniform("textureSampler", 0)
+        shader3D.setUniform("color", color)
 
         val vao = GL30.glGenVertexArrays()
         GL30.glBindVertexArray(vao)
@@ -125,7 +121,7 @@ class Renderer {
 
         glDrawArrays(GL_LINES, 0, 2)
 
-        shader.unbind()
+        shader3D.unbind()
     }
 
     fun wireframe(activate: Boolean = true, func: () -> Unit) {
@@ -142,11 +138,5 @@ class Renderer {
         glDisable(GL_DEPTH_TEST)
         function()
         glEnable(GL_DEPTH_TEST)
-    }
-
-    fun uiText(shader: Shader, aspectRatio: Float, mesh: Mesh, transformation: Matrix4f, color: Vector4f = Vector4f(1.0F)) {
-        shader.setUniform("projection", Matrix4f())
-        shader.setUniform("view", Matrix4f().scale(1.0F / aspectRatio, 1.0F, 1.0F))
-        mesh(shader, mesh, transformation, color)
     }
 }

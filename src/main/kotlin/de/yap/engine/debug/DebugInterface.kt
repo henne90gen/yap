@@ -1,10 +1,13 @@
 package de.yap.engine.debug
 
 import de.yap.engine.Window
+import de.yap.engine.graphics.FontRenderer
 import de.yap.engine.graphics.Renderer
 import de.yap.engine.graphics.Shader
+import de.yap.game.YapGame
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import org.joml.Matrix4f
 import org.lwjgl.glfw.GLFW
 
 
@@ -19,13 +22,13 @@ class DebugInterface {
     val memory = DebugMemory()
     val cpu = DebugCPU()
 
-    fun init(renderer: Renderer) {
+    fun init(fontRenderer: FontRenderer) {
         if (!enabled) {
             return
         }
 
-        memory.init(renderer)
-        cpu.init(renderer)
+        memory.init(fontRenderer)
+        cpu.init(fontRenderer)
     }
 
     fun input() {
@@ -46,13 +49,16 @@ class DebugInterface {
         cpu.update(interval)
     }
 
-    fun render(window: Window, renderer: Renderer, shader: Shader, fontShader: Shader) {
+    fun render(window: Window) {
         if (!enabled) {
             return
         }
+        val shader = YapGame.getInstance().renderer.shader3D
+        shader.setUniform("projection", Matrix4f())
+        shader.setUniform("view", Matrix4f().scale(1.0F / window.aspectRatio(), 1.0F, 1.0F))
 
-        memory.render(window, renderer, shader, fontShader)
-        cpu.render(window, renderer, shader, fontShader)
+        memory.render()
+        cpu.render()
     }
 
     fun keyCallback(windowHandle: Long, key: Int, scancode: Int, action: Int, mods: Int) {

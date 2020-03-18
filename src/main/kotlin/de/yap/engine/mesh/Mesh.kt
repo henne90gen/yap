@@ -85,7 +85,12 @@ data class Mesh(
         var buffer: FloatBuffer? = null
         try {
             buffer = MemoryUtil.memAllocFloat(vertices.size * 3)
-            buffer.put(vertices.flatMap { v -> listOf(v.x, v.y, v.z) }.toFloatArray()).flip()
+            for (vertex in vertices) {
+                buffer.put(vertex.x)
+                buffer.put(vertex.y)
+                buffer.put(vertex.z)
+            }
+            buffer.flip()
 
             val vbo = GL20.glGenBuffers()
             GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vbo)
@@ -100,7 +105,12 @@ data class Mesh(
         var textCoordsBuffer: FloatBuffer? = null
         try {
             textCoordsBuffer = MemoryUtil.memAllocFloat(texCoords.size * 2)
-            textCoordsBuffer.put(texCoords.flatMap { v -> listOf(v.x, v.y) }.toFloatArray()).flip()
+            for (texCoord in texCoords) {
+                textCoordsBuffer.put(texCoord.x)
+                textCoordsBuffer.put(texCoord.y)
+            }
+            textCoordsBuffer.flip()
+
             val tbo = GL20.glGenBuffers()
             GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, tbo)
             GL20.glBufferData(GL20.GL_ARRAY_BUFFER, textCoordsBuffer!!, GL20.GL_STATIC_DRAW)
@@ -114,7 +124,13 @@ data class Mesh(
         var normalBuffer: FloatBuffer? = null
         try {
             normalBuffer = MemoryUtil.memAllocFloat(normals.size * 3)
-            normalBuffer.put(normals.flatMap { v -> listOf(v.x, v.y, v.z) }.toFloatArray()).flip()
+            for (normal in normals) {
+                normalBuffer.put(normal.x)
+                normalBuffer.put(normal.y)
+                normalBuffer.put(normal.z)
+            }
+            normalBuffer.flip()
+
             val nbo = GL20.glGenBuffers()
             GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, nbo)
             GL20.glBufferData(GL20.GL_ARRAY_BUFFER, normalBuffer!!, GL20.GL_STATIC_DRAW)
