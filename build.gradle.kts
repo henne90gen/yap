@@ -1,8 +1,9 @@
 import org.gradle.internal.os.OperatingSystem
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     // Apply the Kotlin JVM plugin to add support for Kotlin.
-    id("org.jetbrains.kotlin.jvm") version "1.3.61"
+    kotlin("jvm") version "1.3.70"
 
     // Apply the application plugin to add support for building a CLI application.
     application
@@ -78,6 +79,15 @@ dependencies {
     // Logging
     implementation("org.apache.logging.log4j", "log4j-api", "2.13.0")
     implementation("org.apache.logging.log4j", "log4j-core", "2.13.0")
+}
+
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.kotlinOptions {
+    jvmTarget = "1.8"
+}
+val compileTestKotlin: KotlinCompile by tasks
+compileTestKotlin.kotlinOptions {
+    jvmTarget = "1.8"
 }
 
 application {
