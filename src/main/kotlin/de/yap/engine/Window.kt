@@ -60,6 +60,7 @@ class Window(private val title: String, var width: Int, var height: Int, private
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2)
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL11.GL_TRUE)
+        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE)
 
         // Create the window
         windowHandle = glfwCreateWindow(width, height, title, MemoryUtil.NULL, MemoryUtil.NULL)
@@ -83,22 +84,19 @@ class Window(private val title: String, var width: Int, var height: Int, private
 
         // Setup the mouse
         mousePosition = Vector2f(0.0F)
-        glfwSetInputMode(windowHandle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetInputMode(windowHandle, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
         glfwSetCursorPosCallback(windowHandle) { _: Long, xpos: Double, ypos: Double ->
             updateMousePosition(xpos.toFloat(), ypos.toFloat())
         }
 
         // Get the resolution of the primary monitor
-        val vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor())
+        val videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor())
         // Center our window
         glfwSetWindowPos(
                 windowHandle,
-                (vidmode!!.width() - width) / 2,
-                (vidmode.height() - height) / 2
+                (videoMode!!.width() - width) / 2,
+                (videoMode.height() - height) / 2
         )
-
-        // enabling debug mode
-        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 
         // Make the OpenGL context current
         glfwMakeContextCurrent(windowHandle)

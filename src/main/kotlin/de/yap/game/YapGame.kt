@@ -182,17 +182,17 @@ class YapGame private constructor() : IGameLogic {
         renderer.shader3D.setUniform("lightPos", Vector3f(2.0f, 0.0f, 4.0f))
         renderer.shader3D.setUniform("lightColor", Vector3f(0.5f, 0.3f, 0.2f))
 
-        renderRayFromCamera()
-        renderCoordinateSystemAxis()
-        renderRoom()
-        renderCameras()
+//        renderRayFromCamera()
+//        renderCoordinateSystemAxis()
+//        renderRoom()
+//        renderCameras()
         renderTextInScene(text)
 
-        val color = Vector4f(0.5F, 0.75F, 0.0F, 1.0F)
-        val transform = Matrix4f().translate(-window.aspectRatio(), 0.85F, 0.0F)
-        text?.value?.let { fontRenderer.string(it, transform, color) }
+//        val color = Vector4f(0.5F, 0.75F, 0.0F, 1.0F)
+//        val transform = Matrix4f().translate(-window.aspectRatio(), 0.85F, 0.0F)
+//        text?.value?.let { fontRenderer.string(it, transform, color) }
 
-        debugInterface.render(window)
+//        debugInterface.render(window)
     }
 
     private fun handleWindowResize(window: Window) {
