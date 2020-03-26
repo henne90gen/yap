@@ -53,8 +53,9 @@ class DebugCPU {
 
         val systemMXBean = ManagementFactory.getOperatingSystemMXBean() as com.sun.management.OperatingSystemMXBean
 
-        val systemLoad = systemMXBean.systemCpuLoad * 100.0
-        systemLoadText?.updateString("${df.format(systemLoad)}%")
+        // TODO systemCpuLoad takes forever to execute on Windows
+        //  val systemLoad = systemMXBean.systemCpuLoad * 100.0
+        //  systemLoadText?.updateString("${df.format(systemLoad)}%")
 
         val processLoad = systemMXBean.processCpuLoad * 100.0
         processLoadText?.updateString("${df.format(processLoad)}%")
