@@ -4,6 +4,7 @@ import de.yap.engine.Camera
 import de.yap.engine.IGameLogic
 import de.yap.engine.Window
 import de.yap.engine.debug.DebugInterface
+import de.yap.engine.events.*
 import de.yap.engine.graphics.FontRenderer
 import de.yap.engine.graphics.Renderer
 import de.yap.engine.graphics.Text
@@ -72,6 +73,8 @@ class YapGame private constructor() : IGameLogic {
 
         window.setKeyCallback(::keyCallback)
         window.setMouseCallback(::mouseCallback)
+
+        EventBus.getInstance().fire(InitEvent())
     }
 
     private fun createText(): Text {
@@ -156,6 +159,8 @@ class YapGame private constructor() : IGameLogic {
 
         mousePosition = Vector2f(window.mousePosition)
         window.mousePosition = Vector2f(0.0F)
+
+        EventBus.getInstance().fire(InputEvent())
     }
 
     override fun update(interval: Float) {
@@ -172,6 +177,8 @@ class YapGame private constructor() : IGameLogic {
                 .add(startOffset)
 
         cameraRayResult = intersects(cameraRayStart, cameraDirection, roomMeshes, roomTransformation)
+
+        EventBus.getInstance().fire(UpdateEvent())
     }
 
     override fun render() {
@@ -194,6 +201,8 @@ class YapGame private constructor() : IGameLogic {
 //        renderTextOnScreen(text)
 
         debugInterface.render(window)
+
+        EventBus.getInstance().fire(RenderEvent())
     }
 
     private fun renderTextOnScreen(text: Text?) {
