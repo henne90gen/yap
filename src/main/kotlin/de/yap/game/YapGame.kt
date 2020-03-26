@@ -16,6 +16,7 @@ import org.joml.Vector2f
 import org.joml.Vector3f
 import org.joml.Vector4f
 import org.lwjgl.glfw.GLFW
+import org.lwjgl.opengl.GL13
 import org.lwjgl.opengl.GL20.glViewport
 
 
@@ -189,7 +190,7 @@ class YapGame private constructor() : IGameLogic {
         renderCoordinateSystemAxis()
         renderRoom()
         renderCameras()
-//        renderTextInScene(text)
+        renderTextInScene(text)
 //        renderTextOnScreen(text)
 
         debugInterface.render(window)
@@ -203,7 +204,21 @@ class YapGame private constructor() : IGameLogic {
 
     private fun renderFontTexture() {
         val mesh = MeshUtils.quad2D(material = fontRenderer.font.material)
-        renderer.mesh(mesh)
+        fontRenderer.fontShader.bind()
+        fontRenderer.fontShader.setUniform("model", Matrix4f())
+        fontRenderer.fontShader.setUniform("color", Vector4f(0.5F))
+
+        if (mesh.hasTexture()) {
+            fontRenderer.fontShader.setUniform("textureSampler", 1)
+        } else {
+            fontRenderer.fontShader.setUniform("textureSampler", 0)
+        }
+
+        mesh.bind()
+
+        GL13.glDrawElements(GL13.GL_TRIANGLES, mesh.indices.size * 3, GL13.GL_UNSIGNED_INT, 0)
+
+        fontRenderer.fontShader.unbind()
     }
 
     private fun handleWindowResize(window: Window) {
