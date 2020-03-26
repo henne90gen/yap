@@ -51,7 +51,7 @@ class EventBus {
 
             val eventClassStr = eventClass.toString()
             listeners.getOrPut(eventClassStr, ::mutableListOf).add(Listener(listener, method))
-            log.info("Registered '$method' as a listener for '$eventClassStr'")
+            log.debug("Registered '$method' as a listener for '$eventClassStr'")
         }
     }
 
@@ -65,7 +65,8 @@ class EventBus {
     }
 
     fun fire(event: YapEvent) {
-        log.debug("Fired $event")
+        log.trace("Fired $event")
+
         val eventListeners = listeners[event.javaClass.toString()]
                 ?: return
 
