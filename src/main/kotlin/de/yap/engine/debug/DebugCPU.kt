@@ -1,6 +1,5 @@
 package de.yap.engine.debug
 
-import de.yap.engine.graphics.FontRenderer
 import de.yap.engine.graphics.Text
 import de.yap.game.YapGame
 import org.joml.Matrix4f
@@ -20,7 +19,8 @@ class DebugCPU {
 
     private var updateCounter = 0
 
-    fun init(fontRenderer: FontRenderer) {
+    fun init() {
+        val fontRenderer = YapGame.getInstance().fontRenderer
         val systemTextTransform = Matrix4f()
                 .translate(0.25F, 0.95F, 0.0F)
                 .scale(0.3F)

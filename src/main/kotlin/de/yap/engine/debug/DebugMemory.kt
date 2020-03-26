@@ -1,6 +1,5 @@
 package de.yap.engine.debug
 
-import de.yap.engine.graphics.FontRenderer
 import de.yap.engine.graphics.Renderer
 import de.yap.engine.graphics.Text
 import de.yap.game.YapGame
@@ -47,7 +46,8 @@ class DebugMemory {
     private var totalJvmMemoryInBytes: Long = 0
     private var freeJvmMemoryInBytes: Long = 0
 
-    fun init(fontRenderer: FontRenderer) {
+    fun init() {
+        val fontRenderer = YapGame.getInstance().fontRenderer
         update(0.0F)
         usedPhysicalMemoryAtStartInBytes = totalPhysicalMemoryInBytes - freePhysicalMemoryInBytes
 

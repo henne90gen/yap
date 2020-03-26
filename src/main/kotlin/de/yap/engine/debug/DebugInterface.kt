@@ -1,9 +1,6 @@
 package de.yap.engine.debug
 
-import de.yap.engine.Window
-import de.yap.engine.graphics.FontRenderer
-import de.yap.engine.graphics.Renderer
-import de.yap.engine.graphics.Shader
+import de.yap.engine.events.*
 import de.yap.game.YapGame
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -22,16 +19,18 @@ class DebugInterface {
     val memory = DebugMemory()
     val cpu = DebugCPU()
 
-    fun init(fontRenderer: FontRenderer) {
+    @Subscribe
+    fun init(event: InitEvent) {
         if (!enabled) {
             return
         }
 
-        memory.init(fontRenderer)
-        cpu.init(fontRenderer)
+        memory.init()
+        cpu.init()
     }
 
-    fun input() {
+    @Subscribe
+    fun input(event: InputEvent) {
         if (!enabled) {
             return
         }
@@ -40,29 +39,32 @@ class DebugInterface {
         cpu.input()
     }
 
-    fun update(interval: Float) {
+    @Subscribe
+    fun update(event: UpdateEvent) {
         if (!enabled) {
             return
         }
 
-        memory.update(interval)
-        cpu.update(interval)
+        memory.update(event.interval)
+        cpu.update(event.interval)
     }
 
-    fun render(window: Window) {
+    @Subscribe
+    fun render(event: RenderEvent) {
         if (!enabled) {
             return
         }
         val shader = YapGame.getInstance().renderer.shader3D
         shader.setUniform("projection", Matrix4f())
-        shader.setUniform("view", Matrix4f().scale(1.0F / window.aspectRatio(), 1.0F, 1.0F))
+        shader.setUniform("view", Matrix4f().scale(1.0F / YapGame.getInstance().window.aspectRatio(), 1.0F, 1.0F))
 
         memory.render()
         cpu.render()
     }
 
-    fun keyCallback(windowHandle: Long, key: Int, scancode: Int, action: Int, mods: Int) {
-        if (key == GLFW.GLFW_KEY_F1 && action == GLFW.GLFW_RELEASE) {
+    @Subscribe
+    fun keyCallback(event: KeyboardEvent) {
+        if (event.key == GLFW.GLFW_KEY_F1 && event.action == GLFW.GLFW_RELEASE) {
             enabled = !enabled
         }
     }
