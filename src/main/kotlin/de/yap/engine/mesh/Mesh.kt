@@ -82,76 +82,81 @@ data class Mesh(
         vao = GL30.glGenVertexArrays()
         GL30.glBindVertexArray(vao!!)
 
-        var buffer: FloatBuffer? = null
+        bindBuffer3f(vertices, 0)
+        bindBuffer2f(texCoords, 1)
+        bindBuffer3f(normals, 2)
+
+        bindIndexBuffer(indices)
+    }
+
+    private fun bindIndexBuffer(indices: List<Vector3i>) {
+        var buffer: IntBuffer? = null
         try {
-            buffer = MemoryUtil.memAllocFloat(vertices.size * 3)
-            for (vertex in vertices) {
-                buffer.put(vertex.x)
-                buffer.put(vertex.y)
-                buffer.put(vertex.z)
+            buffer = MemoryUtil.memAllocInt(indices.size * 3)
+            for (d in indices) {
+                buffer.put(d.x)
+                buffer.put(d.y)
+                buffer.put(d.z)
             }
             buffer.flip()
 
-            val vbo = GL20.glGenBuffers()
-            GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vbo)
+            val ibo = GL15.glGenBuffers()
+            GL20.glBindBuffer(GL20.GL_ELEMENT_ARRAY_BUFFER, ibo)
+            GL20.glBufferData(GL20.GL_ELEMENT_ARRAY_BUFFER, buffer!!, GL20.GL_STATIC_DRAW)
+        } finally {
+            MemoryUtil.memFree(buffer)
+        }
+    }
+
+    private fun bindBuffer2f(data: List<Vector2f>, attribIndex: Int) {
+        if (data.isEmpty()) {
+            return
+        }
+
+        var buffer: FloatBuffer? = null
+        try {
+            buffer = MemoryUtil.memAllocFloat(data.size * 2)
+            for (d in data) {
+                buffer.put(d.x)
+                buffer.put(d.y)
+            }
+            buffer.flip()
+
+            val tbo = GL20.glGenBuffers()
+            GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, tbo)
             GL20.glBufferData(GL20.GL_ARRAY_BUFFER, buffer!!, GL20.GL_STATIC_DRAW)
         } finally {
             MemoryUtil.memFree(buffer)
         }
 
-        GL20.glEnableVertexAttribArray(0)
-        GL20.glVertexAttribPointer(0, 3, GL20.GL_FLOAT, false, 0, 0)
+        GL20.glEnableVertexAttribArray(attribIndex)
+        GL20.glVertexAttribPointer(attribIndex, 2, GL20.GL_FLOAT, false, 0, 0)
+    }
 
-        var textCoordsBuffer: FloatBuffer? = null
-        try {
-            textCoordsBuffer = MemoryUtil.memAllocFloat(texCoords.size * 2)
-            for (texCoord in texCoords) {
-                textCoordsBuffer.put(texCoord.x)
-                textCoordsBuffer.put(texCoord.y)
-            }
-            textCoordsBuffer.flip()
-
-            val tbo = GL20.glGenBuffers()
-            GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, tbo)
-            GL20.glBufferData(GL20.GL_ARRAY_BUFFER, textCoordsBuffer!!, GL20.GL_STATIC_DRAW)
-        } finally {
-            MemoryUtil.memFree(textCoordsBuffer)
+    private fun bindBuffer3f(data: List<Vector3f>, attribIndex: Int) {
+        if (data.isEmpty()) {
+            return
         }
 
-        GL20.glEnableVertexAttribArray(1)
-        GL20.glVertexAttribPointer(1, 2, GL20.GL_FLOAT, false, 0, 0)
-
-        var normalBuffer: FloatBuffer? = null
+        var buffer: FloatBuffer? = null
         try {
-            normalBuffer = MemoryUtil.memAllocFloat(normals.size * 3)
-            for (normal in normals) {
-                normalBuffer.put(normal.x)
-                normalBuffer.put(normal.y)
-                normalBuffer.put(normal.z)
+            buffer = MemoryUtil.memAllocFloat(data.size * 3)
+            for (d in data) {
+                buffer.put(d.x)
+                buffer.put(d.y)
+                buffer.put(d.z)
             }
-            normalBuffer.flip()
+            buffer.flip()
 
             val nbo = GL20.glGenBuffers()
             GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, nbo)
-            GL20.glBufferData(GL20.GL_ARRAY_BUFFER, normalBuffer!!, GL20.GL_STATIC_DRAW)
+            GL20.glBufferData(GL20.GL_ARRAY_BUFFER, buffer!!, GL20.GL_STATIC_DRAW)
         } finally {
-            MemoryUtil.memFree(normalBuffer)
+            MemoryUtil.memFree(buffer)
         }
 
-        GL20.glEnableVertexAttribArray(2)
-        GL20.glVertexAttribPointer(2, 3, GL20.GL_FLOAT, false, 0, 0)
-
-        var indexBuffer: IntBuffer? = null
-        try {
-            indexBuffer = MemoryUtil.memAllocInt(indices.size * 3)
-            indexBuffer.put(indices.flatMap { i -> listOf(i.x, i.y, i.z) }.toIntArray()).flip()
-
-            val ibo = GL15.glGenBuffers()
-            GL20.glBindBuffer(GL20.GL_ELEMENT_ARRAY_BUFFER, ibo)
-            GL20.glBufferData(GL20.GL_ELEMENT_ARRAY_BUFFER, indexBuffer!!, GL20.GL_STATIC_DRAW)
-        } finally {
-            MemoryUtil.memFree(indexBuffer)
-        }
+        GL20.glEnableVertexAttribArray(attribIndex)
+        GL20.glVertexAttribPointer(attribIndex, 3, GL20.GL_FLOAT, false, 0, 0)
     }
 
     private fun bindMaterial() {

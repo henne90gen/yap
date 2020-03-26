@@ -267,6 +267,17 @@ class MeshUtils {
                     Vector3f(0.5F, 0.5F, 0.5F),    // 6
                     Vector3f(-0.5F, 0.5F, 0.5F)    // 7
             )
+            val textureCoords = mutableListOf(
+                    Vector2f(0.0F, 0.0F),
+                    Vector2f(1.0F, 0.0F),
+                    Vector2f(1.0F, 1.0F),
+                    Vector2f(0.0F, 1.0F),
+
+                    Vector2f(0.0F, 0.0F),
+                    Vector2f(1.0F, 0.0F),
+                    Vector2f(1.0F, 1.0F),
+                    Vector2f(0.0F, 1.0F)
+            )
             val indices = mutableListOf(
                     // front
                     Vector3i(0, 1, 2),
@@ -292,7 +303,7 @@ class MeshUtils {
                     Vector3i(4, 5, 1),
                     Vector3i(4, 1, 0)
             )
-            return Mesh(vertices = vertices, indices = indices)
+            return Mesh(vertices = vertices, texCoords = textureCoords, indices = indices)
         }
 
         fun text(fontRenderer: FontRenderer, value: String): Mesh {

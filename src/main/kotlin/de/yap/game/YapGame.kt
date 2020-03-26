@@ -8,6 +8,7 @@ import de.yap.engine.graphics.FontRenderer
 import de.yap.engine.graphics.Renderer
 import de.yap.engine.graphics.Text
 import de.yap.engine.mesh.Mesh
+import de.yap.engine.mesh.MeshUtils
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
@@ -182,17 +183,27 @@ class YapGame private constructor() : IGameLogic {
         renderer.shader3D.setUniform("lightPos", Vector3f(2.0f, 0.0f, 4.0f))
         renderer.shader3D.setUniform("lightColor", Vector3f(0.5f, 0.3f, 0.2f))
 
-//        renderRayFromCamera()
-//        renderCoordinateSystemAxis()
-//        renderRoom()
-//        renderCameras()
-        renderTextInScene(text)
+        renderFontTexture()
 
-//        val color = Vector4f(0.5F, 0.75F, 0.0F, 1.0F)
-//        val transform = Matrix4f().translate(-window.aspectRatio(), 0.85F, 0.0F)
-//        text?.value?.let { fontRenderer.string(it, transform, color) }
+        renderRayFromCamera()
+        renderCoordinateSystemAxis()
+        renderRoom()
+        renderCameras()
+//        renderTextInScene(text)
+//        renderTextOnScreen(text)
 
-//        debugInterface.render(window)
+        debugInterface.render(window)
+    }
+
+    private fun renderTextOnScreen(text: Text?) {
+        val color = Vector4f(0.5F, 0.75F, 0.0F, 1.0F)
+        val transform = Matrix4f().translate(-window.aspectRatio(), 0.85F, 0.0F)
+        text?.value?.let { fontRenderer.string(it, transform, color) }
+    }
+
+    private fun renderFontTexture() {
+        val mesh = MeshUtils.quad2D(material = fontRenderer.font.material)
+        renderer.mesh(mesh)
     }
 
     private fun handleWindowResize(window: Window) {
