@@ -71,9 +71,12 @@ class YapGame private constructor() : IGameLogic {
         window.setKeyCallback(::keyCallback)
         window.setMouseCallback(::mouseCallback)
 
+        EventBus.getInstance().register(this)
         EventBus.getInstance().register(DebugFontTexture())
         EventBus.getInstance().register(debugInterface)
 
+        // we need to fire this ourselves, because we are not registered to the event bus at the time when window would actually fire this
+        EventBus.getInstance().fire(WindowResizeEvent(window.width, window.height))
         EventBus.getInstance().fire(InitEvent())
     }
 
@@ -180,8 +183,6 @@ class YapGame private constructor() : IGameLogic {
     override fun render() {
         renderer.clear()
 
-        handleWindowResize(window)
-
         renderer.shader3D.apply(currentCamera())
         renderer.shader3D.setUniform("color", Vector4f(1.0F))
         renderer.shader3D.setUniform("lightPos", Vector3f(2.0f, 0.0f, 4.0f))
@@ -203,13 +204,9 @@ class YapGame private constructor() : IGameLogic {
         text?.value?.let { fontRenderer.string(it, transform, color) }
     }
 
-    private fun handleWindowResize(window: Window) {
-        if (!window.hasResized) {
-            return
-        }
-
+    @Subscribe
+    fun handleWindowResize(event: WindowResizeEvent) {
         glViewport(0, 0, window.width, window.height)
-        window.hasResized = false
         currentCamera().aspectRatioChanged(window.aspectRatio())
         fontRenderer.aspectRatio = window.aspectRatio()
     }

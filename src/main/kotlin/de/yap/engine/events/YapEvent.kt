@@ -16,3 +16,5 @@ data class KeyboardEvent(
         val action: Int = 0,
         val mods: Int = 0
 ) : YapEvent()
+
+data class WindowResizeEvent(val width: Int = 0, val height: Int = 0) : YapEvent()

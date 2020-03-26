@@ -36,7 +36,14 @@ class EventBus {
             }
 
             val eventClass = method.parameters[0].type
-            val event = eventClass.getDeclaredConstructor().newInstance()
+            val constructor = try {
+                eventClass.getDeclaredConstructor()
+            } catch (e: NoSuchMethodException) {
+                log.error("The event '$eventClass' does not provide a default constructor. (Add default parameters to all arguments)")
+                null
+            } ?: continue
+
+            val event = constructor.newInstance()
             if (event !is YapEvent) {
                 log.error("Could not register event on $method: Parameter must be a subtype of YapEvent")
                 continue
@@ -44,7 +51,7 @@ class EventBus {
 
             val eventClassStr = eventClass.toString()
             listeners.getOrPut(eventClassStr, ::mutableListOf).add(Listener(listener, method))
-            log.debug("Registered '$method' as a listener for '$eventClassStr'")
+            log.info("Registered '$method' as a listener for '$eventClassStr'")
         }
     }
 
