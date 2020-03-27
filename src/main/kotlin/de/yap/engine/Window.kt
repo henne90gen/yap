@@ -1,5 +1,6 @@
 package de.yap.engine
 
+import de.yap.engine.ecs.System
 import de.yap.engine.events.EventBus
 import de.yap.engine.events.WindowResizeEvent
 import org.apache.logging.log4j.LogManager

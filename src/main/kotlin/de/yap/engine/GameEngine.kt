@@ -1,5 +1,7 @@
 package de.yap.engine
 
+import java.lang.System.getProperty
+
 class GameEngine(windowTitle: String?, width: Int, height: Int, vSync: Boolean, private val gameLogic: IGameLogic) : Runnable {
 
     companion object {
@@ -12,7 +14,7 @@ class GameEngine(windowTitle: String?, width: Int, height: Int, vSync: Boolean, 
     private val timer: Timer = Timer()
 
     fun start() {
-        val osName = System.getProperty("os.name")
+        val osName = getProperty("os.name")
         if (osName.contains("Mac")) {
             gameLoopThread.run()
         } else {
