@@ -30,7 +30,7 @@ class TestSystem : System(TestComponent::class.java) {
 class EntityManagerTest {
 
     @Test
-    fun testEntityManager() {
+    fun testNoEntities() {
         val manager = EntityManager()
         val testSystem = TestSystem()
         manager.register(testSystem)
@@ -44,5 +44,55 @@ class EntityManagerTest {
         assertEquals(0, testSystem.updateEntityCount)
         assertEquals(1, testSystem.renderCounter)
         assertEquals(0, testSystem.renderEntityCount)
+    }
+
+    @Test
+    fun testFirstAddSystemAndThenAddEntity() {
+        val manager = EntityManager()
+
+        // register system
+        val testSystem = TestSystem()
+        manager.register(testSystem)
+
+        // add entity
+        val entity = Entity()
+        entity.addComponent(TestComponent())
+        manager.addEntity(entity)
+
+        // run one cycle
+        manager.init()
+        manager.update()
+        manager.render()
+
+        assertEquals(1, testSystem.initCounter)
+        assertEquals(1, testSystem.updateCounter)
+        assertEquals(1, testSystem.updateEntityCount)
+        assertEquals(1, testSystem.renderCounter)
+        assertEquals(1, testSystem.renderEntityCount)
+    }
+
+    @Test
+    fun testFirstAddEntityAndThenAddSystem() {
+        val manager = EntityManager()
+
+        // add entity
+        val entity = Entity()
+        entity.addComponent(TestComponent())
+        manager.addEntity(entity)
+
+        // register system
+        val testSystem = TestSystem()
+        manager.register(testSystem)
+
+        // run one cycle
+        manager.init()
+        manager.update()
+        manager.render()
+
+        assertEquals(1, testSystem.initCounter)
+        assertEquals(1, testSystem.updateCounter)
+        assertEquals(1, testSystem.updateEntityCount)
+        assertEquals(1, testSystem.renderCounter)
+        assertEquals(1, testSystem.renderEntityCount)
     }
 }

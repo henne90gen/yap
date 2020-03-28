@@ -6,7 +6,7 @@ import java.lang.reflect.Method
 
 data class EventListener(val obj: Any, val method: Method)
 
-class Capability(vararg components: Class<out Component>) {
+class Capability(vararg val components: Class<out Component>) {
     private val id: String = components.map { it.name }.sorted().joinToString(separator = "-")
 
     override fun hashCode(): Int {
@@ -32,7 +32,7 @@ class EntityManager {
     }
 
     private val entityList: MutableList<Entity> = ArrayList()
-    private val capabilityMap: MutableMap<Capability, List<Entity>> = LinkedHashMap()
+    private val capabilityMap: MutableMap<Capability, MutableList<Entity>> = LinkedHashMap()
     private val systems: MutableList<System> = ArrayList()
     private val eventListeners: MutableMap<String, MutableList<EventListener>> = LinkedHashMap()
 
@@ -44,22 +44,31 @@ class EntityManager {
 
     fun render() {
         for (system in systems) {
-            val entities = capabilityMap.getOrDefault(system.capability, emptyList())
+            val entities = capabilityMap.getOrDefault(system.capability, emptyList<Entity>())
             system.render(entities)
         }
     }
 
     fun update() {
         for (system in systems) {
-            val entities = capabilityMap.getOrDefault(system.capability, emptyList())
+            val entities = capabilityMap.getOrDefault(system.capability, emptyList<Entity>())
             system.update(entities)
         }
     }
 
     fun register(system: System) {
         systems.add(system)
-        // create new entry in the entityMap
-        // scan entities and add all matching entities to new entry in the entityMap
+
+        val entitiesWithCapability = ArrayList<Entity>()
+        for (entity in entityList) {
+            if (entity.hasCapability(system.capability)) {
+                entitiesWithCapability.add(entity)
+            }
+        }
+
+        capabilityMap[system.capability] = entitiesWithCapability
+
+        log.debug("Registered $system")
     }
 
     fun registerEventListener(obj: Any) {
@@ -108,7 +117,14 @@ class EntityManager {
 
     fun addEntity(entity: Entity) {
         entityList.add(entity)
-        // add entity to all matching entries of the entityMap
+
+        for (entry in capabilityMap) {
+            if (entity.hasCapability(entry.key)) {
+                entry.value.add(entity)
+            }
+        }
+
+        log.debug("Added $entity")
     }
 
     fun fireEvent(event: Event) {
