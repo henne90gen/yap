@@ -3,9 +3,9 @@ package de.yap.game
 import de.yap.engine.Camera
 import de.yap.engine.IGameLogic
 import de.yap.engine.Window
-import de.yap.engine.debug.DebugFontTexture
 import de.yap.engine.debug.DebugInterface
-import de.yap.engine.events.*
+import de.yap.engine.ecs.Subscribe
+import de.yap.engine.ecs.WindowResizeEvent
 import de.yap.engine.graphics.FontRenderer
 import de.yap.engine.graphics.Renderer
 import de.yap.engine.graphics.Text
@@ -71,13 +71,15 @@ class YapGame private constructor() : IGameLogic {
         window.setKeyCallback(::keyCallback)
         window.setMouseCallback(::mouseCallback)
 
-        EventBus.getInstance().register(this)
-        EventBus.getInstance().register(DebugFontTexture())
-        EventBus.getInstance().register(debugInterface)
+        // TODO use EntityManager
+//        EventBus.getInstance().register(this)
+//        EventBus.getInstance().register(DebugFontTexture())
+//        EventBus.getInstance().register(debugInterface)
 
         // we need to fire this ourselves, because we are not registered to the event bus at the time when window would actually fire this
-        EventBus.getInstance().fire(WindowResizeEvent(window.width, window.height))
-        EventBus.getInstance().fire(InitEvent())
+        // TODO use EntityManager
+//        EventBus.getInstance().fire(WindowResizeEvent(window.width, window.height))
+//        EventBus.getInstance().fire(InitEvent())
     }
 
     private fun createText(): Text {
@@ -101,7 +103,8 @@ class YapGame private constructor() : IGameLogic {
             switchToNextCamera(window)
         }
 
-        EventBus.getInstance().fire(KeyboardEvent(key, scancode, action, mods))
+        // TODO use EntityManager
+//        EventBus.getInstance().fire(KeyboardEvent(key, scancode, action, mods))
     }
 
     private fun mouseCallback(windowHandle: Long, button: Int, action: Int, mods: Int) {
@@ -161,7 +164,8 @@ class YapGame private constructor() : IGameLogic {
         mousePosition = Vector2f(window.mousePosition)
         window.mousePosition = Vector2f(0.0F)
 
-        EventBus.getInstance().fire(InputEvent())
+        // TODO use EntityManager
+//        EventBus.getInstance().fire(InputEvent())
     }
 
     override fun update(interval: Float) {
@@ -177,7 +181,8 @@ class YapGame private constructor() : IGameLogic {
 
         cameraRayResult = intersects(cameraRayStart, cameraDirection, roomMeshes, roomTransformation)
 
-        EventBus.getInstance().fire(UpdateEvent(interval))
+        // TODO use EntityManager
+//        EventBus.getInstance().fire(UpdateEvent(interval))
     }
 
     override fun render() {
@@ -195,7 +200,8 @@ class YapGame private constructor() : IGameLogic {
         renderTextInScene(text)
 //        renderTextOnScreen(text)
 
-        EventBus.getInstance().fire(RenderEvent())
+        // TODO use EntityManager
+//        EventBus.getInstance().fire(RenderEvent())
     }
 
     private fun renderTextOnScreen(text: Text?) {

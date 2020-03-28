@@ -1,29 +1,40 @@
 package de.yap.engine.ecs
 
-// iterate over all entities
-// iterate over all entities that have multiple components (all the same)
-// remove an entity and associated nodes
-//   - remove from entityList
-//   - find out which NodeTypes correspond to the entity and delete it from those lists in the nodeMap
-// add entity
-//   - generate id
-//   - add components
-//   - iterate all nodes and create the ones that have matching components
-// add component to entity
-//   - check that ComponentType does not exist already
-//   - just add component
-//   - create nodes that are now possible
-// remove component from entity
-//   - similar to removing an entity
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
+import java.lang.reflect.Method
 
+data class EventListener(val obj: Any, val method: Method)
+
+class Capability(vararg components: Class<out Component>) {
+    private val id: String = components.map { it.name }.sorted().joinToString(separator = "-")
+
+    override fun hashCode(): Int {
+        return id.hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Capability
+
+        if (id != other.id) return false
+
+        return true
+    }
+}
 
 class EntityManager {
-    val entityList: List<Entity> = ArrayList()
 
-    // map from unique component-string to entities
-    // the component-string is a "list" of components
-    val nodeMap: Map<String, List<Entity>> = LinkedHashMap()
-    val systems: List<System> = ArrayList()
+    companion object {
+        private val log: Logger = LogManager.getLogger()
+    }
+
+    private val entityList: MutableList<Entity> = ArrayList()
+    private val capabilityMap: MutableMap<Capability, List<Entity>> = LinkedHashMap()
+    private val systems: MutableList<System> = ArrayList()
+    private val eventListeners: MutableMap<String, MutableList<EventListener>> = LinkedHashMap()
 
     fun init() {
         for (system in systems) {
@@ -31,28 +42,83 @@ class EntityManager {
         }
     }
 
-    private fun getNodeId(nodeClass: Class<out Node>): String {
-        val fields = nodeClass.declaredFields
-        // TODO use fields that are subclasses of Component to construct unique id
-        // TODO sort those fields alphabetically
-        return nodeClass.name
-    }
-
     fun render() {
         for (system in systems) {
-            val nodeClass = system.getRequiredComponents()
-            val key = getNodeId(nodeClass)
-            val nodes = nodeMap[key]
-            nodes?.let { system.render(it) }
+            val entities = capabilityMap.getOrDefault(system.capability, emptyList())
+            system.render(entities)
         }
     }
 
     fun update() {
         for (system in systems) {
-            val nodeClass = system.getRequiredComponents()
-            val key = getNodeId(nodeClass)
-            val nodes = nodeMap[key]
-            nodes?.let { system.update(it) }
+            val entities = capabilityMap.getOrDefault(system.capability, emptyList())
+            system.update(entities)
+        }
+    }
+
+    fun register(system: System) {
+        systems.add(system)
+        // create new entry in the entityMap
+        // scan entities and add all matching entities to new entry in the entityMap
+    }
+
+    fun registerEventListener(obj: Any) {
+        for (method in obj.javaClass.methods) {
+            if (!isEventSubscription(method)) {
+                continue
+            }
+
+            if (method.parameters.isEmpty()) {
+                log.error("Could not register event on $method: No parameters provided")
+                continue
+            }
+
+            if (method.parameters.size > 1) {
+                log.warn("Ignoring extra parameters for event registration on $method")
+            }
+
+            val eventClass = method.parameters[0].type
+            val constructor = try {
+                eventClass.getDeclaredConstructor()
+            } catch (e: NoSuchMethodException) {
+                log.error("The event '$eventClass' does not provide a default constructor. (Add default parameters to all arguments)")
+                null
+            } ?: continue
+
+            val event = constructor.newInstance()
+            if (event !is Event) {
+                log.error("Could not register event on $method: Parameter must be a subtype of YapEvent")
+                continue
+            }
+
+            val eventClassStr = eventClass.name
+            eventListeners.getOrPut(eventClassStr, ::mutableListOf).add(EventListener(obj, method))
+            log.debug("Registered '$method' as a listener for '$eventClassStr'")
+        }
+    }
+
+    private fun isEventSubscription(method: Method): Boolean {
+        for (annotation in method.annotations) {
+            if (annotation is Subscribe) {
+                return true
+            }
+        }
+        return false
+    }
+
+    fun addEntity(entity: Entity) {
+        entityList.add(entity)
+        // add entity to all matching entries of the entityMap
+    }
+
+    fun fireEvent(event: Event) {
+        log.trace("Fired $event")
+
+        val listeners = eventListeners[event.javaClass.name]
+                ?: return
+
+        for (listener in listeners) {
+            listener.method.invoke(listener.obj, event)
         }
     }
 }

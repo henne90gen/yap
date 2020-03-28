@@ -1,10 +1,9 @@
 package de.yap.engine.debug
 
-import de.yap.engine.events.*
-import de.yap.game.YapGame
+import de.yap.engine.ecs.KeyboardEvent
+import de.yap.engine.ecs.Subscribe
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-import org.joml.Matrix4f
 import org.lwjgl.glfw.GLFW
 
 
@@ -19,48 +18,52 @@ class DebugInterface {
     val memory = DebugMemory()
     val cpu = DebugCPU()
 
-    @Subscribe
-    fun init(event: InitEvent) {
-        if (!enabled) {
-            return
-        }
+    // TODO use EntityManager
+//    @Subscribe
+//    fun init(event: InitEvent) {
+//        if (!enabled) {
+//            return
+//        }
+//
+//        memory.init()
+//        cpu.init()
+//    }
 
-        memory.init()
-        cpu.init()
-    }
+    // TODO use EntityManager
+//    @Subscribe
+//    fun input(event: InputEvent) {
+//        if (!enabled) {
+//            return
+//        }
+//
+//        memory.input()
+//        cpu.input()
+//    }
 
-    @Subscribe
-    fun input(event: InputEvent) {
-        if (!enabled) {
-            return
-        }
+    // TODO use EntityManager
+//    @Subscribe
+//    fun update(event: UpdateEvent) {
+//        if (!enabled) {
+//            return
+//        }
+//
+//        memory.update(event.interval)
+//        cpu.update(event.interval)
+//    }
 
-        memory.input()
-        cpu.input()
-    }
-
-    @Subscribe
-    fun update(event: UpdateEvent) {
-        if (!enabled) {
-            return
-        }
-
-        memory.update(event.interval)
-        cpu.update(event.interval)
-    }
-
-    @Subscribe
-    fun render(event: RenderEvent) {
-        if (!enabled) {
-            return
-        }
-        val shader = YapGame.getInstance().renderer.shader3D
-        shader.setUniform("projection", Matrix4f())
-        shader.setUniform("view", Matrix4f().scale(1.0F / YapGame.getInstance().window.aspectRatio(), 1.0F, 1.0F))
-
-        memory.render()
-        cpu.render()
-    }
+    // TODO use EntityManager
+//    @Subscribe
+//    fun render(event: RenderEvent) {
+//        if (!enabled) {
+//            return
+//        }
+//        val shader = YapGame.getInstance().renderer.shader3D
+//        shader.setUniform("projection", Matrix4f())
+//        shader.setUniform("view", Matrix4f().scale(1.0F / YapGame.getInstance().window.aspectRatio(), 1.0F, 1.0F))
+//
+//        memory.render()
+//        cpu.render()
+//    }
 
     @Subscribe
     fun keyCallback(event: KeyboardEvent) {

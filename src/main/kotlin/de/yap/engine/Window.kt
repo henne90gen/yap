@@ -1,8 +1,5 @@
 package de.yap.engine
 
-import de.yap.engine.ecs.System
-import de.yap.engine.events.EventBus
-import de.yap.engine.events.WindowResizeEvent
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Vector2f
@@ -74,7 +71,8 @@ class Window(private val title: String, var width: Int, var height: Int, private
         glfwSetFramebufferSizeCallback(windowHandle) { _: Long, width: Int, height: Int ->
             this.width = width
             this.height = height
-            EventBus.getInstance().fire(WindowResizeEvent(width, height))
+            // TODO use EntityManager
+//            EventBus.getInstance().fire(WindowResizeEvent(width, height))
         }
 
         // Setup a key callback

@@ -1,28 +1,17 @@
 package de.yap.engine.ecs
 
-import de.yap.engine.events.Subscribe
+abstract class System(vararg components: Class<out Component>) {
+    val capability = Capability(*components)
 
-interface System {
-    fun getRequiredComponents(): List<Class<out Component>>
-    fun init() {}
-    fun render(entities: List<Entity>) {}
-    fun update(entities: List<Entity>) {}
+    open fun init() {}
+    open fun render(entities: List<Entity>) {}
+    open fun update(entities: List<Entity>) {}
 }
 
-class RenderSystem : System {
-    override fun getRequiredComponents(): List<Class<out Component>> {
-        return listOf(PositionComponent::class.java, MeshComponent::class.java)
-    }
-
+class RenderSystem : System(PositionComponent::class.java, MeshComponent::class.java) {
     override fun render(entities: List<Entity>) {
         for (entity in entities) {
-            entity.getComponent(PositionComponent::class.java)
-
+            val position = entity.getComponent<PositionComponent>()
         }
-    }
-
-    @Subscribe(components = { MyComponent.class, ... })
-    fun conditionalRender(event: MyEvent) {
-
     }
 }
