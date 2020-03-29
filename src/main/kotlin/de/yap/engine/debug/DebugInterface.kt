@@ -14,7 +14,7 @@ import org.lwjgl.glfw.GLFW
 class DebugInterface : ISystem() {
 
     companion object {
-        private val log: Logger = LogManager.getLogger(DebugInterface::class.java.name)
+        private val log: Logger = LogManager.getLogger()
     }
 
     private var enabled = true

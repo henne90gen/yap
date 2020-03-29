@@ -14,7 +14,7 @@ import java.nio.FloatBuffer
 class Shader(private val vertexShaderPath: String, private val fragmentShaderPath: String) {
 
     companion object {
-        private val log: Logger = LogManager.getLogger(Shader::class.java.name)
+        private val log: Logger = LogManager.getLogger()
     }
 
     private var programId: Int = 0

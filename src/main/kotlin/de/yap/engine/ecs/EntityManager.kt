@@ -7,6 +7,11 @@ import java.lang.reflect.Method
 data class EventListener(val obj: Any, val method: Method)
 
 class Capability(vararg val components: Class<out Component>) {
+
+    companion object {
+        val ALL_CAPABILITIES = Capability()
+    }
+
     private val id: String = components.map { it.name }.sorted().joinToString(separator = "-")
 
     override fun hashCode(): Int {
@@ -31,10 +36,13 @@ class EntityManager {
         private val log: Logger = LogManager.getLogger()
     }
 
-    private val entityList: MutableList<Entity> = ArrayList()
     private val capabilityMap: MutableMap<Capability, MutableList<Entity>> = LinkedHashMap()
     private val systems: MutableList<ISystem> = ArrayList()
     private val eventListeners: MutableMap<String, MutableList<EventListener>> = LinkedHashMap()
+
+    init {
+        capabilityMap[Capability.ALL_CAPABILITIES] = ArrayList()
+    }
 
     fun init() {
         for (system in systems) {
@@ -61,7 +69,7 @@ class EntityManager {
         systems.add(system)
 
         val entitiesWithCapability = ArrayList<Entity>()
-        for (entity in entityList) {
+        for (entity in capabilityMap[Capability.ALL_CAPABILITIES]!!) {
             if (entity.hasCapability(system.capability)) {
                 entitiesWithCapability.add(entity)
             }
@@ -117,8 +125,6 @@ class EntityManager {
     }
 
     fun addEntity(entity: Entity) {
-        entityList.add(entity)
-
         for (entry in capabilityMap) {
             if (entity.hasCapability(entry.key)) {
                 entry.value.add(entity)

@@ -175,7 +175,7 @@ data class Mesh(
     }
 
     companion object {
-        private val log: Logger = LogManager.getLogger(Mesh::class.java.name)
+        private val log: Logger = LogManager.getLogger()
 
         fun fromFile(filePath: String): List<Mesh> {
             val file = File(filePath)

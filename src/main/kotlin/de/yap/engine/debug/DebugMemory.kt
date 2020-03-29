@@ -11,7 +11,7 @@ import java.lang.management.ManagementFactory
 
 class DebugMemory {
     companion object {
-        private val log: Logger = LogManager.getLogger(DebugMemory::class.java.name)
+        private val log: Logger = LogManager.getLogger()
 
         private const val MEMORY_BAR_HEIGHT = 0.05F
 

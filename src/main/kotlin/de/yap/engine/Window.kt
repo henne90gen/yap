@@ -19,7 +19,7 @@ import org.lwjgl.system.MemoryUtil
 class Window(private val title: String, var width: Int, var height: Int, private var vSync: Boolean) {
 
     companion object {
-        private val log: Logger = LogManager.getLogger(Window::class.java.name)
+        private val log: Logger = LogManager.getLogger()
     }
 
     private var windowHandle: Long = 0

@@ -19,7 +19,7 @@ class Texture(
 ) {
 
     companion object {
-        private val log: Logger = LogManager.getLogger(Texture::class.java.name)
+        private val log: Logger = LogManager.getLogger()
 
         fun fromFile(file: File): Texture {
             check(file.exists()) { "File '$file' does not exist" }

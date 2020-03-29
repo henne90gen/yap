@@ -19,7 +19,7 @@ import java.nio.FloatBuffer
 class Renderer {
 
     companion object {
-        private val log: Logger = LogManager.getLogger(Renderer::class.java.name)
+        private val log: Logger = LogManager.getLogger()
     }
 
     private lateinit var quadMesh: Mesh

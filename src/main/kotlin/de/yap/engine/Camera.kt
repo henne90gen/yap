@@ -13,7 +13,7 @@ import kotlin.math.abs
 class Camera(val position: Vector3f = Vector3f(0.0F)) {
 
     companion object {
-        private val log: Logger = LogManager.getLogger(Camera::class.java.name)
+        private val log: Logger = LogManager.getLogger()
         private val X_AXIS = Vector3f(1.0F, 0.0F, 0.0F)
         private val Y_AXIS = Vector3f(0.0F, 1.0F, 0.0F)
         private val Z_AXIS = Vector3f(0.0F, 0.0F, 1.0F)

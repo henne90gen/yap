@@ -23,7 +23,7 @@ class Timer {
         }
 }
 
-private val log: Logger = LogManager.getLogger(Timer::class.java.name)
+private val log: Logger = LogManager.getLogger()
 
 fun time(name: String, active: Boolean = true, func: () -> Unit) {
     val startTime = System.nanoTime()

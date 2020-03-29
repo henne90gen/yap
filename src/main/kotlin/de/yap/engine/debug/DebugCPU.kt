@@ -11,9 +11,6 @@ class DebugCPU {
 
     private val df = DecimalFormat("#.00")
 
-    private var systemText: Text? = null
-    private var systemLoadText: Text? = null
-
     private var processText: Text? = null
     private var processLoadText: Text? = null
 
@@ -21,16 +18,6 @@ class DebugCPU {
 
     fun init() {
         val fontRenderer = YapGame.getInstance().fontRenderer
-        val systemTextTransform = Matrix4f()
-                .translate(0.25F, 0.95F, 0.0F)
-                .scale(0.3F)
-        systemText = Text("System:", fontRenderer.font, systemTextTransform)
-
-        val systemLoadTransform = Matrix4f()
-                .translate(0.5F, 0.95F, 0.0F)
-                .scale(0.3F)
-        systemLoadText = Text("", fontRenderer.font, systemLoadTransform)
-
         val processTextTransform = Matrix4f()
                 .translate(0.25F, 0.90F, 0.0F)
                 .scale(0.3F)
@@ -50,19 +37,12 @@ class DebugCPU {
 
         val systemMXBean = ManagementFactory.getOperatingSystemMXBean() as com.sun.management.OperatingSystemMXBean
 
-        // TODO systemCpuLoad takes forever to execute on Windows
-        //  val systemLoad = systemMXBean.systemCpuLoad * 100.0
-        //  systemLoadText?.updateString("${df.format(systemLoad)}%")
-
         val processLoad = systemMXBean.processCpuLoad * 100.0
         processLoadText?.updateString("${df.format(processLoad)}%")
     }
 
     fun render() {
         val fontRenderer = YapGame.getInstance().fontRenderer
-        systemText?.let { fontRenderer.string(it) }
-        systemLoadText?.let { fontRenderer.string(it) }
-
         processText?.let { fontRenderer.string(it) }
         processLoadText?.let { fontRenderer.string(it) }
     }

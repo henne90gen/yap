@@ -24,7 +24,7 @@ class Font(
 ) {
 
     companion object {
-        private val log: Logger = LogManager.getLogger(Font::class.java.name)
+        private val log: Logger = LogManager.getLogger()
 
         fun fromInternalFile(file: String): Font {
             val ttf = IOUtils.loadInternalResource(file)

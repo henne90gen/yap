@@ -22,7 +22,7 @@ interface MeshLoader {
 
 class ObjLoader : MeshLoader {
     companion object {
-        private val log: Logger = LogManager.getLogger(ObjLoader::class.java.name)
+        private val log: Logger = LogManager.getLogger()
     }
 
     data class FaceIndices(val vertex: Vector3i, val texture: Vector3i, val normal: Vector3i)
@@ -225,7 +225,7 @@ class ObjLoader : MeshLoader {
 
 class MeshUtils {
     companion object {
-        private val log: Logger = LogManager.getLogger(MeshUtils::class.java.name)
+        private val log: Logger = LogManager.getLogger()
 
         fun quad2D(
                 posMin: Vector2f = Vector2f(-0.5F),

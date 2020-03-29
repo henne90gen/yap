@@ -23,7 +23,7 @@ import org.lwjgl.opengl.GL20.glViewport
 class YapGame private constructor() : IGameLogic {
 
     companion object {
-        private val log: Logger = LogManager.getLogger(YapGame::class.java.name)
+        private val log: Logger = LogManager.getLogger()
 
         private val yapGame: YapGame = YapGame()
 
