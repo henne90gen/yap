@@ -1,9 +1,9 @@
 package de.yap.engine.debug
 
 import de.yap.engine.ecs.Entity
-import de.yap.engine.ecs.ISystem
 import de.yap.engine.ecs.KeyboardEvent
 import de.yap.engine.ecs.Subscribe
+import de.yap.engine.ecs.systems.ISystem
 import de.yap.engine.graphics.Matrix4fUniform
 import de.yap.game.YapGame
 import org.apache.logging.log4j.LogManager

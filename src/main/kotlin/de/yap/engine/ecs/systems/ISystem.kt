@@ -1,4 +1,6 @@
-package de.yap.engine.ecs
+package de.yap.engine.ecs.systems
+
+import de.yap.engine.ecs.*
 
 abstract class ISystem(vararg components: Class<out Component>) {
     val capability = Capability(*components)

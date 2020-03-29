@@ -147,6 +147,7 @@ class Shader(private val vertexShaderPath: String, private val fragmentShaderPat
         glDeleteShader(fragmentShader)
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun <T> getUniform(name: String): T? {
         return currentUniforms[name] as T
     }
