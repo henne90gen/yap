@@ -43,14 +43,19 @@ class CameraSystem : ISystem(PositionComponent::class.java, RotationComponent::c
             YapGame.getInstance().renderer.cube(transformation, color)
 
             // show viewing direction
-            val dir = Vector4f(0.0F, 0.0F, -1.0F, 0.0F)
-                    .mul(rotationMatrix(rotationComponent).invert())
-                    .normalize()
+            val dir = direction(rotationComponent)
             val end = Vector3f(position)
-                    .add(dir.x, dir.y, dir.z)
+                    .add(dir)
             val viewDirColor = Vector4f(1.0F, 0.0F, 0.0F, 1.0F)
             YapGame.getInstance().renderer.line(position, end, viewDirColor)
         }
+    }
+
+    fun direction(rotationComponent: RotationComponent): Vector3f {
+        val dir = Vector4f(0.0F, 0.0F, -1.0F, 0.0F)
+                .mul(rotationMatrix(rotationComponent).invert())
+                .normalize()
+        return Vector3f(dir.x, dir.y, dir.z)
     }
 
     override fun update(interval: Float, entities: List<Entity>) {
@@ -152,7 +157,7 @@ class CameraSystem : ISystem(PositionComponent::class.java, RotationComponent::c
         positionComponent.position.add(Vector3f(rotatedOffset.x, rotatedOffset.y, rotatedOffset.z))
     }
 
-    private fun rotate(rotationComponent: RotationComponent, rotation: Vector2f) {
+    fun rotate(rotationComponent: RotationComponent, rotation: Vector2f) {
         rotationComponent.pitch -= rotation.y
         rotationComponent.yaw += rotation.x
     }
