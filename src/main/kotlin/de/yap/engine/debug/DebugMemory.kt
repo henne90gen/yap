@@ -67,9 +67,6 @@ class DebugMemory {
         jvmText = Text("JVM Memory:", fontRenderer.font, jvmTextTransformation)
     }
 
-    fun input() {
-    }
-
     fun update(interval: Float) {
         totalJvmMemoryInBytes = Runtime.getRuntime().totalMemory()
         freeJvmMemoryInBytes = Runtime.getRuntime().freeMemory()

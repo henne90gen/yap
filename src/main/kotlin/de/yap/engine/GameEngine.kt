@@ -33,16 +33,6 @@ class GameEngine(windowTitle: String?, width: Int, height: Int, vSync: Boolean, 
         }
     }
 
-    private fun init() {
-        window.init()
-        timer.init()
-        gameLogic.init(window)
-    }
-
-    private fun cleanUp() {
-        window.cleanUp()
-    }
-
     private fun gameLoop() {
         var elapsedTime: Float
         var accumulator = 0f
@@ -51,8 +41,6 @@ class GameEngine(windowTitle: String?, width: Int, height: Int, vSync: Boolean, 
         while (running && !window.windowShouldClose()) {
             elapsedTime = timer.elapsedTime
             accumulator += elapsedTime
-
-            input()
 
             while (accumulator >= interval) {
                 // TODO calculate actual last update time here
@@ -81,8 +69,10 @@ class GameEngine(windowTitle: String?, width: Int, height: Int, vSync: Boolean, 
         }
     }
 
-    private fun input() {
-        gameLogic.input()
+    private fun init() {
+        window.init()
+        timer.init()
+        gameLogic.init(window)
     }
 
     private fun update(interval: Float) {
@@ -91,6 +81,10 @@ class GameEngine(windowTitle: String?, width: Int, height: Int, vSync: Boolean, 
 
     private fun render() {
         gameLogic.render()
-        window.update()
+        window.render()
+    }
+
+    private fun cleanUp() {
+        window.cleanUp()
     }
 }

@@ -39,7 +39,7 @@ fun intersects(rayStart: Vector3f, direction: Vector3f, meshes: List<Mesh>, tran
     return closestIntersection
 }
 
-fun intersects(rayStart: Vector3f, direction: Vector3f, vec1: Vector3f, vec2: Vector3f, vec3: Vector3f): IntersectionResult {
+private fun intersects(rayStart: Vector3f, direction: Vector3f, vec1: Vector3f, vec2: Vector3f, vec3: Vector3f): IntersectionResult {
     val epsilon = 0.0000001F
     val t = Intersectionf.intersectRayTriangle(rayStart, direction, vec1, vec2, vec3, epsilon)
     if (t < 0.0F) {

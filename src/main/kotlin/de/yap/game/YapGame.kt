@@ -3,9 +3,9 @@ package de.yap.game
 import de.yap.engine.Camera
 import de.yap.engine.IGameLogic
 import de.yap.engine.Window
+import de.yap.engine.debug.DebugFontTexture
 import de.yap.engine.debug.DebugInterface
-import de.yap.engine.ecs.Subscribe
-import de.yap.engine.ecs.WindowResizeEvent
+import de.yap.engine.ecs.*
 import de.yap.engine.graphics.FontRenderer
 import de.yap.engine.graphics.Renderer
 import de.yap.engine.graphics.Text
@@ -34,9 +34,10 @@ class YapGame private constructor() : IGameLogic {
 
     lateinit var window: Window
 
+    val entityManager = EntityManager()
+
     private val direction = Vector3f(0.0f, 0.0f, 0.0f)
     val renderer = Renderer()
-    private val debugInterface = DebugInterface()
     val fontRenderer = FontRenderer()
 
     private val camera = Camera(Vector3f(0.5F, 0.0F, 3.0F))
@@ -68,18 +69,14 @@ class YapGame private constructor() : IGameLogic {
 
         text = createText()
 
-        window.setKeyCallback(::keyCallback)
-        window.setMouseCallback(::mouseCallback)
+        entityManager.registerEventListener(this)
+        entityManager.registerSystem(DebugFontTexture())
+        entityManager.registerSystem(DebugInterface())
 
-        // TODO use EntityManager
-//        EventBus.getInstance().register(this)
-//        EventBus.getInstance().register(DebugFontTexture())
-//        EventBus.getInstance().register(debugInterface)
+        entityManager.init()
 
         // we need to fire this ourselves, because we are not registered to the event bus at the time when window would actually fire this
-        // TODO use EntityManager
-//        EventBus.getInstance().fire(WindowResizeEvent(window.width, window.height))
-//        EventBus.getInstance().fire(InitEvent())
+        entityManager.fireEvent(WindowResizeEvent(window.width, window.height))
     }
 
     private fun createText(): Text {
@@ -90,25 +87,10 @@ class YapGame private constructor() : IGameLogic {
         return Text(value, fontRenderer.font, transform, color)
     }
 
-    private fun keyCallback(windowHandle: Long, key: Int, scancode: Int, action: Int, mods: Int) {
-        if (key == GLFW.GLFW_KEY_ESCAPE && action == GLFW.GLFW_RELEASE) {
-            GLFW.glfwSetWindowShouldClose(windowHandle, true) // We will detect this in the rendering loop
-        }
-
-        if (key == GLFW.GLFW_KEY_F && action == GLFW.GLFW_RELEASE) {
-            roomWireframe = !roomWireframe
-        }
-
-        if (key == GLFW.GLFW_KEY_SPACE && action == GLFW.GLFW_RELEASE) {
-            switchToNextCamera(window)
-        }
-
-        // TODO use EntityManager
-//        EventBus.getInstance().fire(KeyboardEvent(key, scancode, action, mods))
-    }
-
-    private fun mouseCallback(windowHandle: Long, button: Int, action: Int, mods: Int) {
-        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && action == GLFW.GLFW_RELEASE && cameraRayResult.hasValue()) {
+    @Subscribe
+    fun mouseCallback(event: MouseClickEvent) {
+        // TODO refactor this into a system
+        if (event.button == GLFW.GLFW_MOUSE_BUTTON_LEFT && event.action == GLFW.GLFW_RELEASE && cameraRayResult.hasValue()) {
             val point = cameraRayResult.point
             point.add(
                     Vector3f(cameraRayResult.normal)
@@ -126,50 +108,81 @@ class YapGame private constructor() : IGameLogic {
      *  - Left Mouse Click - teleport to point of intersection
      *  - SPACE - change camera perspective
      */
-    override fun input() {
+    @Subscribe
+    fun keyboardEvent(event: KeyboardEvent) {
+        fun keyPressed(key: Int): Boolean {
+            return event.key == key && (event.action == GLFW.GLFW_PRESS || event.action == GLFW.GLFW_REPEAT)
+        }
+
+        fun keyReleased(key: Int): Boolean {
+            return event.key == key && event.action == GLFW.GLFW_RELEASE
+        }
+
+        // TODO for movement it is probably better to poll the current state of these keys instead of listening for events
+        //      -> move this into update() and ask the window about the current state of these keys
         direction.x = when {
-            window.isKeyPressed(GLFW.GLFW_KEY_D) -> {
+            keyPressed(GLFW.GLFW_KEY_D) -> {
                 1.0F
             }
-            window.isKeyPressed(GLFW.GLFW_KEY_A) -> {
+            keyPressed(GLFW.GLFW_KEY_A) -> {
                 -1.0F
             }
-            else -> {
+            keyReleased(GLFW.GLFW_KEY_A) || keyReleased(GLFW.GLFW_KEY_D) -> {
                 0.0F
+            }
+            else -> {
+                direction.x
             }
         }
         direction.y = when {
-            window.isKeyPressed(GLFW.GLFW_KEY_Q) -> {
+            keyPressed(GLFW.GLFW_KEY_Q) -> {
                 1.0F
             }
-            window.isKeyPressed(GLFW.GLFW_KEY_E) -> {
+            keyPressed(GLFW.GLFW_KEY_E) -> {
                 -1.0F
             }
-            else -> {
+            keyReleased(GLFW.GLFW_KEY_Q) || keyReleased(GLFW.GLFW_KEY_E) -> {
                 0.0F
+            }
+            else -> {
+                direction.y
             }
         }
         direction.z = when {
-            window.isKeyPressed(GLFW.GLFW_KEY_S) -> {
+            keyPressed(GLFW.GLFW_KEY_S) -> {
                 1.0F
             }
-            window.isKeyPressed(GLFW.GLFW_KEY_W) -> {
+            keyPressed(GLFW.GLFW_KEY_W) -> {
                 -1.0F
             }
-            else -> {
+            keyReleased(GLFW.GLFW_KEY_S) || keyReleased(GLFW.GLFW_KEY_W) -> {
                 0.0F
+            }
+            else -> {
+                direction.z
             }
         }
 
-        mousePosition = Vector2f(window.mousePosition)
-        window.mousePosition = Vector2f(0.0F)
+        if (keyReleased(GLFW.GLFW_KEY_ESCAPE)) {
+            window.close()
+        }
+        if (keyReleased(GLFW.GLFW_KEY_F)) {
+            roomWireframe = !roomWireframe
+        }
+        if (keyReleased(GLFW.GLFW_KEY_SPACE)) {
+            switchToNextCamera(window)
+        }
+    }
 
-        // TODO use EntityManager
-//        EventBus.getInstance().fire(InputEvent())
+    @Subscribe
+    fun mouseEvent(event: MouseMoveEvent) {
+        mousePosition = Vector2f(event.x, event.y)
+        window.setMousePosition(0.0, 0.0)
     }
 
     override fun update(interval: Float) {
         currentCamera().update(direction, mousePosition)
+        mousePosition = Vector2f(0.0F)
 
         val cameraDirection = camera.direction()
         val startOffset = Vector3f(cameraDirection)
@@ -181,8 +194,7 @@ class YapGame private constructor() : IGameLogic {
 
         cameraRayResult = intersects(cameraRayStart, cameraDirection, roomMeshes, roomTransformation)
 
-        // TODO use EntityManager
-//        EventBus.getInstance().fire(UpdateEvent(interval))
+        entityManager.update(interval)
     }
 
     override fun render() {
@@ -200,8 +212,7 @@ class YapGame private constructor() : IGameLogic {
         renderTextInScene(text)
 //        renderTextOnScreen(text)
 
-        // TODO use EntityManager
-//        EventBus.getInstance().fire(RenderEvent())
+        entityManager.render()
     }
 
     private fun renderTextOnScreen(text: Text?) {

@@ -5,7 +5,7 @@ import kotlin.test.assertEquals
 
 class TestComponent : Component()
 
-class TestSystem : System(TestComponent::class.java) {
+class TestSystem : ISystem(TestComponent::class.java) {
     var initCounter = 0
     var updateCounter = 0
     var updateEntityCount = 0
@@ -16,7 +16,7 @@ class TestSystem : System(TestComponent::class.java) {
         initCounter++
     }
 
-    override fun update(entities: List<Entity>) {
+    override fun update(interval: Float, entities: List<Entity>) {
         updateCounter++
         updateEntityCount += entities.size
     }
@@ -33,10 +33,10 @@ class EntityManagerTest {
     fun testNoEntities() {
         val manager = EntityManager()
         val testSystem = TestSystem()
-        manager.register(testSystem)
+        manager.registerSystem(testSystem)
 
         manager.init()
-        manager.update()
+        manager.update(0.0F)
         manager.render()
 
         assertEquals(1, testSystem.initCounter)
@@ -52,7 +52,7 @@ class EntityManagerTest {
 
         // register system
         val testSystem = TestSystem()
-        manager.register(testSystem)
+        manager.registerSystem(testSystem)
 
         // add entity
         val entity = Entity()
@@ -61,7 +61,7 @@ class EntityManagerTest {
 
         // run one cycle
         manager.init()
-        manager.update()
+        manager.update(0.0F)
         manager.render()
 
         assertEquals(1, testSystem.initCounter)
@@ -82,11 +82,11 @@ class EntityManagerTest {
 
         // register system
         val testSystem = TestSystem()
-        manager.register(testSystem)
+        manager.registerSystem(testSystem)
 
         // run one cycle
         manager.init()
-        manager.update()
+        manager.update(0.0F)
         manager.render()
 
         assertEquals(1, testSystem.initCounter)

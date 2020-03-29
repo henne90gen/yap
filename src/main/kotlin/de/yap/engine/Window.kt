@@ -1,8 +1,12 @@
 package de.yap.engine
 
+import de.yap.engine.ecs.KeyboardEvent
+import de.yap.engine.ecs.MouseClickEvent
+import de.yap.engine.ecs.MouseMoveEvent
+import de.yap.engine.ecs.WindowResizeEvent
+import de.yap.game.YapGame
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-import org.joml.Vector2f
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.opengl.GL
@@ -23,27 +27,20 @@ class Window(private val title: String, var width: Int, var height: Int, private
     private var ups = 0.0F
     private var fps = 0.0F
 
-    var mousePosition = Vector2f(0.0F)
-        set(value) {
-//            log.info("Setting MousePosition: {}", value)
-            var xPos = value.x       // (-aspectRatio, aspectRatio) (left, right)
-            xPos *= aspectRatio()      // (-1, 1)
-            xPos += 1.0F             // (0, 2)
-            xPos *= 0.5F             // (0, 1)
-            xPos *= width.toFloat()  // (0, width)
-            var yPos = value.y       // (-1, 1) (bottom, top)
-            yPos += 1.0F             // (0, 2)
-            yPos *= 0.5F             // (0, 1)
-            yPos *= -1.0F            // (0, -1)
-            yPos += 1.0F             // (1, 0)
-            yPos *= height.toFloat() // (height, 0)
-            glfwSetCursorPos(windowHandle, xPos.toDouble(), yPos.toDouble())
-            field = value
-        }
-        get() {
-//            log.info("Getting MousePosition: {}", field)
-            return field
-        }
+    fun setMousePosition(x: Double, y: Double) {
+        var xPos = x             // (-aspectRatio, aspectRatio) (left, right)
+        xPos *= aspectRatio()    // (-1, 1)
+        xPos += 1.0F             // (0, 2)
+        xPos *= 0.5F             // (0, 1)
+        xPos *= width.toFloat()  // (0, width)
+        var yPos = y             // (-1, 1) (bottom, top)
+        yPos += 1.0F             // (0, 2)
+        yPos *= 0.5F             // (0, 1)
+        yPos *= -1.0F            // (0, -1)
+        yPos += 1.0F             // (1, 0)
+        yPos *= height.toFloat() // (height, 0)
+        glfwSetCursorPos(windowHandle, xPos.toDouble(), yPos.toDouble())
+    }
 
     fun init() {
         // Setup an error callback. The default implementation
@@ -71,22 +68,22 @@ class Window(private val title: String, var width: Int, var height: Int, private
         glfwSetFramebufferSizeCallback(windowHandle) { _: Long, width: Int, height: Int ->
             this.width = width
             this.height = height
-            // TODO use EntityManager
-//            EventBus.getInstance().fire(WindowResizeEvent(width, height))
+            YapGame.getInstance().entityManager.fireEvent(WindowResizeEvent(width, height))
         }
 
         // Setup a key callback
-        glfwSetKeyCallback(windowHandle) { window: Long, key: Int, _: Int, action: Int, _: Int ->
-            if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-                glfwSetWindowShouldClose(window, true) // We will detect this in the rendering loop
-            }
+        glfwSetKeyCallback(windowHandle) { window: Long, key: Int, scancode: Int, action: Int, mods: Int ->
+            YapGame.getInstance().entityManager.fireEvent(KeyboardEvent(key, scancode, action, mods))
         }
 
         // Setup the mouse
-        mousePosition = Vector2f(0.0F)
         glfwSetInputMode(windowHandle, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
         glfwSetCursorPosCallback(windowHandle) { _: Long, xpos: Double, ypos: Double ->
-            updateMousePosition(xpos.toFloat(), ypos.toFloat())
+            fireMouseMoveEvent(xpos.toFloat(), ypos.toFloat())
+        }
+
+        glfwSetMouseButtonCallback(windowHandle) { _: Long, button: Int, action: Int, mods: Int ->
+            YapGame.getInstance().entityManager.fireEvent(MouseClickEvent(button, action, mods))
         }
 
         // Get the resolution of the primary monitor
@@ -128,21 +125,25 @@ class Window(private val title: String, var width: Int, var height: Int, private
      *         +----------------------+
      * (-aspectRatio,-1)         (aspectRatio,-1)
      */
-    private fun updateMousePosition(xPos: Float, yPos: Float) {
-        mousePosition.x = xPos * (1.0F / width)
-        mousePosition.y = yPos * (1.0F / height)
+    private fun fireMouseMoveEvent(xPos: Float, yPos: Float) {
+        var x = xPos * (1.0 / width)
+        var y = yPos * (1.0 / height)
 
         // flip y axis (currently increases from top to bottom)
-        mousePosition.y -= 1.0F
-        mousePosition.y *= -1.0F
+        y -= 1.0F
+        y *= -1.0F
 
         // adjust coordinate system to go from -1 to 1 in x and y
-        mousePosition
-                .mul(2.0F)
-                .sub(Vector2f(1.0F))
+        x *= 2.0
+        y *= 2.0
+        x -= 1.0
+        y -= 1.0
 
         // scale x to match the aspect ratio of the window
-        mousePosition.x *= aspectRatio()
+        x *= aspectRatio()
+
+        // fire event
+        YapGame.getInstance().entityManager.fireEvent(MouseMoveEvent(x.toFloat(), y.toFloat()))
     }
 
     fun setClearColor(r: Float, g: Float, b: Float, alpha: Float) {
@@ -151,18 +152,6 @@ class Window(private val title: String, var width: Int, var height: Int, private
 
     fun isKeyPressed(keyCode: Int): Boolean {
         return glfwGetKey(windowHandle, keyCode) == GLFW_PRESS
-    }
-
-    fun isMousePressed(mouseButtonCode: Int): Boolean {
-        return glfwGetMouseButton(windowHandle, mouseButtonCode) == GLFW_PRESS
-    }
-
-    fun setKeyCallback(callback: (Long, Int, Int, Int, Int) -> Unit) {
-        glfwSetKeyCallback(windowHandle, callback)
-    }
-
-    fun setMouseCallback(callback: (Long, Int, Int, Int) -> Unit) {
-        glfwSetMouseButtonCallback(windowHandle, callback)
     }
 
     fun windowShouldClose(): Boolean {
@@ -184,7 +173,7 @@ class Window(private val title: String, var width: Int, var height: Int, private
         }
     }
 
-    fun update() {
+    fun render() {
         glfwSwapBuffers(windowHandle)
         glfwPollEvents()
     }
@@ -207,5 +196,9 @@ class Window(private val title: String, var width: Int, var height: Int, private
 
     fun aspectRatio(): Float {
         return width.toFloat() / height.toFloat()
+    }
+
+    fun close() {
+        glfwSetWindowShouldClose(windowHandle, true)
     }
 }

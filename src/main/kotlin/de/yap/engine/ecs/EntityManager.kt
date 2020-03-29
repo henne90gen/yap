@@ -33,7 +33,7 @@ class EntityManager {
 
     private val entityList: MutableList<Entity> = ArrayList()
     private val capabilityMap: MutableMap<Capability, MutableList<Entity>> = LinkedHashMap()
-    private val systems: MutableList<System> = ArrayList()
+    private val systems: MutableList<ISystem> = ArrayList()
     private val eventListeners: MutableMap<String, MutableList<EventListener>> = LinkedHashMap()
 
     fun init() {
@@ -44,19 +44,20 @@ class EntityManager {
 
     fun render() {
         for (system in systems) {
-            val entities = capabilityMap.getOrDefault(system.capability, emptyList<Entity>())
+            val entities = capabilityMap.getOrDefault(system.capability, mutableListOf())
             system.render(entities)
         }
     }
 
-    fun update() {
+    fun update(interval: Float) {
         for (system in systems) {
-            val entities = capabilityMap.getOrDefault(system.capability, emptyList<Entity>())
-            system.update(entities)
+            val entities = capabilityMap.getOrDefault(system.capability, mutableListOf())
+            system.update(interval, entities)
         }
     }
 
-    fun register(system: System) {
+    fun registerSystem(system: ISystem) {
+        registerEventListener(system)
         systems.add(system)
 
         val entitiesWithCapability = ArrayList<Entity>()

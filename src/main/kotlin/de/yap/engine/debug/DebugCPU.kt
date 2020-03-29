@@ -42,9 +42,6 @@ class DebugCPU {
         processLoadText = Text("", fontRenderer.font, processLoadTransform)
     }
 
-    fun input() {
-    }
-
     fun update(interval: Float) {
         updateCounter++
         if (updateCounter % 4 != 0) {
