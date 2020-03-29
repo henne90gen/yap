@@ -1,7 +1,9 @@
 package de.yap.engine.ecs
 
+import org.joml.Vector3f
 
-class Entity {
+
+open class Entity {
     // String == Component.class.name
     val components: MutableMap<String, Component> = LinkedHashMap()
 
@@ -21,5 +23,14 @@ class Entity {
             }
         }
         return true
+    }
+}
+
+class PlayerEntity(position: Vector3f = Vector3f(0.0F), hasInput: Boolean) : Entity() {
+    init {
+        addComponent(PositionComponent(position))
+        addComponent(RotationComponent())
+        addComponent(MeshComponent())
+        addComponent(CameraComponent(active = hasInput))
     }
 }

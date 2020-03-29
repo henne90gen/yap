@@ -1,6 +1,5 @@
 package de.yap.engine.graphics
 
-import de.yap.engine.Camera
 import de.yap.engine.Font
 import de.yap.engine.mesh.Mesh
 import de.yap.engine.mesh.MeshUtils
@@ -51,8 +50,9 @@ class FontRenderer {
         renderString(text.mesh, text.transform, text.color)
     }
 
-    fun stringInScene(text: Text, camera: Camera) {
-        fontShader.apply(camera)
+    fun stringInScene(text: Text, view: Matrix4f, projection: Matrix4f) {
+        fontShader.setUniform("view", view)
+        fontShader.setUniform("projection", projection)
         renderString(text.mesh, text.transform, text.color)
     }
 

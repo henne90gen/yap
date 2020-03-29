@@ -1,11 +1,10 @@
 package de.yap.game
 
-import de.yap.engine.Camera
-import de.yap.engine.IGameLogic
-import de.yap.engine.Window
+import de.yap.engine.*
 import de.yap.engine.debug.DebugFontTexture
 import de.yap.engine.debug.DebugInterface
 import de.yap.engine.ecs.*
+import de.yap.engine.ecs.systems.CameraSystem
 import de.yap.engine.graphics.FontRenderer
 import de.yap.engine.graphics.Renderer
 import de.yap.engine.graphics.Text
@@ -13,7 +12,6 @@ import de.yap.engine.mesh.Mesh
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
-import org.joml.Vector2f
 import org.joml.Vector3f
 import org.joml.Vector4f
 import org.lwjgl.glfw.GLFW
@@ -36,20 +34,16 @@ class YapGame private constructor() : IGameLogic {
 
     val entityManager = EntityManager()
 
-    private val direction = Vector3f(0.0f, 0.0f, 0.0f)
     val renderer = Renderer()
     val fontRenderer = FontRenderer()
 
-    private val camera = Camera(Vector3f(0.5F, 0.0F, 3.0F))
-    private val secondCamera = Camera()
-    private var selectedCamera = 0
+    var view: Matrix4f = Matrix4f()
+    var projection: Matrix4f = Matrix4f()
 
     private var cameraRayStart = Vector3f()
     private var cameraRayResult = IntersectionResult()
 
     private var roomWireframe = false
-
-    private var mousePosition = Vector2f()
 
     private var roomMeshes: List<Mesh> = emptyList()
     private val scale = 2.0F
@@ -69,14 +63,25 @@ class YapGame private constructor() : IGameLogic {
 
         text = createText()
 
-        entityManager.registerEventListener(this)
-        entityManager.registerSystem(DebugFontTexture())
-        entityManager.registerSystem(DebugInterface())
+        initSystems()
 
-        entityManager.init()
+        initEntities()
 
-        // we need to fire this ourselves, because we are not registered to the event bus at the time when window would actually fire this
+        // we need to fire this ourselves, because we are not registered to listen to events at the time when window actually fires this
         entityManager.fireEvent(WindowResizeEvent(window.width, window.height))
+    }
+
+    private fun initSystems() {
+        entityManager.registerEventListener(this)
+        entityManager.registerSystem(CameraSystem())
+        entityManager.registerSystem(DebugInterface())
+        entityManager.registerSystem(DebugFontTexture())
+        entityManager.init()
+    }
+
+    private fun initEntities() {
+        entityManager.addEntity(PlayerEntity(Vector3f(0.5F, 0.0F, 3.0F), true))
+        entityManager.addEntity(PlayerEntity(hasInput = false))
     }
 
     private fun createText(): Text {
@@ -88,79 +93,9 @@ class YapGame private constructor() : IGameLogic {
     }
 
     @Subscribe
-    fun mouseCallback(event: MouseClickEvent) {
-        // TODO refactor this into a system
-        if (event.button == GLFW.GLFW_MOUSE_BUTTON_LEFT && event.action == GLFW.GLFW_RELEASE && cameraRayResult.hasValue()) {
-            val point = cameraRayResult.point
-            point.add(
-                    Vector3f(cameraRayResult.normal)
-                            .normalize()
-                            .mul(0.5F)
-            )
-            camera.teleport(point, cameraRayResult.normal)
-        }
-    }
-
-    /**
-     * Controls:
-     *  - W,A,S,D - move in the x-z-plane
-     *  - Q,E - move along the y-axis
-     *  - Left Mouse Click - teleport to point of intersection
-     *  - SPACE - change camera perspective
-     */
-    @Subscribe
     fun keyboardEvent(event: KeyboardEvent) {
-        fun keyPressed(key: Int): Boolean {
-            return event.key == key && (event.action == GLFW.GLFW_PRESS || event.action == GLFW.GLFW_REPEAT)
-        }
-
         fun keyReleased(key: Int): Boolean {
             return event.key == key && event.action == GLFW.GLFW_RELEASE
-        }
-
-        // TODO for movement it is probably better to poll the current state of these keys instead of listening for events
-        //      -> move this into update() and ask the window about the current state of these keys
-        direction.x = when {
-            keyPressed(GLFW.GLFW_KEY_D) -> {
-                1.0F
-            }
-            keyPressed(GLFW.GLFW_KEY_A) -> {
-                -1.0F
-            }
-            keyReleased(GLFW.GLFW_KEY_A) || keyReleased(GLFW.GLFW_KEY_D) -> {
-                0.0F
-            }
-            else -> {
-                direction.x
-            }
-        }
-        direction.y = when {
-            keyPressed(GLFW.GLFW_KEY_Q) -> {
-                1.0F
-            }
-            keyPressed(GLFW.GLFW_KEY_E) -> {
-                -1.0F
-            }
-            keyReleased(GLFW.GLFW_KEY_Q) || keyReleased(GLFW.GLFW_KEY_E) -> {
-                0.0F
-            }
-            else -> {
-                direction.y
-            }
-        }
-        direction.z = when {
-            keyPressed(GLFW.GLFW_KEY_S) -> {
-                1.0F
-            }
-            keyPressed(GLFW.GLFW_KEY_W) -> {
-                -1.0F
-            }
-            keyReleased(GLFW.GLFW_KEY_S) || keyReleased(GLFW.GLFW_KEY_W) -> {
-                0.0F
-            }
-            else -> {
-                direction.z
-            }
         }
 
         if (keyReleased(GLFW.GLFW_KEY_ESCAPE)) {
@@ -169,46 +104,23 @@ class YapGame private constructor() : IGameLogic {
         if (keyReleased(GLFW.GLFW_KEY_F)) {
             roomWireframe = !roomWireframe
         }
-        if (keyReleased(GLFW.GLFW_KEY_SPACE)) {
-            switchToNextCamera(window)
-        }
-    }
-
-    @Subscribe
-    fun mouseEvent(event: MouseMoveEvent) {
-        mousePosition = Vector2f(event.x, event.y)
-        window.setMousePosition(0.0, 0.0)
     }
 
     override fun update(interval: Float) {
-        currentCamera().update(direction, mousePosition)
-        mousePosition = Vector2f(0.0F)
-
-        val cameraDirection = camera.direction()
-        val startOffset = Vector3f(cameraDirection)
-                .add(0.0F, -0.1F, 0.0F) // move the start down a little
-                .normalize()
-                .mul(0.01F)
-        cameraRayStart = Vector3f(camera.position)
-                .add(startOffset)
-
-        cameraRayResult = intersects(cameraRayStart, cameraDirection, roomMeshes, roomTransformation)
-
         entityManager.update(interval)
     }
 
     override fun render() {
         renderer.clear()
 
-        renderer.shader3D.apply(currentCamera())
+        renderer.shader3D.setUniform("view", view)
+        renderer.shader3D.setUniform("projection", projection)
         renderer.shader3D.setUniform("color", Vector4f(1.0F))
         renderer.shader3D.setUniform("lightPos", Vector3f(2.0f, 0.0f, 4.0f))
         renderer.shader3D.setUniform("lightColor", Vector3f(0.5f, 0.3f, 0.2f))
 
-        renderRayFromCamera()
         renderCoordinateSystemAxis()
         renderRoom()
-        renderCameras()
         renderTextInScene(text)
 //        renderTextOnScreen(text)
 
@@ -222,10 +134,15 @@ class YapGame private constructor() : IGameLogic {
     }
 
     @Subscribe
-    fun handleWindowResize(event: WindowResizeEvent) {
+    fun onWindowResize(event: WindowResizeEvent) {
         glViewport(0, 0, window.width, window.height)
-        currentCamera().aspectRatioChanged(window.aspectRatio())
         fontRenderer.aspectRatio = window.aspectRatio()
+        projection = Matrix4f()
+                .perspective(
+                        Math.toRadians(FIELD_OF_VIEW).toFloat(),
+                        window.aspectRatio(),
+                        Z_NEAR, Z_FAR
+                )
     }
 
     private fun renderTextInScene(text: Text?) {
@@ -233,16 +150,7 @@ class YapGame private constructor() : IGameLogic {
             return
         }
 
-        fontRenderer.stringInScene(text, currentCamera())
-    }
-
-    private fun renderCameras() {
-        // TODO show "up" axis of camera
-        if (selectedCamera == 0) {
-            renderer.cube(Matrix4f().translate(secondCamera.position).scale(0.4F), Vector4f(1.0F, 1.0F, 0.0F, 1.0F))
-        } else {
-            renderer.cube(Matrix4f().translate(camera.position).scale(0.4F), Vector4f(1.0F, 0.0F, 1.0F, 1.0F))
-        }
+        fontRenderer.stringInScene(text, view, projection)
     }
 
     private fun renderRoom() {
@@ -264,30 +172,5 @@ class YapGame private constructor() : IGameLogic {
         renderer.line(Vector3f(0.0F, 0.0F, 0.0F), Vector3f(1.0F, 0.0F, 0.0F), Vector4f(1.0F, 0.0F, 0.0F, 1.0F))
         renderer.line(Vector3f(0.0F, 0.0F, 0.0F), Vector3f(0.0F, 1.0F, 0.0F), Vector4f(0.0F, 1.0F, 0.0F, 1.0F))
         renderer.line(Vector3f(0.0F, 0.0F, 0.0F), Vector3f(0.0F, 0.0F, 1.0F), Vector4f(0.0F, 0.0F, 1.0F, 1.0F))
-    }
-
-    private fun renderRayFromCamera() {
-        val color = Vector4f(1.0F, 0.0F, 0.0F, 1.0F)
-        if (cameraRayResult.hasValue()) {
-            renderer.line(cameraRayStart, cameraRayResult.point, color)
-            renderer.cube(Matrix4f().translate(cameraRayResult.point).scale(0.1F), color)
-        } else {
-            renderer.line(cameraRayStart, camera.direction().mul(1000.0F), color)
-        }
-    }
-
-    private fun currentCamera(): Camera {
-        return if (selectedCamera == 0) {
-            camera
-        } else {
-            secondCamera
-        }
-    }
-
-    private fun switchToNextCamera(window: Window) {
-        selectedCamera++
-        selectedCamera %= 2
-        val aspectRatio = window.width.toFloat() / window.height.toFloat()
-        currentCamera().aspectRatioChanged(aspectRatio)
     }
 }

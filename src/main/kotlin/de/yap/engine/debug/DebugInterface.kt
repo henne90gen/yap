@@ -4,6 +4,7 @@ import de.yap.engine.ecs.Entity
 import de.yap.engine.ecs.ISystem
 import de.yap.engine.ecs.KeyboardEvent
 import de.yap.engine.ecs.Subscribe
+import de.yap.engine.graphics.Matrix4fUniform
 import de.yap.game.YapGame
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -40,12 +41,25 @@ class DebugInterface : ISystem() {
         if (!enabled) {
             return
         }
-        val shader = YapGame.getInstance().renderer.shader3D
-        shader.setUniform("projection", Matrix4f())
-        shader.setUniform("view", Matrix4f().scale(1.0F / YapGame.getInstance().window.aspectRatio(), 1.0F, 1.0F))
 
-        memory.render()
-        cpu.render()
+        inScreenSpace {
+            memory.render()
+            cpu.render()
+        }
+    }
+
+    private fun inScreenSpace(func: () -> Unit) {
+        val shader = YapGame.getInstance().renderer.shader3D
+        val aspectRatio = YapGame.getInstance().window.aspectRatio()
+        val projection = shader.getUniform<Matrix4fUniform>("projection")!!.value
+        val view = shader.getUniform<Matrix4fUniform>("view")!!.value
+        shader.setUniform("projection", Matrix4f())
+        shader.setUniform("view", Matrix4f().scale(1.0F / aspectRatio, 1.0F, 1.0F))
+
+        func()
+
+        shader.setUniform("projection", projection)
+        shader.setUniform("view", view)
     }
 
     @Subscribe

@@ -4,7 +4,6 @@ import de.yap.engine.mesh.Material
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.lwjgl.opengl.GL11
-import org.lwjgl.opengl.GL13
 import org.lwjgl.stb.STBTTAlignedQuad
 import org.lwjgl.stb.STBTTBakedChar
 import org.lwjgl.stb.STBTTFontinfo
@@ -61,9 +60,6 @@ class Font(
 
                 val firstChar = 32
                 STBTruetype.stbtt_BakeFontBitmap(ttf, fontHeight, bitmap, bitmapWidth, bitmapHeight, firstChar, cdata)
-
-                GL13.glEnable(GL13.GL_BLEND)
-                GL13.glBlendFunc(GL13.GL_SRC_ALPHA, GL13.GL_ONE_MINUS_SRC_ALPHA)
 
                 val scaleForPixelHeight = STBTruetype.stbtt_ScaleForPixelHeight(info, fontHeight)
 

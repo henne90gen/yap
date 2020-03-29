@@ -134,6 +134,10 @@ class EntityManager {
         log.debug("Added $entity")
     }
 
+    fun getEntities(capability: Capability): List<Entity> {
+        return capabilityMap[capability] ?: emptyList()
+    }
+
     fun fireEvent(event: Event) {
         log.trace("Fired $event")
 

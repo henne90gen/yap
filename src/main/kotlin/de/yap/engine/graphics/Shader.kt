@@ -1,6 +1,5 @@
 package de.yap.engine.graphics
 
-import de.yap.engine.Camera
 import de.yap.engine.IOUtils
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -11,6 +10,14 @@ import org.lwjgl.opengl.GL20.*
 import org.lwjgl.system.MemoryUtil
 import java.nio.FloatBuffer
 
+abstract class Uniform
+
+data class Matrix4fUniform(val value: Matrix4f) : Uniform()
+data class Vector3fUniform(val value: Vector3f) : Uniform()
+data class Vector4fUniform(val value: Vector4f) : Uniform()
+data class IntUniform(val value: Int) : Uniform()
+
+
 class Shader(private val vertexShaderPath: String, private val fragmentShaderPath: String) {
 
     companion object {
@@ -18,6 +25,8 @@ class Shader(private val vertexShaderPath: String, private val fragmentShaderPat
     }
 
     private var programId: Int = 0
+
+    private val currentUniforms = LinkedHashMap<String, Uniform>()
 
     fun compile() {
         programId = glCreateProgram()
@@ -34,11 +43,6 @@ class Shader(private val vertexShaderPath: String, private val fragmentShaderPat
         glUseProgram(0)
     }
 
-    fun apply(camera: Camera) {
-        setUniform("view", camera.viewMatrix)
-        setUniform("projection", camera.projectionMatrix)
-    }
-
     fun setUniform(name: String, value: Int) {
         bind()
 
@@ -47,6 +51,8 @@ class Shader(private val vertexShaderPath: String, private val fragmentShaderPat
             log.warn("Could not find uniform '{}'", name)
             return
         }
+
+        currentUniforms[name] = IntUniform(value)
 
         glUniform1i(loc, value)
     }
@@ -60,6 +66,8 @@ class Shader(private val vertexShaderPath: String, private val fragmentShaderPat
             return
         }
 
+        currentUniforms[name] = Vector4fUniform(value)
+
         glUniform4f(loc, value.x, value.y, value.z, value.w)
     }
 
@@ -72,6 +80,8 @@ class Shader(private val vertexShaderPath: String, private val fragmentShaderPat
             return
         }
 
+        currentUniforms[name] = Vector3fUniform(value)
+
         glUniform3f(loc, value.x, value.y, value.z)
     }
 
@@ -83,6 +93,8 @@ class Shader(private val vertexShaderPath: String, private val fragmentShaderPat
             log.warn("Could not find uniform '{}'", name)
             return
         }
+
+        currentUniforms[name] = Matrix4fUniform(value)
 
         var buffer: FloatBuffer? = null
         try {
@@ -133,5 +145,9 @@ class Shader(private val vertexShaderPath: String, private val fragmentShaderPat
 
         glDeleteShader(vertexShader)
         glDeleteShader(fragmentShader)
+    }
+
+    fun <T> getUniform(name: String): T? {
+        return currentUniforms[name] as T
     }
 }

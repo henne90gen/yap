@@ -7,12 +7,14 @@ import de.yap.engine.ecs.WindowResizeEvent
 import de.yap.game.YapGame
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import org.joml.Vector2f
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GLUtil
 import org.lwjgl.system.Callback
+import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
 
 
@@ -79,7 +81,8 @@ class Window(private val title: String, var width: Int, var height: Int, private
         // Setup the mouse
         glfwSetInputMode(windowHandle, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
         glfwSetCursorPosCallback(windowHandle) { _: Long, xpos: Double, ypos: Double ->
-            fireMouseMoveEvent(xpos.toFloat(), ypos.toFloat())
+            val pair = mapPositionFromPixelSpaceToScreenSpace(xpos, ypos)
+            YapGame.getInstance().entityManager.fireEvent(MouseMoveEvent(pair.first.toFloat(), pair.second.toFloat()))
         }
 
         glfwSetMouseButtonCallback(windowHandle) { _: Long, button: Int, action: Int, mods: Int ->
@@ -125,7 +128,7 @@ class Window(private val title: String, var width: Int, var height: Int, private
      *         +----------------------+
      * (-aspectRatio,-1)         (aspectRatio,-1)
      */
-    private fun fireMouseMoveEvent(xPos: Float, yPos: Float) {
+    private fun mapPositionFromPixelSpaceToScreenSpace(xPos: Double, yPos: Double): Pair<Double, Double> {
         var x = xPos * (1.0 / width)
         var y = yPos * (1.0 / height)
 
@@ -142,16 +145,15 @@ class Window(private val title: String, var width: Int, var height: Int, private
         // scale x to match the aspect ratio of the window
         x *= aspectRatio()
 
-        // fire event
-        YapGame.getInstance().entityManager.fireEvent(MouseMoveEvent(x.toFloat(), y.toFloat()))
+        return Pair(x, y)
     }
 
     fun setClearColor(r: Float, g: Float, b: Float, alpha: Float) {
         GL11.glClearColor(r, g, b, alpha)
     }
 
-    fun isKeyPressed(keyCode: Int): Boolean {
-        return glfwGetKey(windowHandle, keyCode) == GLFW_PRESS
+    fun getKeyState(keyCode: Int): Int {
+        return glfwGetKey(windowHandle, keyCode)
     }
 
     fun windowShouldClose(): Boolean {
@@ -200,5 +202,16 @@ class Window(private val title: String, var width: Int, var height: Int, private
 
     fun close() {
         glfwSetWindowShouldClose(windowHandle, true)
+    }
+
+    fun getMousePosition(mousePosition: Vector2f) {
+        MemoryStack.stackPush().use {
+            val xPos = it.doubles(0.0)
+            val yPos = it.doubles(0.0)
+            glfwGetCursorPos(windowHandle, xPos, yPos)
+            val pair = mapPositionFromPixelSpaceToScreenSpace(xPos.get(), yPos.get())
+            mousePosition.x = pair.first.toFloat()
+            mousePosition.y = pair.second.toFloat()
+        }
     }
 }
