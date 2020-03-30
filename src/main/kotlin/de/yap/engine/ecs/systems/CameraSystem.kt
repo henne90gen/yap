@@ -23,6 +23,8 @@ class CameraSystem : ISystem(PositionComponent::class.java, RotationComponent::c
 
     companion object {
         private val log = LogManager.getLogger()
+
+        var currentCameraEntity: Entity? = null
     }
 
     override fun render(entities: List<Entity>) {
@@ -39,8 +41,7 @@ class CameraSystem : ISystem(PositionComponent::class.java, RotationComponent::c
             val position = positionComponent.position
             val transformation = Matrix4f()
                     .translate(position).scale(0.4F)
-            val color = Vector4f(1.0F, 1.0F, 0.0F, 1.0F)
-            YapGame.getInstance().renderer.cube(transformation, color)
+            YapGame.getInstance().renderer.cube(transformation, cameraComponent.color)
 
             // show viewing direction
             val dir = direction(rotationComponent)
@@ -67,6 +68,8 @@ class CameraSystem : ISystem(PositionComponent::class.java, RotationComponent::c
             if (!cameraComponent.active) {
                 continue
             }
+
+            currentCameraEntity = entity
 
             pollDirection(cameraComponent.direction)
             pollMousePosition(cameraComponent)

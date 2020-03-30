@@ -5,6 +5,7 @@ import org.joml.Vector3f
 
 val X_AXIS = Vector3f(1.0F, 0.0F, 0.0F)
 val Y_AXIS = Vector3f(0.0F, 1.0F, 0.0F)
+val Z_AXIS = Vector3f(0.0F, 0.0F, 1.0F)
 
 const val MOVEMENT_SPEED = 0.1F
 const val MOUSE_SENSITIVITY = 0.5F

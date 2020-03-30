@@ -82,8 +82,10 @@ class YapGame private constructor() : IGameLogic {
     }
 
     private fun initEntities() {
-        entityManager.addEntity(PlayerEntity(Vector3f(0.5F, 0.0F, 3.0F), true))
-        entityManager.addEntity(PlayerEntity(hasInput = false))
+        entityManager.addEntity(PlayerEntity(Vector3f(0.5F, 0.0F, 3.0F), Vector4f(1.0F, 0.0F, 0.0F, 1.0F), hasInput = true))
+        entityManager.addEntity(PlayerEntity(Vector3f(-2.9F, 0.0F, 3.9F), Vector4f(0.0F, 1.0F, 0.0F, 1.0F), hasInput = false))
+
+        //entityManager.addEntity(BlockEntity(Vector3f(1.0F, 0.0F, 0.0f)))
     }
 
     private fun createText(): Text {

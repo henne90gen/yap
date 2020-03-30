@@ -2,6 +2,7 @@ package de.yap.engine.ecs
 
 import org.joml.Vector2f
 import org.joml.Vector3f
+import org.joml.Vector4f
 
 abstract class Component
 
@@ -19,5 +20,6 @@ class MeshComponent : Component()
 class CameraComponent(
         var direction: Vector3f = Vector3f(0.0F),
         var mousePosition: Vector2f = Vector2f(0.0F),
+        val color: Vector4f = Vector4f(1.0F),
         var active: Boolean = false
 ) : Component()

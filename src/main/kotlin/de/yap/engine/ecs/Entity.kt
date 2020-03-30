@@ -1,6 +1,7 @@
 package de.yap.engine.ecs
 
 import org.joml.Vector3f
+import org.joml.Vector4f
 
 
 open class Entity {
@@ -26,11 +27,10 @@ open class Entity {
     }
 }
 
-class PlayerEntity(position: Vector3f = Vector3f(0.0F), hasInput: Boolean) : Entity() {
+class PlayerEntity(position: Vector3f = Vector3f(0.0F), color: Vector4f = Vector4f(1.0F), hasInput: Boolean) : Entity() {
     init {
         addComponent(PositionComponent(position))
         addComponent(RotationComponent())
-        addComponent(MeshComponent())
-        addComponent(CameraComponent(active = hasInput))
+        addComponent(CameraComponent(color = color, active = hasInput))
     }
 }
