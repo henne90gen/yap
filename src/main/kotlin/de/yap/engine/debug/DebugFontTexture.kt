@@ -10,7 +10,13 @@ import org.lwjgl.opengl.GL11.*
 
 class DebugFontTexture : ISystem() {
 
+    private var enabled = false
+
     override fun render(entities: List<Entity>) {
+        if (!enabled) {
+            return
+        }
+
         val yapGame = YapGame.getInstance()
         val fontRenderer = yapGame.fontRenderer
         val mesh = MeshUtils.quad2D(material = fontRenderer.font.material)
