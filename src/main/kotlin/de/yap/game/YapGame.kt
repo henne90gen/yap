@@ -5,6 +5,7 @@ import de.yap.engine.debug.DebugFontTexture
 import de.yap.engine.debug.DebugInterface
 import de.yap.engine.ecs.*
 import de.yap.engine.ecs.systems.CameraSystem
+import de.yap.engine.ecs.systems.MeshSystem
 import de.yap.engine.ecs.systems.ShowComponentInfoSystem
 import de.yap.engine.graphics.FontRenderer
 import de.yap.engine.graphics.Renderer
@@ -75,6 +76,7 @@ class YapGame private constructor() : IGameLogic {
     private fun initSystems() {
         entityManager.registerEventListener(this)
         entityManager.registerSystem(CameraSystem())
+        entityManager.registerSystem(MeshSystem())
         entityManager.registerSystem(ShowComponentInfoSystem())
         entityManager.registerSystem(DebugInterface())
         entityManager.registerSystem(DebugFontTexture())
@@ -85,7 +87,11 @@ class YapGame private constructor() : IGameLogic {
         entityManager.addEntity(PlayerEntity(Vector3f(0.5F, 0.0F, 3.0F), Vector4f(1.0F, 0.0F, 0.0F, 1.0F), hasInput = true))
         entityManager.addEntity(PlayerEntity(Vector3f(-2.9F, 0.0F, 3.9F), Vector4f(0.0F, 1.0F, 0.0F, 1.0F), hasInput = false))
 
-        //entityManager.addEntity(BlockEntity(Vector3f(1.0F, 0.0F, 0.0f)))
+        for (x in 0..10) {
+            for (y in 0..10) {
+                entityManager.addEntity(BlockEntity(Vector3f(x.toFloat(), 0.0F, y.toFloat())))
+            }
+        }
     }
 
     private fun createText(): Text {

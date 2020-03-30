@@ -1,5 +1,6 @@
 package de.yap.engine.ecs
 
+import de.yap.engine.mesh.Mesh
 import org.joml.Vector2f
 import org.joml.Vector3f
 import org.joml.Vector4f
@@ -15,7 +16,10 @@ class RotationComponent(
         var yaw: Float = 0.0F
 ) : Component()
 
-class MeshComponent : Component()
+class MeshComponent(
+        var mesh: Mesh,
+        val color: Vector4f = Vector4f(1.0F)
+) : Component()
 
 class CameraComponent(
         var direction: Vector3f = Vector3f(0.0F),

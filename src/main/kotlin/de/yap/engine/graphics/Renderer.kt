@@ -23,7 +23,7 @@ class Renderer {
     }
 
     private lateinit var quadMesh: Mesh
-    private lateinit var cubeMesh: Mesh
+    lateinit var cubeMesh: Mesh
 
     val shader3D = Shader("shaders/vertex.glsl", "shaders/fragment.glsl")
 

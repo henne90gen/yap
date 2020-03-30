@@ -35,14 +35,20 @@ class ShowComponentInfoSystem : ISystem(PositionComponent::class.java) {
                     }
                 }
 
-                field.get(component).toString()
+                val result = field.get(component).toString()
+                if (result.length > 20) {
+                    result.substring(0, 20)
+                } else {
+                    result
+                }
             } catch (e: IllegalAccessException) {
                 null
             }
         }
     }
 
-    private var enabled = true
+    // TODO enable again, when all TODOs in the renderComponentInfo are done
+    private var enabled = false
 
     override fun render(entities: List<Entity>) {
         if (!enabled) {
@@ -53,9 +59,8 @@ class ShowComponentInfoSystem : ISystem(PositionComponent::class.java) {
     }
 
     private fun renderComponentInfo(entity: Entity) {
-        // TODO maybe only render this info on mouse hover
-        // TODO maybe add setting that lets you switch between mouse hover showing and always showing
-        // TODO maybe render this information as part of the HUD instead of in the world
+        // TODO only render this info on mouse hover
+        // TODO render this information as part of the HUD instead of in the world
 
         if (entity == CameraSystem.currentCameraEntity) {
             return
