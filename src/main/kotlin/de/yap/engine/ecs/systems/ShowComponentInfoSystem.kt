@@ -36,8 +36,9 @@ class ShowComponentInfoSystem : ISystem(PositionComponent::class.java) {
                 }
 
                 val result = field.get(component).toString()
-                if (result.length > 20) {
-                    result.substring(0, 20)
+                val maxNumberOfCharacters = 40
+                if (result.length > maxNumberOfCharacters) {
+                    result.substring(0, maxNumberOfCharacters)
                 } else {
                     result
                 }
