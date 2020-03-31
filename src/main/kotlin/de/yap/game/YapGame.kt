@@ -1,12 +1,13 @@
 package de.yap.game
 
-import de.yap.engine.*
+import de.yap.engine.IGameLogic
 import de.yap.engine.debug.DebugFontTexture
 import de.yap.engine.debug.DebugInterface
 import de.yap.engine.ecs.EntityManager
 import de.yap.engine.ecs.KeyboardEvent
 import de.yap.engine.ecs.Subscribe
 import de.yap.engine.ecs.WindowResizeEvent
+import de.yap.engine.ecs.entities.BlockEntity
 import de.yap.engine.ecs.entities.PlayerEntity
 import de.yap.engine.ecs.systems.FirstPersonCameraSystem
 import de.yap.engine.ecs.systems.MeshSystem
@@ -14,7 +15,11 @@ import de.yap.engine.ecs.systems.ShowComponentInfoSystem
 import de.yap.engine.graphics.FontRenderer
 import de.yap.engine.graphics.Renderer
 import de.yap.engine.graphics.Text
+import de.yap.engine.graphics.Window
 import de.yap.engine.mesh.Mesh
+import de.yap.engine.util.FIELD_OF_VIEW
+import de.yap.engine.util.Z_FAR
+import de.yap.engine.util.Z_NEAR
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f

@@ -1,4 +1,4 @@
-package de.yap.engine
+package de.yap.engine.util
 
 import org.joml.Vector3f
 

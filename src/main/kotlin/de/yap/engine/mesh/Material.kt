@@ -1,6 +1,6 @@
 package de.yap.engine.mesh
 
-import de.yap.engine.Texture
+import de.yap.engine.graphics.Texture
 
 class Material(val name: String) {
 

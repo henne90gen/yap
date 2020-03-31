@@ -1,4 +1,4 @@
-package de.yap.engine
+package de.yap.engine.graphics
 
 import de.yap.engine.ecs.KeyboardEvent
 import de.yap.engine.ecs.MouseClickEvent

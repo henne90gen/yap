@@ -1,8 +1,8 @@
 package de.yap.engine.mesh
 
-import de.yap.engine.Font
-import de.yap.engine.Texture
+import de.yap.engine.graphics.Font
 import de.yap.engine.graphics.FontRenderer
+import de.yap.engine.graphics.Texture
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Vector2f

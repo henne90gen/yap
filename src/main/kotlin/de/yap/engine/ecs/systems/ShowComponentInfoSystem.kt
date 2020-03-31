@@ -1,10 +1,10 @@
 package de.yap.engine.ecs.systems
 
-import de.yap.engine.Y_AXIS
 import de.yap.engine.ecs.Component
 import de.yap.engine.ecs.PositionComponent
 import de.yap.engine.ecs.entities.Entity
 import de.yap.engine.graphics.Text
+import de.yap.engine.util.Y_AXIS
 import de.yap.game.YapGame
 import org.joml.Matrix4f
 import org.joml.Vector2f

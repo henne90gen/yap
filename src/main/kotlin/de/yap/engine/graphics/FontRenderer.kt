@@ -1,6 +1,5 @@
 package de.yap.engine.graphics
 
-import de.yap.engine.Font
 import de.yap.engine.mesh.Mesh
 import de.yap.engine.mesh.MeshUtils
 import org.joml.Matrix4f

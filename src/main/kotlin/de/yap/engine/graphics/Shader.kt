@@ -1,6 +1,6 @@
 package de.yap.engine.graphics
 
-import de.yap.engine.IOUtils
+import de.yap.engine.util.IOUtils
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f

@@ -1,6 +1,7 @@
-package de.yap.engine
+package de.yap.engine.graphics
 
 import de.yap.engine.mesh.Material
+import de.yap.engine.util.IOUtils
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.lwjgl.opengl.GL11

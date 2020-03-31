@@ -1,11 +1,11 @@
 package de.yap.engine.ecs.systems
 
-import de.yap.engine.MOUSE_SENSITIVITY
-import de.yap.engine.MOVEMENT_SPEED
-import de.yap.engine.X_AXIS
-import de.yap.engine.Y_AXIS
 import de.yap.engine.ecs.*
 import de.yap.engine.ecs.entities.Entity
+import de.yap.engine.util.MOUSE_SENSITIVITY
+import de.yap.engine.util.MOVEMENT_SPEED
+import de.yap.engine.util.X_AXIS
+import de.yap.engine.util.Y_AXIS
 import de.yap.game.YapGame
 import org.apache.logging.log4j.LogManager
 import org.joml.Matrix4f

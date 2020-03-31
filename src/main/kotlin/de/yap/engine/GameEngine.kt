@@ -1,5 +1,7 @@
 package de.yap.engine
 
+import de.yap.engine.graphics.Window
+import de.yap.engine.util.Timer
 import java.lang.System.getProperty
 
 class GameEngine(windowTitle: String?, width: Int, height: Int, vSync: Boolean, private val gameLogic: IGameLogic) : Runnable {

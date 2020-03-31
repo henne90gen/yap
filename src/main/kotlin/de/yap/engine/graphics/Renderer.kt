@@ -1,6 +1,5 @@
 package de.yap.engine.graphics
 
-import de.yap.engine.Texture
 import de.yap.engine.mesh.Material
 import de.yap.engine.mesh.Mesh
 import de.yap.engine.mesh.MeshUtils
