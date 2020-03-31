@@ -106,7 +106,7 @@ class Window(private val title: String, var width: Int, var height: Int, private
         glfwShowWindow(windowHandle)
         GL.createCapabilities()
 
-        debugCallback = GLUtil.setupDebugMessageCallback() // may return null if the debug mode is not available
+//        debugCallback = GLUtil.setupDebugMessageCallback() // may return null if the debug mode is not available
 
         setClearColor(0.0f, 0.0f, 0.0f, 0.0f)
     }
