@@ -2,6 +2,7 @@ package de.yap.game
 
 import de.yap.engine.IGameLogic
 import de.yap.engine.debug.DebugFontTexture
+import de.yap.engine.debug.DebugFrameTiming
 import de.yap.engine.debug.DebugInterface
 import de.yap.engine.ecs.EntityManager
 import de.yap.engine.ecs.KeyboardEvent
@@ -90,6 +91,7 @@ class YapGame private constructor() : IGameLogic {
         entityManager.registerSystem(MeshSystem())
         entityManager.registerSystem(ShowComponentInfoSystem())
         entityManager.registerSystem(DebugInterface())
+        entityManager.registerSystem(DebugFrameTiming())
         entityManager.registerSystem(DebugFontTexture())
         entityManager.init()
     }
