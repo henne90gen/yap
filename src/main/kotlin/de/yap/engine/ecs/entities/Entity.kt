@@ -16,6 +16,10 @@ open class Entity {
         components[component::class.java.name] = component
     }
 
+    inline fun <reified T : Component> hasComponent(): Boolean {
+        return T::class.java.name in components
+    }
+
     fun hasCapability(capability: Capability): Boolean {
         val names = components.keys
         for (component in capability.components) {
@@ -32,5 +36,6 @@ class PlayerEntity(position: Vector3f = Vector3f(0.0F), color: Vector4f = Vector
         addComponent(PositionComponent(position))
         addComponent(RotationComponent())
         addComponent(CameraComponent(color = color, active = hasInput))
+        addComponent(PhysicsComponent())
     }
 }

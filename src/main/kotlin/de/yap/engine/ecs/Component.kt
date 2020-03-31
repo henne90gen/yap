@@ -42,3 +42,13 @@ class CameraComponent(
         val color: Vector4f = Vector4f(1.0F),
         var active: Boolean = false
 ) : Component()
+
+class PhysicsComponent(
+        var velocity: Float = 0.0F,
+        var acceleration: Float = 0.0F
+) : Component()
+
+class BoundingBoxComponent(
+        var min: Vector3f,
+        var max: Vector3f
+) : Component()

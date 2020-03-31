@@ -10,6 +10,7 @@ import de.yap.engine.ecs.WindowResizeEvent
 import de.yap.engine.ecs.entities.BlockEntity
 import de.yap.engine.ecs.entities.PlayerEntity
 import de.yap.engine.ecs.systems.FirstPersonCameraSystem
+import de.yap.engine.ecs.systems.GravitySystem
 import de.yap.engine.ecs.systems.MeshSystem
 import de.yap.engine.ecs.systems.ShowComponentInfoSystem
 import de.yap.engine.graphics.FontRenderer
@@ -84,6 +85,7 @@ class YapGame private constructor() : IGameLogic {
 
     private fun initSystems() {
         entityManager.registerEventListener(this)
+        entityManager.registerSystem(GravitySystem())
         entityManager.registerSystem(FirstPersonCameraSystem())
         entityManager.registerSystem(MeshSystem())
         entityManager.registerSystem(ShowComponentInfoSystem())
@@ -100,7 +102,7 @@ class YapGame private constructor() : IGameLogic {
         val yOffset = -25
         for (x in 0..50) {
             for (y in 0..50) {
-                val position = Vector3f(x.toFloat() + xOffset, 0.0F, y.toFloat() + yOffset)
+                val position = Vector3f(x.toFloat() + xOffset, -1.0F, y.toFloat() + yOffset)
                 entityManager.addEntity(BlockEntity(position))
             }
         }

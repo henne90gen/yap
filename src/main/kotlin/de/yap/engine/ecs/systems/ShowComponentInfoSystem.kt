@@ -12,6 +12,7 @@ import org.joml.Vector3f
 import java.lang.reflect.Field
 
 class ShowComponentInfoSystem : ISystem(PositionComponent::class.java) {
+
     companion object {
         fun componentToText(component: Component): String {
             val clazz = component.javaClass
