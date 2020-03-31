@@ -16,7 +16,7 @@ import org.lwjgl.glfw.GLFW
  * Controls:
  *  - W,A,S,D - move in the x-z-plane
  *  - Q,E - move along the y-axis
- *  - SPACE - switch to next camera
+ *  - TAB - switch to next camera
  */
 class FirstPersonCameraSystem : ISystem(PositionComponent::class.java, RotationComponent::class.java, CameraComponent::class.java) {
 
@@ -160,7 +160,7 @@ class FirstPersonCameraSystem : ISystem(PositionComponent::class.java, RotationC
 
     @Subscribe
     fun onKeyboard(event: KeyboardEvent) {
-        if (event.key == GLFW.GLFW_KEY_SPACE && event.action == GLFW.GLFW_RELEASE) {
+        if (event.key == GLFW.GLFW_KEY_TAB && event.action == GLFW.GLFW_RELEASE) {
             switchActiveCamera()
         }
     }
