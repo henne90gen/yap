@@ -19,11 +19,7 @@ import org.lwjgl.glfw.GLFW
 
 class DebugInterface : ISystem() {
 
-    companion object {
-        private val log: Logger = LogManager.getLogger()
-    }
-
-    private var enabled = true
+    private var enabled = false
 
     private val memory = DebugMemory()
     private val cpu = DebugCPU()
@@ -47,7 +43,7 @@ class DebugInterface : ISystem() {
             return
         }
 
-        inScreenSpace {
+        YapGame.getInstance().renderer.inScreenSpace {
             memory.render()
             cpu.render()
         }
@@ -82,20 +78,6 @@ class DebugInterface : ISystem() {
             renderer.line(origin, yEnd, Vector4f(0.0F, 1.0F, 0.0F, 1.0F))
             renderer.line(origin, zEnd, Vector4f(0.0F, 0.0F, 1.0F, 1.0F))
         }
-    }
-
-    private fun inScreenSpace(func: () -> Unit) {
-        val shader = YapGame.getInstance().renderer.shader3D
-        val aspectRatio = YapGame.getInstance().window.aspectRatio()
-        val projection = shader.getUniform<Matrix4fUniform>("projection")!!.value
-        val view = shader.getUniform<Matrix4fUniform>("view")!!.value
-        shader.setUniform("projection", Matrix4f())
-        shader.setUniform("view", Matrix4f().scale(1.0F / aspectRatio, 1.0F, 1.0F))
-
-        func()
-
-        shader.setUniform("projection", projection)
-        shader.setUniform("view", view)
     }
 
     @Subscribe

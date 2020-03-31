@@ -3,6 +3,7 @@ package de.yap.engine.graphics
 import de.yap.engine.mesh.Material
 import de.yap.engine.mesh.Mesh
 import de.yap.engine.mesh.MeshUtils
+import de.yap.game.YapGame
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
@@ -148,5 +149,18 @@ class Renderer {
         glDisable(GL_DEPTH_TEST)
         function()
         glEnable(GL_DEPTH_TEST)
+    }
+
+    fun inScreenSpace(func: () -> Unit) {
+        val aspectRatio = YapGame.getInstance().window.aspectRatio()
+        val projection = shader3D.getUniform<Matrix4fUniform>("projection")!!.value
+        val view = shader3D.getUniform<Matrix4fUniform>("view")!!.value
+        shader3D.setUniform("projection", Matrix4f())
+        shader3D.setUniform("view", Matrix4f().scale(1.0F / aspectRatio, 1.0F, 1.0F))
+
+        func()
+
+        shader3D.setUniform("projection", projection)
+        shader3D.setUniform("view", view)
     }
 }
