@@ -4,8 +4,6 @@ import de.yap.engine.ecs.*
 import de.yap.engine.ecs.entities.Entity
 import de.yap.engine.util.MOUSE_SENSITIVITY
 import de.yap.engine.util.MOVEMENT_SPEED
-import de.yap.engine.util.X_AXIS
-import de.yap.engine.util.Y_AXIS
 import de.yap.game.YapGame
 import org.apache.logging.log4j.LogManager
 import org.joml.Matrix4f
@@ -41,23 +39,17 @@ class FirstPersonCameraSystem : ISystem(PositionComponent::class.java, RotationC
             // show position
             val position = positionComponent.position
             val transformation = Matrix4f()
-                    .translate(position).scale(0.4F)
+                    .translate(position)
+                    .scale(0.4F)
             YapGame.getInstance().renderer.cube(transformation, cameraComponent.color)
 
             // show viewing direction
-            val dir = direction(rotationComponent)
+            val dir = rotationComponent.direction()
             val end = Vector3f(position)
                     .add(dir)
             val viewDirColor = Vector4f(1.0F, 0.0F, 0.0F, 1.0F)
             YapGame.getInstance().renderer.line(position, end, viewDirColor)
         }
-    }
-
-    fun direction(rotationComponent: RotationComponent): Vector3f {
-        val dir = Vector4f(0.0F, 0.0F, -1.0F, 0.0F)
-                .mul(rotationMatrix(rotationComponent).invert())
-                .normalize()
-        return Vector3f(dir.x, dir.y, dir.z)
     }
 
     override fun update(interval: Float, entities: List<Entity>) {
@@ -84,7 +76,7 @@ class FirstPersonCameraSystem : ISystem(PositionComponent::class.java, RotationC
 
             val pos = Vector3f(positionComponent.position)
             YapGame.getInstance().view = Matrix4f()
-                    .mul(rotationMatrix(rotationComponent))
+                    .mul(rotationComponent.rotationMatrix())
                     .translate(pos.mul(-1.0f))
 
             cameraComponent.mousePosition = Vector2f(0.0F)
@@ -156,7 +148,7 @@ class FirstPersonCameraSystem : ISystem(PositionComponent::class.java, RotationC
 
     private fun rotatedMove(positionComponent: PositionComponent, rotationComponent: RotationComponent, offset: Vector3f) {
         val rotatedOffset = Vector4f(offset.x, offset.y, offset.z, 0.0F)
-                .mul(rotationMatrix(rotationComponent).invert())
+                .mul(rotationComponent.rotationMatrix().invert())
 
         positionComponent.position.add(Vector3f(rotatedOffset.x, rotatedOffset.y, rotatedOffset.z))
     }
@@ -164,12 +156,6 @@ class FirstPersonCameraSystem : ISystem(PositionComponent::class.java, RotationC
     fun rotate(rotationComponent: RotationComponent, rotation: Vector2f) {
         rotationComponent.pitch -= rotation.y
         rotationComponent.yaw += rotation.x
-    }
-
-    private fun rotationMatrix(rotationComponent: RotationComponent): Matrix4f {
-        return Matrix4f()
-                .rotate(rotationComponent.pitch, X_AXIS)
-                .rotate(rotationComponent.yaw, Y_AXIS)
     }
 
     @Subscribe

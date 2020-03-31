@@ -7,8 +7,8 @@ import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.joml.Vector4f
 import org.lwjgl.opengl.GL20.*
-import org.lwjgl.system.MemoryUtil
-import java.nio.FloatBuffer
+import org.lwjgl.system.MemoryStack
+
 
 abstract class Uniform
 
@@ -26,6 +26,7 @@ class Shader(private val vertexShaderPath: String, private val fragmentShaderPat
 
     private var programId: Int = 0
 
+    private val uniformLocations = LinkedHashMap<String, Int>()
     private val currentUniforms = LinkedHashMap<String, Uniform>()
 
     fun compile() {
@@ -88,23 +89,29 @@ class Shader(private val vertexShaderPath: String, private val fragmentShaderPat
     fun setUniform(name: String, value: Matrix4f) {
         bind()
 
-        val loc = glGetUniformLocation(programId, name)
-        if (loc < 0) {
-            log.warn("Could not find uniform '{}'", name)
-            return
-        }
+        val loc = getUniformLocation(name) ?: return
 
         currentUniforms[name] = Matrix4fUniform(value)
 
-        var buffer: FloatBuffer? = null
-        try {
-            buffer = MemoryUtil.memAllocFloat(16)
-            value.get(buffer)
-
-            glUniformMatrix4fv(loc, false, buffer!!)
-        } finally {
-            MemoryUtil.memFree(buffer)
+        MemoryStack.stackPush().use { stack ->
+            val fb = value.get(stack.mallocFloat(16))
+            glUniformMatrix4fv(loc, false, fb)
         }
+    }
+
+    private fun getUniformLocation(name: String): Int? {
+        val cachedLocation = uniformLocations[name]
+        if (cachedLocation != null) {
+            return cachedLocation
+        }
+
+        val location = glGetUniformLocation(programId, name)
+        uniformLocations[name] = location
+        if (location < 0) {
+            log.warn("Could not find uniform '{}'", name)
+            return null
+        }
+        return location
     }
 
     private fun compilePartial(type: Int, filePath: String): Int {

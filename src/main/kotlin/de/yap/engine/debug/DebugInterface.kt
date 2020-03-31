@@ -1,14 +1,19 @@
 package de.yap.engine.debug
 
 import de.yap.engine.ecs.KeyboardEvent
+import de.yap.engine.ecs.PositionComponent
+import de.yap.engine.ecs.RotationComponent
 import de.yap.engine.ecs.Subscribe
 import de.yap.engine.ecs.entities.Entity
+import de.yap.engine.ecs.systems.FirstPersonCameraSystem
 import de.yap.engine.ecs.systems.ISystem
 import de.yap.engine.graphics.Matrix4fUniform
 import de.yap.game.YapGame
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
+import org.joml.Vector3f
+import org.joml.Vector4f
 import org.lwjgl.glfw.GLFW
 
 
@@ -45,6 +50,37 @@ class DebugInterface : ISystem() {
         inScreenSpace {
             memory.render()
             cpu.render()
+        }
+
+        renderCoordinateSystem()
+    }
+
+    private fun renderCoordinateSystem() {
+        val renderer = YapGame.getInstance().renderer
+        val currentCamera = FirstPersonCameraSystem.currentCameraEntity
+        currentCamera?.let {
+            val positionComponent = currentCamera.getComponent<PositionComponent>()
+            val rotationComponent = currentCamera.getComponent<RotationComponent>()
+
+            val position = positionComponent.position
+            val direction = rotationComponent.direction()
+            val transformation = Matrix4f()
+                    .translate(position)
+                    .translate(direction)
+                    .scale(0.075F)
+            val origin = Vector3f(0.0F, 0.0F, 0.0F)
+            val xEnd = Vector3f(1.0F, 0.0F, 0.0F)
+            val yEnd = Vector3f(0.0F, 1.0F, 0.0F)
+            val zEnd = Vector3f(0.0F, 0.0F, 1.0F)
+
+            transformation.transformPosition(origin)
+            transformation.transformPosition(xEnd)
+            transformation.transformPosition(yEnd)
+            transformation.transformPosition(zEnd)
+
+            renderer.line(origin, xEnd, Vector4f(1.0F, 0.0F, 0.0F, 1.0F))
+            renderer.line(origin, yEnd, Vector4f(0.0F, 1.0F, 0.0F, 1.0F))
+            renderer.line(origin, zEnd, Vector4f(0.0F, 0.0F, 1.0F, 1.0F))
         }
     }
 

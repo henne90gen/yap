@@ -94,11 +94,14 @@ class YapGame private constructor() : IGameLogic {
 
     private fun initEntities() {
         entityManager.addEntity(PlayerEntity(Vector3f(0.5F, 0.0F, 3.0F), Vector4f(1.0F, 0.0F, 0.0F, 1.0F), hasInput = true))
-        entityManager.addEntity(PlayerEntity(Vector3f(-2.9F, 0.0F, 3.9F), Vector4f(0.0F, 1.0F, 0.0F, 1.0F), hasInput = false))
+        entityManager.addEntity(PlayerEntity(Vector3f(0.0F, 1.0F, 0.0F), Vector4f(0.0F, 1.0F, 0.0F, 1.0F), hasInput = false))
 
-        for (x in 0..10) {
-            for (y in 0..10) {
-                entityManager.addEntity(BlockEntity(Vector3f(x.toFloat(), 0.0F, y.toFloat())))
+        val xOffset = -25
+        val yOffset = -25
+        for (x in 0..50) {
+            for (y in 0..50) {
+                val position = Vector3f(x.toFloat() + xOffset, 0.0F, y.toFloat() + yOffset)
+                entityManager.addEntity(BlockEntity(position))
             }
         }
     }
@@ -138,18 +141,7 @@ class YapGame private constructor() : IGameLogic {
         renderer.shader3D.setUniform("lightPos", Vector3f(2.0f, 0.0f, 4.0f))
         renderer.shader3D.setUniform("lightColor", Vector3f(0.5f, 0.3f, 0.2f))
 
-        renderCoordinateSystemAxis()
-        renderRoom()
-        renderTextInScene(text)
-//        renderTextOnScreen(text)
-
         entityManager.render()
-    }
-
-    private fun renderTextOnScreen(text: Text?) {
-        val color = Vector4f(0.5F, 0.75F, 0.0F, 1.0F)
-        val transform = Matrix4f().translate(-window.aspectRatio(), 0.85F, 0.0F)
-        text?.value?.let { fontRenderer.string(it, transform, color) }
     }
 
     @Subscribe
@@ -164,14 +156,6 @@ class YapGame private constructor() : IGameLogic {
                 )
     }
 
-    private fun renderTextInScene(text: Text?) {
-        if (text == null) {
-            return
-        }
-
-        fontRenderer.stringInScene(text, view, projection)
-    }
-
     private fun renderRoom() {
         renderer.wireframe(roomWireframe) {
             for (roomMesh in roomMeshes) {
@@ -179,17 +163,5 @@ class YapGame private constructor() : IGameLogic {
                 renderer.mesh(roomMesh, roomTransformation, color)
             }
         }
-    }
-
-    private fun renderCoordinateSystemAxis() {
-        renderer.cube(Matrix4f().translate(Vector3f(0.0F, 0.0F, 0.0F)).scale(0.1F))
-
-        renderer.cube(Matrix4f().translate(Vector3f(1.0F, 0.0F, 0.0F)).scale(0.1F), Vector4f(1.0F, 0.0F, 0.0F, 1.0F))
-        renderer.cube(Matrix4f().translate(Vector3f(0.0F, 1.0F, 0.0F)).scale(0.1F), Vector4f(0.0F, 1.0F, 0.0F, 1.0F))
-        renderer.cube(Matrix4f().translate(Vector3f(0.0F, 0.0F, 1.0F)).scale(0.1F), Vector4f(0.0F, 0.0F, 1.0F, 1.0F))
-
-        renderer.line(Vector3f(0.0F, 0.0F, 0.0F), Vector3f(1.0F, 0.0F, 0.0F), Vector4f(1.0F, 0.0F, 0.0F, 1.0F))
-        renderer.line(Vector3f(0.0F, 0.0F, 0.0F), Vector3f(0.0F, 1.0F, 0.0F), Vector4f(0.0F, 1.0F, 0.0F, 1.0F))
-        renderer.line(Vector3f(0.0F, 0.0F, 0.0F), Vector3f(0.0F, 0.0F, 1.0F), Vector4f(0.0F, 0.0F, 1.0F, 1.0F))
     }
 }

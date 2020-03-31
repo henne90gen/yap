@@ -15,7 +15,7 @@ class FirstPersonCameraSystemTest {
         val cameraSystem = FirstPersonCameraSystem()
         val rotationComponent = RotationComponent()
         cameraSystem.rotate(rotationComponent, Vector2f(PI.toFloat(), 0.0F))
-        assertVectorsEqual(Vector3f(0.0F, 0.0F, 1.0F), cameraSystem.direction(rotationComponent))
+        assertVectorsEqual(Vector3f(0.0F, 0.0F, 1.0F), rotationComponent.direction())
     }
 
     @Test
@@ -23,7 +23,7 @@ class FirstPersonCameraSystemTest {
         val cameraSystem = FirstPersonCameraSystem()
         val rotationComponent = RotationComponent()
         cameraSystem.rotate(rotationComponent, Vector2f(PI.toFloat() / 2.0F, 0.0F))
-        assertVectorsEqual(Vector3f(1.0F, 0.0F, 0.0F), cameraSystem.direction(rotationComponent))
+        assertVectorsEqual(Vector3f(1.0F, 0.0F, 0.0F), rotationComponent.direction())
     }
 
     @Test
@@ -31,7 +31,7 @@ class FirstPersonCameraSystemTest {
         val cameraSystem = FirstPersonCameraSystem()
         val rotationComponent = RotationComponent()
         cameraSystem.rotate(rotationComponent, Vector2f(0.0F, PI.toFloat() / 2.0F))
-        assertVectorsEqual(Vector3f(0.0F, 1.0F, 0.0F), cameraSystem.direction(rotationComponent))
+        assertVectorsEqual(Vector3f(0.0F, 1.0F, 0.0F), rotationComponent.direction())
     }
 
     @Test
@@ -39,7 +39,7 @@ class FirstPersonCameraSystemTest {
         val cameraSystem = FirstPersonCameraSystem()
         val rotationComponent = RotationComponent()
         cameraSystem.rotate(rotationComponent, Vector2f(PI.toFloat() / 4.0F, 0.0F))
-        assertVectorsEqual(Vector3f(0.5F, 0.0F, -0.5F).normalize(), cameraSystem.direction(rotationComponent))
+        assertVectorsEqual(Vector3f(0.5F, 0.0F, -0.5F).normalize(), rotationComponent.direction())
     }
 
     private fun assertVectorsEqual(v1: Vector3f, v2: Vector3f) {
