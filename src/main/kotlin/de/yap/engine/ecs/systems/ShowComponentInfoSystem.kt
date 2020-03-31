@@ -2,8 +2,8 @@ package de.yap.engine.ecs.systems
 
 import de.yap.engine.Y_AXIS
 import de.yap.engine.ecs.Component
-import de.yap.engine.ecs.Entity
 import de.yap.engine.ecs.PositionComponent
+import de.yap.engine.ecs.entities.Entity
 import de.yap.engine.graphics.Text
 import de.yap.game.YapGame
 import org.joml.Matrix4f
@@ -63,12 +63,12 @@ class ShowComponentInfoSystem : ISystem(PositionComponent::class.java) {
         // TODO only render this info on mouse hover
         // TODO render this information as part of the HUD instead of in the world
 
-        if (entity == CameraSystem.currentCameraEntity) {
+        if (entity == FirstPersonCameraSystem.currentCameraEntity) {
             return
         }
 
         var lookAt = Vector3f(0.0F)
-        CameraSystem.currentCameraEntity?.let {
+        FirstPersonCameraSystem.currentCameraEntity?.let {
             val positionComponent = it.getComponent<PositionComponent>()
             lookAt = positionComponent.position
         }

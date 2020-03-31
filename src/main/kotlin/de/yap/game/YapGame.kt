@@ -3,8 +3,12 @@ package de.yap.game
 import de.yap.engine.*
 import de.yap.engine.debug.DebugFontTexture
 import de.yap.engine.debug.DebugInterface
-import de.yap.engine.ecs.*
-import de.yap.engine.ecs.systems.CameraSystem
+import de.yap.engine.ecs.EntityManager
+import de.yap.engine.ecs.KeyboardEvent
+import de.yap.engine.ecs.Subscribe
+import de.yap.engine.ecs.WindowResizeEvent
+import de.yap.engine.ecs.entities.PlayerEntity
+import de.yap.engine.ecs.systems.FirstPersonCameraSystem
 import de.yap.engine.ecs.systems.MeshSystem
 import de.yap.engine.ecs.systems.ShowComponentInfoSystem
 import de.yap.engine.graphics.FontRenderer
@@ -75,7 +79,7 @@ class YapGame private constructor() : IGameLogic {
 
     private fun initSystems() {
         entityManager.registerEventListener(this)
-        entityManager.registerSystem(CameraSystem())
+        entityManager.registerSystem(FirstPersonCameraSystem())
         entityManager.registerSystem(MeshSystem())
         entityManager.registerSystem(ShowComponentInfoSystem())
         entityManager.registerSystem(DebugInterface())

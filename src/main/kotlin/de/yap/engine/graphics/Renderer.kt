@@ -1,5 +1,7 @@
 package de.yap.engine.graphics
 
+import de.yap.engine.Texture
+import de.yap.engine.mesh.Material
 import de.yap.engine.mesh.Mesh
 import de.yap.engine.mesh.MeshUtils
 import org.apache.logging.log4j.LogManager
@@ -12,6 +14,7 @@ import org.lwjgl.opengl.GL13.*
 import org.lwjgl.opengl.GL20
 import org.lwjgl.opengl.GL30
 import org.lwjgl.system.MemoryUtil
+import java.io.File
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 
@@ -23,7 +26,8 @@ class Renderer {
     }
 
     private lateinit var quadMesh: Mesh
-    lateinit var cubeMesh: Mesh
+    private lateinit var cubeMesh: Mesh
+    lateinit var textureMapMaterial: Material
 
     val shader3D = Shader("shaders/vertex.glsl", "shaders/fragment.glsl")
 
@@ -39,6 +43,9 @@ class Renderer {
 
         quadMesh = MeshUtils.quad2D()
         cubeMesh = MeshUtils.unitCube()
+
+        textureMapMaterial = Material("CubeMaterial")
+        textureMapMaterial.texture = Texture.fromFile(File("models/texture_map.png"))
     }
 
     private fun create1x1WhiteTexture() {

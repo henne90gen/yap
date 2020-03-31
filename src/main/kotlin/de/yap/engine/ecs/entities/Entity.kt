@@ -1,9 +1,8 @@
-package de.yap.engine.ecs
+package de.yap.engine.ecs.entities
 
-import de.yap.game.YapGame
+import de.yap.engine.ecs.*
 import org.joml.Vector3f
 import org.joml.Vector4f
-
 
 open class Entity {
     // String == Component.class.name
@@ -33,12 +32,5 @@ class PlayerEntity(position: Vector3f = Vector3f(0.0F), color: Vector4f = Vector
         addComponent(PositionComponent(position))
         addComponent(RotationComponent())
         addComponent(CameraComponent(color = color, active = hasInput))
-    }
-}
-
-class BlockEntity(position: Vector3f = Vector3f()) : Entity() {
-    init {
-        addComponent(PositionComponent(position))
-        addComponent(MeshComponent(YapGame.getInstance().renderer.cubeMesh))
     }
 }

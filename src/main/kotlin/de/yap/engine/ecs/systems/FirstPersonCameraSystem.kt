@@ -5,6 +5,7 @@ import de.yap.engine.MOVEMENT_SPEED
 import de.yap.engine.X_AXIS
 import de.yap.engine.Y_AXIS
 import de.yap.engine.ecs.*
+import de.yap.engine.ecs.entities.Entity
 import de.yap.game.YapGame
 import org.apache.logging.log4j.LogManager
 import org.joml.Matrix4f
@@ -19,7 +20,7 @@ import org.lwjgl.glfw.GLFW
  *  - Q,E - move along the y-axis
  *  - SPACE - switch to next camera
  */
-class CameraSystem : ISystem(PositionComponent::class.java, RotationComponent::class.java, CameraComponent::class.java) {
+class FirstPersonCameraSystem : ISystem(PositionComponent::class.java, RotationComponent::class.java, CameraComponent::class.java) {
 
     companion object {
         private val log = LogManager.getLogger()

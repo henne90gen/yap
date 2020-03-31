@@ -1,5 +1,6 @@
 package de.yap.engine.ecs
 
+import de.yap.engine.ecs.entities.Entity
 import de.yap.engine.ecs.systems.ISystem
 import org.junit.Test
 import kotlin.test.assertEquals

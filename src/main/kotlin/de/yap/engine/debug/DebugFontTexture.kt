@@ -1,6 +1,6 @@
 package de.yap.engine.debug
 
-import de.yap.engine.ecs.Entity
+import de.yap.engine.ecs.entities.Entity
 import de.yap.engine.ecs.systems.ISystem
 import de.yap.engine.mesh.MeshUtils
 import de.yap.game.YapGame

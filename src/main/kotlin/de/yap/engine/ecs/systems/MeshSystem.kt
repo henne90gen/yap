@@ -1,8 +1,8 @@
 package de.yap.engine.ecs.systems
 
-import de.yap.engine.ecs.Entity
 import de.yap.engine.ecs.MeshComponent
 import de.yap.engine.ecs.PositionComponent
+import de.yap.engine.ecs.entities.Entity
 import de.yap.game.YapGame
 import org.joml.Matrix4f
 

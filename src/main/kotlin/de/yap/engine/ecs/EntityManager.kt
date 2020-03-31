@@ -1,5 +1,6 @@
 package de.yap.engine.ecs
 
+import de.yap.engine.ecs.entities.Entity
 import de.yap.engine.ecs.systems.ISystem
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger

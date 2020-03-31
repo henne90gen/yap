@@ -1,6 +1,10 @@
 package de.yap.engine.ecs.systems
 
-import de.yap.engine.ecs.*
+import de.yap.engine.ecs.Capability
+import de.yap.engine.ecs.Component
+import de.yap.engine.ecs.MeshComponent
+import de.yap.engine.ecs.PositionComponent
+import de.yap.engine.ecs.entities.Entity
 
 abstract class ISystem(vararg components: Class<out Component>) {
     val capability = Capability(*components)

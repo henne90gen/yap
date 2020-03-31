@@ -253,30 +253,119 @@ class MeshUtils {
             return Mesh(vertices = vertices, texCoords = texCoords, indices = indices, material = material)
         }
 
-        fun unitCube(): Mesh {
+        fun unitCube(material: Material? = null, texMin: Vector2f = Vector2f(0.0F), texMax: Vector2f = Vector2f(1.0F)): Mesh {
+            val min = Vector3f(-0.5F)
+            val max = Vector3f(0.5F)
             val vertices = mutableListOf(
                     // back
-                    Vector3f(-0.5F, -0.5F, -0.5F), // 0
-                    Vector3f(0.5F, -0.5F, -0.5F),  // 1
-                    Vector3f(0.5F, 0.5F, -0.5F),   // 2
-                    Vector3f(-0.5F, 0.5F, -0.5F),  // 3
+                    Vector3f(min.x, min.y, min.z), // 0
+                    Vector3f(min.x, max.y, min.z), // 1
+                    Vector3f(max.x, max.y, min.z), // 2
+                    Vector3f(max.x, min.y, min.z), // 3
 
                     // front
-                    Vector3f(-0.5F, -0.5F, 0.5F),  // 4
-                    Vector3f(0.5F, -0.5F, 0.5F),   // 5
-                    Vector3f(0.5F, 0.5F, 0.5F),    // 6
-                    Vector3f(-0.5F, 0.5F, 0.5F)    // 7
+                    Vector3f(min.x, min.y, max.z), // 4
+                    Vector3f(max.x, min.y, max.z), // 5
+                    Vector3f(max.x, max.y, max.z), // 6
+                    Vector3f(min.x, max.y, max.z), // 7
+
+                    // right
+                    Vector3f(max.x, min.y, max.z), // 8
+                    Vector3f(max.x, min.y, min.z), // 9
+                    Vector3f(max.x, max.y, min.z), // 10
+                    Vector3f(max.x, max.y, max.z), // 11
+
+                    // left
+                    Vector3f(min.x, min.y, min.z), // 12
+                    Vector3f(min.x, min.y, max.z), // 13
+                    Vector3f(min.x, max.y, max.z), // 14
+                    Vector3f(min.x, max.y, min.z), // 15
+
+                    // top
+                    Vector3f(min.x, max.y, max.z), // 16
+                    Vector3f(max.x, max.y, max.z), // 17
+                    Vector3f(max.x, max.y, min.z), // 18
+                    Vector3f(min.x, max.y, min.z), // 19
+
+                    // bottom
+                    Vector3f(min.x, min.y, max.z), // 20
+                    Vector3f(min.x, min.y, min.z), // 21
+                    Vector3f(max.x, min.y, min.z), // 22
+                    Vector3f(max.x, min.y, max.z)  // 23
             )
             val textureCoords = mutableListOf(
-                    Vector2f(0.0F, 0.0F),
-                    Vector2f(1.0F, 0.0F),
-                    Vector2f(1.0F, 1.0F),
-                    Vector2f(0.0F, 1.0F),
+                    // front
+                    Vector2f(texMin.x, texMin.y),
+                    Vector2f(texMin.x, texMax.y),
+                    Vector2f(texMax.x, texMax.y),
+                    Vector2f(texMax.x, texMin.y),
 
-                    Vector2f(0.0F, 0.0F),
-                    Vector2f(1.0F, 0.0F),
-                    Vector2f(1.0F, 1.0F),
-                    Vector2f(0.0F, 1.0F)
+                    // back
+                    Vector2f(texMin.x, texMin.y),
+                    Vector2f(texMax.x, texMin.y),
+                    Vector2f(texMax.x, texMax.y),
+                    Vector2f(texMin.x, texMax.y),
+
+                    // right
+                    Vector2f(texMin.x, texMax.y),
+                    Vector2f(texMin.x, texMin.y),
+                    Vector2f(texMax.x, texMin.y),
+                    Vector2f(texMax.x, texMax.y),
+
+                    // left
+                    Vector2f(texMin.x, texMin.y),
+                    Vector2f(texMin.x, texMax.y),
+                    Vector2f(texMax.x, texMax.y),
+                    Vector2f(texMax.x, texMin.y),
+
+                    // top
+                    Vector2f(texMin.x, texMax.y),
+                    Vector2f(texMax.x, texMax.y),
+                    Vector2f(texMax.x, texMin.y),
+                    Vector2f(texMin.x, texMin.y),
+
+                    // bottom
+                    Vector2f(texMin.x, texMax.y),
+                    Vector2f(texMin.x, texMin.y),
+                    Vector2f(texMax.x, texMin.y),
+                    Vector2f(texMax.x, texMax.y)
+            )
+            val normals = mutableListOf(
+                    // back
+                    Vector3f(0.0F, 0.0F, -1.0F),
+                    Vector3f(0.0F, 0.0F, -1.0F),
+                    Vector3f(0.0F, 0.0F, -1.0F),
+                    Vector3f(0.0F, 0.0F, -1.0F),
+
+                    // front
+                    Vector3f(0.0F, 0.0F, 1.0F),
+                    Vector3f(0.0F, 0.0F, 1.0F),
+                    Vector3f(0.0F, 0.0F, 1.0F),
+                    Vector3f(0.0F, 0.0F, 1.0F),
+
+                    // right
+                    Vector3f(1.0F, 0.0F, 0.0F),
+                    Vector3f(1.0F, 0.0F, 0.0F),
+                    Vector3f(1.0F, 0.0F, 0.0F),
+                    Vector3f(1.0F, 0.0F, 0.0F),
+
+                    // left
+                    Vector3f(-1.0F, 0.0F, 0.0F),
+                    Vector3f(-1.0F, 0.0F, 0.0F),
+                    Vector3f(-1.0F, 0.0F, 0.0F),
+                    Vector3f(-1.0F, 0.0F, 0.0F),
+
+                    // top
+                    Vector3f(0.0F, 1.0F, 0.0F),
+                    Vector3f(0.0F, 1.0F, 0.0F),
+                    Vector3f(0.0F, 1.0F, 0.0F),
+                    Vector3f(0.0F, 1.0F, 0.0F),
+
+                    // bottom
+                    Vector3f(0.0F, -1.0F, 0.0F),
+                    Vector3f(0.0F, -1.0F, 0.0F),
+                    Vector3f(0.0F, -1.0F, 0.0F),
+                    Vector3f(0.0F, -1.0F, 0.0F)
             )
             val indices = mutableListOf(
                     // front
@@ -288,22 +377,28 @@ class MeshUtils {
                     Vector3i(4, 6, 7),
 
                     // right
-                    Vector3i(5, 1, 2),
-                    Vector3i(5, 2, 6),
+                    Vector3i(8, 9, 10),
+                    Vector3i(8, 10, 11),
 
                     // left
-                    Vector3i(0, 4, 7),
-                    Vector3i(0, 7, 3),
+                    Vector3i(12, 13, 14),
+                    Vector3i(12, 14, 15),
 
                     // top
-                    Vector3i(7, 6, 2),
-                    Vector3i(7, 2, 3),
+                    Vector3i(16, 17, 18),
+                    Vector3i(16, 18, 19),
 
                     // bottom
-                    Vector3i(4, 5, 1),
-                    Vector3i(4, 1, 0)
+                    Vector3i(20, 21, 22),
+                    Vector3i(20, 22, 23)
             )
-            return Mesh(vertices = vertices, texCoords = textureCoords, indices = indices)
+            return Mesh(
+                    vertices = vertices,
+                    texCoords = textureCoords,
+                    normals = normals,
+                    indices = indices,
+                    material = material
+            )
         }
 
         fun text(fontRenderer: FontRenderer, value: String): Mesh {
