@@ -4,6 +4,7 @@ import de.yap.engine.ecs.*
 import de.yap.engine.ecs.entities.Entity
 import de.yap.engine.util.MOUSE_SENSITIVITY
 import de.yap.engine.util.MOVEMENT_SPEED
+import de.yap.engine.util.Y_AXIS
 import de.yap.game.YapGame
 import org.apache.logging.log4j.LogManager
 import org.joml.Matrix4f
@@ -18,7 +19,7 @@ import org.lwjgl.glfw.GLFW
  *  - Q,E - move along the y-axis
  *  - TAB - switch to next camera
  */
-class FirstPersonCameraSystem : ISystem(PositionComponent::class.java, RotationComponent::class.java, CameraComponent::class.java) {
+class FirstPersonCamera : ISystem(PositionComponent::class.java, RotationComponent::class.java, CameraComponent::class.java) {
 
     companion object {
         private val log = LogManager.getLogger()
@@ -54,21 +55,24 @@ class FirstPersonCameraSystem : ISystem(PositionComponent::class.java, RotationC
 
     override fun update(interval: Float, entities: List<Entity>) {
         for (entity in entities) {
-            val positionComponent = entity.getComponent<PositionComponent>()
-            val rotationComponent = entity.getComponent<RotationComponent>()
             val cameraComponent = entity.getComponent<CameraComponent>()
-
             if (!cameraComponent.active) {
                 continue
             }
+
+            val positionComponent = entity.getComponent<PositionComponent>()
+            val rotationComponent = entity.getComponent<RotationComponent>()
 
             currentCameraEntity = entity
 
             pollDirection(cameraComponent.direction)
             pollMousePosition(cameraComponent)
 
-            val tmp = Vector3f(cameraComponent.direction).mul(MOVEMENT_SPEED)
-            rotatedMove(positionComponent, rotationComponent, tmp)
+            val offset = Vector3f(cameraComponent.direction).mul(MOVEMENT_SPEED)
+            val rotatedOffset = Vector4f(offset.x, offset.y, offset.z, 0.0F)
+                    .mul(Matrix4f().rotate(rotationComponent.yaw, Y_AXIS).invert())
+
+            positionComponent.position.add(rotatedOffset.x, rotatedOffset.y, rotatedOffset.z)
 
             val mouseRot = Vector2f(cameraComponent.mousePosition.x, cameraComponent.mousePosition.y)
                     .mul(MOUSE_SENSITIVITY)
@@ -110,13 +114,13 @@ class FirstPersonCameraSystem : ISystem(PositionComponent::class.java, RotationC
             }
         }
         direction.y = when {
-            keyPressed(GLFW.GLFW_KEY_Q) -> {
+            keyPressed(GLFW.GLFW_KEY_SPACE) -> {
                 1.0F
             }
-            keyPressed(GLFW.GLFW_KEY_E) -> {
+            keyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) -> {
                 -1.0F
             }
-            keyReleased(GLFW.GLFW_KEY_Q) || keyReleased(GLFW.GLFW_KEY_E) -> {
+            keyReleased(GLFW.GLFW_KEY_SPACE) || keyReleased(GLFW.GLFW_KEY_LEFT_SHIFT) -> {
                 0.0F
             }
             else -> {
@@ -144,13 +148,6 @@ class FirstPersonCameraSystem : ISystem(PositionComponent::class.java, RotationC
         YapGame.getInstance().window.getMousePosition(mousePosition)
         cameraComponent.mousePosition = mousePosition
         YapGame.getInstance().window.setMousePosition(0.0, 0.0)
-    }
-
-    private fun rotatedMove(positionComponent: PositionComponent, rotationComponent: RotationComponent, offset: Vector3f) {
-        val rotatedOffset = Vector4f(offset.x, offset.y, offset.z, 0.0F)
-                .mul(rotationComponent.rotationMatrix().invert())
-
-        positionComponent.position.add(Vector3f(rotatedOffset.x, rotatedOffset.y, rotatedOffset.z))
     }
 
     fun rotate(rotationComponent: RotationComponent, rotation: Vector2f) {

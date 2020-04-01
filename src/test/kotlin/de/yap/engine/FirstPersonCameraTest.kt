@@ -1,18 +1,18 @@
 package de.yap.engine
 
 import de.yap.engine.ecs.RotationComponent
-import de.yap.engine.ecs.systems.FirstPersonCameraSystem
+import de.yap.engine.ecs.systems.FirstPersonCamera
 import org.joml.Math.PI
 import org.joml.Vector2f
 import org.joml.Vector3f
 import org.junit.Assert
 import org.junit.Test
 
-class FirstPersonCameraSystemTest {
+class FirstPersonCameraTest {
 
     @Test
     fun testRotate180DegreesWorks() {
-        val cameraSystem = FirstPersonCameraSystem()
+        val cameraSystem = FirstPersonCamera()
         val rotationComponent = RotationComponent()
         cameraSystem.rotate(rotationComponent, Vector2f(PI.toFloat(), 0.0F))
         assertVectorsEqual(Vector3f(0.0F, 0.0F, 1.0F), rotationComponent.direction())
@@ -20,7 +20,7 @@ class FirstPersonCameraSystemTest {
 
     @Test
     fun testRotateXWorks() {
-        val cameraSystem = FirstPersonCameraSystem()
+        val cameraSystem = FirstPersonCamera()
         val rotationComponent = RotationComponent()
         cameraSystem.rotate(rotationComponent, Vector2f(PI.toFloat() / 2.0F, 0.0F))
         assertVectorsEqual(Vector3f(1.0F, 0.0F, 0.0F), rotationComponent.direction())
@@ -28,7 +28,7 @@ class FirstPersonCameraSystemTest {
 
     @Test
     fun testRotateYWorks() {
-        val cameraSystem = FirstPersonCameraSystem()
+        val cameraSystem = FirstPersonCamera()
         val rotationComponent = RotationComponent()
         cameraSystem.rotate(rotationComponent, Vector2f(0.0F, PI.toFloat() / 2.0F))
         assertVectorsEqual(Vector3f(0.0F, 1.0F, 0.0F), rotationComponent.direction())
@@ -36,7 +36,7 @@ class FirstPersonCameraSystemTest {
 
     @Test
     fun testRotatedDirectionIsAlwaysNormalized() {
-        val cameraSystem = FirstPersonCameraSystem()
+        val cameraSystem = FirstPersonCamera()
         val rotationComponent = RotationComponent()
         cameraSystem.rotate(rotationComponent, Vector2f(PI.toFloat() / 4.0F, 0.0F))
         assertVectorsEqual(Vector3f(0.5F, 0.0F, -0.5F).normalize(), rotationComponent.direction())

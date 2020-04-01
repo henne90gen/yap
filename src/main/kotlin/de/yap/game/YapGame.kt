@@ -10,8 +10,8 @@ import de.yap.engine.ecs.Subscribe
 import de.yap.engine.ecs.WindowResizeEvent
 import de.yap.engine.ecs.entities.BlockEntity
 import de.yap.engine.ecs.entities.PlayerEntity
-import de.yap.engine.ecs.systems.FirstPersonCameraSystem
-import de.yap.engine.ecs.systems.GravitySystem
+import de.yap.engine.ecs.systems.FirstPersonCamera
+import de.yap.engine.ecs.systems.LevelEditor
 import de.yap.engine.ecs.systems.MeshSystem
 import de.yap.engine.ecs.systems.ShowComponentInfoSystem
 import de.yap.engine.graphics.FontRenderer
@@ -78,8 +78,8 @@ class YapGame private constructor() : IGameLogic {
 
     private fun initSystems() {
         entityManager.registerEventListener(this)
-        entityManager.registerSystem(GravitySystem())
-        entityManager.registerSystem(FirstPersonCameraSystem())
+        entityManager.registerSystem(LevelEditor())
+        entityManager.registerSystem(FirstPersonCamera())
         entityManager.registerSystem(MeshSystem())
         entityManager.registerSystem(ShowComponentInfoSystem())
         entityManager.registerSystem(DebugInterface())

@@ -3,11 +3,15 @@
 ## TODOs
 
 - game does not terminate correctly after pressing ESC
-
+- font does not load correctly on windows
 - complete physics system
 - level file format
 - level generator (Max)
 - level editor (Henne)
+    - place blocks with right click
+    - remove blocks with left click
+    - show outline of block that will be placed
+    - press Alt to release mouse
 - top down camera (try both)
     - direct control
     - move only when player gets too close to edge
