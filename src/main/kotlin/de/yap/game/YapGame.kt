@@ -95,6 +95,8 @@ class YapGame private constructor() : IGameLogic {
         for ((pos, entity) in levelGenerator.generateLevelEntities()){
             entityManager.addEntity(entity)
         }
+        val position = Vector3f(0.5F, 0.5F, 0.5F)
+        entityManager.addEntity(BlockEntity(position))
     }
 
     @Subscribe

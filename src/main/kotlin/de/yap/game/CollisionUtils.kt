@@ -6,16 +6,24 @@ import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.joml.Vector4f
 
-data class IntersectionResult(val point: Vector3f = Vector3f(), val distanceSquared: Float = Float.MAX_VALUE, val normal: Vector3f = Vector3f()) {
+data class IntersectionResult(
+        val point: Vector3f = Vector3f(),
+        val distanceSquared: Float = Float.MAX_VALUE,
+        val normal: Vector3f = Vector3f()
+) {
     fun hasValue(): Boolean {
         return distanceSquared != Float.MAX_VALUE
     }
 }
 
-fun intersects(rayStart: Vector3f, direction: Vector3f, meshes: List<Mesh>, transformation: Matrix4f): IntersectionResult {
+data class TransformedMesh(val mesh: Mesh, val transformation: Matrix4f)
+
+fun intersects(rayStart: Vector3f, direction: Vector3f, transformedMeshes: List<TransformedMesh>): IntersectionResult {
     var closestIntersection = IntersectionResult()
 
-    for (mesh in meshes) {
+    for (transformedMesh in transformedMeshes) {
+        val mesh = transformedMesh.mesh
+        val transformation = transformedMesh.transformation
         for (i in mesh.indices.indices) {
             val triangle = mesh.indices[i]
 
