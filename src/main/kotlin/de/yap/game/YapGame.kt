@@ -121,8 +121,8 @@ class YapGame private constructor() : IGameLogic {
         renderer.shader3D.setUniform("view", view)
         renderer.shader3D.setUniform("projection", projection)
         renderer.shader3D.setUniform("color", Vector4f(1.0F))
-        renderer.shader3D.setUniform("lightPos", Vector3f(2.0f, 0.0f, 4.0f))
-        renderer.shader3D.setUniform("lightColor", Vector3f(0.5f, 0.3f, 0.2f))
+        renderer.shader3D.setUniform("lightPos", Vector3f(1.0f, 1.0f, 1.0f))
+        renderer.shader3D.setUniform("lightColor", Vector3f(0.075f, 0.075f, 0.075f))
 
         entityManager.render()
     }

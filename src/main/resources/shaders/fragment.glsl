@@ -14,7 +14,9 @@ out vec4 outColor;
 vec4 calcDiffuseComponent(vec3 normal, vec3 lightPos, vec3 lightColor, vec3 fragPos) {
     vec3 norm = normalize(normal);
     vec3 lightDir = normalize(lightPos - fragPos);
-    float diff = max(dot(norm, lightDir), 0.0);
+    // this fixes ambient lighting but breaks the fps debug rendering although the later
+    // one should be influenced by ambient lighting at all...
+    float diff = dot(norm, lightDir); //float diff = sign(dot(norm, lightDir));
     vec3 diffuse = diff * lightColor;
     return vec4(diffuse, 1.0);
 }
