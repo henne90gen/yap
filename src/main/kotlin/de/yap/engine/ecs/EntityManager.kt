@@ -38,6 +38,12 @@ class EntityManager {
         private val log: Logger = LogManager.getLogger()
     }
 
+    // Player: Position Rotation
+    // NPC: Position Rotation
+    // Block: Position
+
+    // RotationsSachen: Position Rotation
+
     private val capabilityMap: MutableMap<Capability, MutableList<Entity>> = LinkedHashMap()
     private val systems: MutableList<ISystem> = ArrayList()
     private val eventListeners: MutableMap<String, MutableList<EventListener>> = LinkedHashMap()

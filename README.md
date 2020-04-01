@@ -2,9 +2,31 @@
 
 ## TODOs
 
-- create layer system
-    - layers: HUD, Game, Menus, Debug
 - game does not terminate correctly after pressing ESC
+
+- complete physics system
+- level file format
+- level generator (Max)
+- level editor (Henne)
+- top down camera (try both)
+    - direct control
+    - move only when player gets too close to edge
+- path finding
+    - along the voxel grid
+
+## Story
+
+- house at night
+- try to get to the fridge to get food
+- don't get caught by your parents
+- otherwise you are grounded for two weeks
+- scenarios
+    - normal house
+    - orphanage
+    - hospital?
+    - prison?
+    - forest?
+    - parking lot? (fast cars that can run you over)
 
 ## Entity Component System
 

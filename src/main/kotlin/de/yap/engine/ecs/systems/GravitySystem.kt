@@ -25,8 +25,8 @@ class GravitySystem : ISystem(PhysicsComponent::class.java, PositionComponent::c
         physicsComponent.velocity += physicsComponent.acceleration * interval
         positionComponent.position.y -= physicsComponent.velocity * interval
 
-        if (positionComponent.position.y < 0.0F) {
-            positionComponent.position.y = 0.0F
+        if (positionComponent.position.y < 1.8F) {
+            positionComponent.position.y = 1.8F
         }
     }
 }

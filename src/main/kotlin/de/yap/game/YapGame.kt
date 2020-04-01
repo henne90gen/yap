@@ -16,7 +16,6 @@ import de.yap.engine.ecs.systems.MeshSystem
 import de.yap.engine.ecs.systems.ShowComponentInfoSystem
 import de.yap.engine.graphics.FontRenderer
 import de.yap.engine.graphics.Renderer
-import de.yap.engine.graphics.Text
 import de.yap.engine.graphics.Window
 import de.yap.engine.mesh.Mesh
 import de.yap.engine.util.FIELD_OF_VIEW
@@ -53,9 +52,6 @@ class YapGame private constructor() : IGameLogic {
     var view: Matrix4f = Matrix4f()
     var projection: Matrix4f = Matrix4f()
 
-    private var cameraRayStart = Vector3f()
-    private var cameraRayResult = IntersectionResult()
-
     private var roomWireframe = false
 
     private var roomMeshes: List<Mesh> = emptyList()
@@ -64,8 +60,6 @@ class YapGame private constructor() : IGameLogic {
     private val position = Vector3f(negativeScaleHalf)
     private val roomTransformation = Matrix4f().translate(position).scale(scale)
 
-    private var text: Text? = null
-
     override fun init(window: Window) {
         this.window = window
 
@@ -73,8 +67,6 @@ class YapGame private constructor() : IGameLogic {
         fontRenderer.init()
 
         roomMeshes = Mesh.fromFile("models/scene.obj")
-
-        text = createText()
 
         initSystems()
 
@@ -97,25 +89,17 @@ class YapGame private constructor() : IGameLogic {
     }
 
     private fun initEntities() {
-        entityManager.addEntity(PlayerEntity(Vector3f(0.5F, 0.0F, 3.0F), Vector4f(1.0F, 0.0F, 0.0F, 1.0F), hasInput = true))
+        entityManager.addEntity(PlayerEntity(Vector3f(0.5F, 10.0F, 3.0F), Vector4f(1.0F, 0.0F, 0.0F, 1.0F), hasInput = true))
         entityManager.addEntity(PlayerEntity(Vector3f(0.0F, 1.0F, 0.0F), Vector4f(0.0F, 1.0F, 0.0F, 1.0F), hasInput = false))
 
         val xOffset = -25
         val yOffset = -25
         for (x in 0..50) {
             for (y in 0..50) {
-                val position = Vector3f(x.toFloat() + xOffset, -1.0F, y.toFloat() + yOffset)
+                val position = Vector3f(x.toFloat() + xOffset, -0.5F, y.toFloat() + yOffset)
                 entityManager.addEntity(BlockEntity(position))
             }
         }
-    }
-
-    private fun createText(): Text {
-        var value = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas vitae purus dolor. Mauris pellentesque commodo nulla, sit amet euismod sapien viverra ut. Cras commodo euismod turpis, ac lobortis augue. Nam consequat sodales quam ac porttitor. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc non est iaculis, posuere diam a, suscipit nibh. Fusce nec erat vel sapien dictum pulvinar eu porttitor leo. Nulla finibus dolor turpis, eu sagittis risus tincidunt sed. Ut convallis augue massa, vel dapibus mauris scelerisque eget. Duis sollicitudin vulputate augue, tincidunt ornare dolor feugiat at."
-        value = value.replace(". ", ".\n")
-        val color = Vector4f(0.0F, 0.5F, 0.75F, 1.0F)
-        val transform = Matrix4f().translate(-2.0F, 2.0F, 0.0F)
-        return Text(value, fontRenderer.font, transform, color)
     }
 
     @Subscribe
