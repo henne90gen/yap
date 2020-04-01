@@ -14,51 +14,63 @@ import org.joml.Vector4f
 
 class LevelEditor : ISystem(MeshComponent::class.java, PositionComponent::class.java) {
 
-    private var intersectionResult: IntersectionResult = IntersectionResult()
+    private var clampedPoint: Vector3f? = null
 
     override fun render(entities: List<Entity>) {
         renderCrosshair()
         renderSelectedBlock()
-        renderCurrentPosition()
-    }
-
-    private fun renderCurrentPosition() {
-        val cameraEntity = FirstPersonCamera.currentCameraEntity
-        cameraEntity?.let {
-            val positionComponent = it.getComponent<PositionComponent>()
-            val transform = Matrix4f()
-                    .translate(-0.3F, 0.8F, 0.0F)
-                    .scale(0.3F)
-            YapGame.getInstance().fontRenderer.string("${positionComponent.position}", transform)
-        }
     }
 
     private fun renderSelectedBlock() {
-        if (!intersectionResult.hasValue()) {
-            return
+        clampedPoint?.let {
+            val renderer = YapGame.getInstance().renderer
+            renderer.wireframe {
+                val transformation = Matrix4f()
+                        .translate(it)
+                val color = Vector4f(1.0F, 1.0F, 1.0F, 1.0F)
+                renderer.cube(transformation, color)
+            }
         }
-
-        val renderer = YapGame.getInstance().renderer
-        val clampedPoint = clampPoint(intersectionResult)
-        renderer.wireframe {
-            val transformation = Matrix4f()
-                    .translate(clampedPoint)
-            val color = Vector4f(1.0F, 1.0F, 1.0F, 1.0F)
-            renderer.cube(transformation, color)
-        }
-
-        var transform = Matrix4f()
-                .translate(-0.3F, 0.7F, 0.0F)
-                .scale(0.3F)
-        YapGame.getInstance().fontRenderer.string("${intersectionResult.normal}", transform)
-
-        transform = Matrix4f()
-                .translate(-0.3F, 0.6F, 0.0F)
-                .scale(0.3F)
-        YapGame.getInstance().fontRenderer.string("$clampedPoint", transform)
     }
 
-    private fun clampPoint(intersectionResult: IntersectionResult): Vector3f {
+    private fun renderCrosshair() {
+        val renderer = YapGame.getInstance().renderer
+        renderer.inScreenSpace {
+            val color = Vector4f(1.0F, 1.0F, 1.0F, 1.0F)
+
+            val transformationHorizontal = Matrix4f()
+                    .scale(0.1F, 0.005F, 1.0F)
+            renderer.quad(transformationHorizontal, color)
+
+            val transformationVertical = Matrix4f()
+                    .scale(0.005F, 0.1F, 1.0F)
+            renderer.quad(transformationVertical, color)
+        }
+    }
+
+    override fun update(interval: Float, entities: List<Entity>) {
+        val meshes = entities.map {
+            TransformedMesh(
+                    it.getComponent<MeshComponent>().mesh,
+                    Matrix4f().translate(it.getComponent<PositionComponent>().position)
+            )
+        }
+        val cameraEntity = FirstPersonCamera.currentCameraEntity
+        var rayStart = Vector3f(0.0F)
+        var direction = Vector3f(0.0F, 0.0F, -1.0F)
+        cameraEntity?.let {
+            rayStart = it.getComponent<PositionComponent>().position
+            direction = it.getComponent<RotationComponent>().direction()
+        }
+        val intersectionResult = intersects(rayStart, direction, meshes)
+        clampedPoint = clampPoint(intersectionResult)
+    }
+
+    private fun clampPoint(intersectionResult: IntersectionResult): Vector3f? {
+        if (!intersectionResult.hasValue()) {
+            return null
+        }
+
         val normal = intersectionResult.normal
         val point = Vector3f(intersectionResult.point).add(Vector3f(normal).absolute().mul(0.01F))
 
@@ -95,37 +107,5 @@ class LevelEditor : ISystem(MeshComponent::class.java, PositionComponent::class.
         } else {
             num.toInt().toFloat()
         }
-    }
-
-    private fun renderCrosshair() {
-        val renderer = YapGame.getInstance().renderer
-        renderer.inScreenSpace {
-            val color = Vector4f(1.0F, 1.0F, 1.0F, 1.0F)
-
-            val transformationHorizontal = Matrix4f()
-                    .scale(0.1F, 0.005F, 1.0F)
-            renderer.quad(transformationHorizontal, color)
-
-            val transformationVertical = Matrix4f()
-                    .scale(0.005F, 0.1F, 1.0F)
-            renderer.quad(transformationVertical, color)
-        }
-    }
-
-    override fun update(interval: Float, entities: List<Entity>) {
-        val meshes = entities.map {
-            TransformedMesh(
-                    it.getComponent<MeshComponent>().mesh,
-                    Matrix4f().translate(it.getComponent<PositionComponent>().position)
-            )
-        }
-        val cameraEntity = FirstPersonCamera.currentCameraEntity
-        var rayStart = Vector3f(0.0F)
-        var direction = Vector3f(0.0F, 0.0F, -1.0F)
-        cameraEntity?.let {
-            rayStart = it.getComponent<PositionComponent>().position
-            direction = it.getComponent<RotationComponent>().direction()
-        }
-        intersectionResult = intersects(rayStart, direction, meshes)
     }
 }
