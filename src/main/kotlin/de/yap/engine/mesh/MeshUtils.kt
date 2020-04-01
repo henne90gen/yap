@@ -254,8 +254,8 @@ class MeshUtils {
         }
 
         fun unitCube(material: Material? = null, texMin: Vector2f = Vector2f(0.0F), texMax: Vector2f = Vector2f(1.0F)): Mesh {
-            val min = Vector3f(-0.5F)
-            val max = Vector3f(0.5F)
+            val min = Vector3f(0F)
+            val max = Vector3f(1F)
             val vertices = mutableListOf(
                     // back
                     Vector3f(min.x, min.y, min.z), // 0

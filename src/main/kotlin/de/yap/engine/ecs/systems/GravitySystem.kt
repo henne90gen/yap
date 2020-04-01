@@ -25,6 +25,7 @@ class GravitySystem : ISystem(PhysicsComponent::class.java, PositionComponent::c
         physicsComponent.velocity += physicsComponent.acceleration * interval
         positionComponent.position.y -= physicsComponent.velocity * interval
 
+        // simulates the player height of 1,80m
         if (positionComponent.position.y < 1.8F) {
             positionComponent.position.y = 1.8F
         }

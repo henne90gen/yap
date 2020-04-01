@@ -8,7 +8,6 @@ import de.yap.engine.ecs.EntityManager
 import de.yap.engine.ecs.KeyboardEvent
 import de.yap.engine.ecs.Subscribe
 import de.yap.engine.ecs.WindowResizeEvent
-import de.yap.engine.ecs.entities.BlockEntity
 import de.yap.engine.ecs.entities.PlayerEntity
 import de.yap.engine.ecs.systems.FirstPersonCamera
 import de.yap.engine.ecs.systems.LevelEditor
@@ -89,16 +88,12 @@ class YapGame private constructor() : IGameLogic {
     }
 
     private fun initEntities() {
-        entityManager.addEntity(PlayerEntity(Vector3f(0.5F, 10.0F, 3.0F), Vector4f(1.0F, 0.0F, 0.0F, 1.0F), hasInput = true))
-        entityManager.addEntity(PlayerEntity(Vector3f(0.0F, 1.0F, 0.0F), Vector4f(0.0F, 1.0F, 0.0F, 1.0F), hasInput = false))
+        entityManager.addEntity(PlayerEntity(Vector3f(0.5F, 0.0F, 3.0F), Vector4f(1.0F, 0.0F, 0.0F, 1.0F), hasInput = true))
+        entityManager.addEntity(PlayerEntity(Vector3f(0.0F, 1.0F, 2.0F), Vector4f(0.0F, 1.0F, 0.0F, 1.0F), hasInput = false))
 
-        val xOffset = -25
-        val yOffset = -25
-        for (x in 0..50) {
-            for (y in 0..50) {
-                val position = Vector3f(x.toFloat() + xOffset, -0.5F, y.toFloat() + yOffset)
-                entityManager.addEntity(BlockEntity(position))
-            }
+        val levelGenerator = LevelGenerator()
+        for (entity in levelGenerator.generateLevelEntities()){
+            entityManager.addEntity(entity)
         }
     }
 
