@@ -132,7 +132,7 @@ class ObjLoader : MeshLoader {
             log.warn("Malformed texture coordinate on line {}", lineNumber)
             return
         }
-        textCoords.add(Vector2f(floats[0], floats[1]))
+        textCoords.add(Vector2f(floats[0], 1-floats[1]))
     }
 
     private fun addFace(faceIndices: MutableList<FaceIndices>, line: String, lineNumber: Int) {

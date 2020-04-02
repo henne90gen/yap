@@ -45,7 +45,7 @@ class Renderer {
         cubeMesh = MeshUtils.unitCube()
 
         textureMapMaterial = Material("CubeMaterial")
-        textureMapMaterial.texture = Texture.fromFile(File("models/texture_map.png"))
+        textureMapMaterial.texture = Texture.fromFile(File("models/texture_atlas.png"))
     }
 
     private fun create1x1WhiteTexture() {

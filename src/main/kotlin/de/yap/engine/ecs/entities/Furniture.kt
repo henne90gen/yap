@@ -26,3 +26,33 @@ class ChairEntity(position: Vector3f) : Entity() {
     }
 
 }
+
+class WasteBinEntity(position: Vector3f) : Entity() {
+
+    init {
+        addComponent(PositionComponent(position))
+
+        val mesh = Mesh.fromFile("models/waste_bin.obj")[0]
+        addComponent(MeshComponent(mesh))
+    }
+}
+
+class ShoeShelfEntity(position: Vector3f) : Entity() {
+
+    init {
+        addComponent(PositionComponent(position))
+
+        val mesh = Mesh.fromFile("models/shoe_shelf.obj")[0]
+        addComponent(MeshComponent(mesh))
+    }
+}
+
+class WardrobeEntity(position: Vector3f) : Entity() {
+
+    init {
+        addComponent(PositionComponent(position))
+
+        val mesh = Mesh.fromFile("models/wardrobe.obj")[0]
+        addComponent(MeshComponent(mesh))
+    }
+}
