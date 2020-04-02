@@ -97,4 +97,18 @@ class EntityManagerTest {
         assertEquals(1, testSystem.renderCounter)
         assertEquals(1, testSystem.renderEntityCount)
     }
+
+    @Test
+    fun testRemoveEntity() {
+        val manager = EntityManager()
+
+        // add entity
+        val entity = Entity()
+        entity.addComponent(TestComponent())
+        manager.addEntity(entity)
+
+        manager.removeEntity(entity)
+
+        assertEquals(0, manager.getEntities(Capability.ALL_CAPABILITIES).size)
+    }
 }

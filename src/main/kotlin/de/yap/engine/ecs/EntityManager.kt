@@ -156,4 +156,13 @@ class EntityManager {
             listener.method.invoke(listener.obj, event)
         }
     }
+
+    fun removeEntity(entity: Entity) {
+        for (capability in capabilityMap) {
+            if (!entity.hasCapability(capability.key)) {
+                continue
+            }
+            capability.value.remove(entity)
+        }
+    }
 }

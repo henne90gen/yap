@@ -19,7 +19,7 @@ class LevelEditor : ISystem(MeshComponent::class.java, PositionComponent::class.
 
     @Subscribe
     fun onMouseClick(event: MouseClickEvent) {
-        if (event.button == GLFW.GLFW_MOUSE_BUTTON_1) {
+        if (event.button == GLFW.GLFW_MOUSE_BUTTON_1 && event.action == GLFW.GLFW_RELEASE) {
             removeBlock()
         }
         if (event.button == GLFW.GLFW_MOUSE_BUTTON_2 && event.action == GLFW.GLFW_RELEASE) {
@@ -28,7 +28,20 @@ class LevelEditor : ISystem(MeshComponent::class.java, PositionComponent::class.
     }
 
     private fun removeBlock() {
-
+        clampedPoint?.let { p ->
+            normal?.let { n ->
+                val removalPoint = Vector3f(p).sub(n)
+                // TODO use a spacial query
+                val entities = YapGame.getInstance().entityManager.getEntities(capability)
+                for (entity in entities) {
+                    val position = entity.getComponent<PositionComponent>().position
+                    if (removalPoint == position) {
+                        YapGame.getInstance().entityManager.removeEntity(entity)
+                        break
+                    }
+                }
+            }
+        }
     }
 
     private fun placeBlock() {
