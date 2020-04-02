@@ -2,8 +2,10 @@
 
 ## TODOs
 
-- game does not terminate correctly after pressing ESC
-- font does not load correctly on windows
+- bugs
+    - game does not terminate correctly after pressing ESC
+    - font does not load correctly on windows
+    - when rendering text, game crashes after a while
 - complete physics system
 - level file format
 - level generator (Max)
@@ -12,7 +14,11 @@
     - remove blocks with left click
     - show outline of block that will be placed
     - press Alt to release mouse
-- top down camera (try both)
+    - add UI
+        - to configure which block to place
+        - save/load level files
+- top down camera (try different variants)
+    - third person camera
     - direct control
     - move only when player gets too close to edge
 - path finding

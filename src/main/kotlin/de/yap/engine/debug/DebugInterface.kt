@@ -5,7 +5,6 @@ import de.yap.engine.ecs.PositionComponent
 import de.yap.engine.ecs.RotationComponent
 import de.yap.engine.ecs.Subscribe
 import de.yap.engine.ecs.entities.Entity
-import de.yap.engine.ecs.systems.FirstPersonCamera
 import de.yap.engine.ecs.systems.ISystem
 import de.yap.game.YapGame
 import org.joml.Matrix4f
@@ -50,7 +49,7 @@ class DebugInterface : ISystem() {
 
     private fun renderCoordinateSystem() {
         val renderer = YapGame.getInstance().renderer
-        val currentCamera = FirstPersonCamera.currentCameraEntity
+        val currentCamera = YapGame.getInstance().firstPersonCamera.getCurrentCamera()
         currentCamera?.let {
             val positionComponent = currentCamera.getComponent<PositionComponent>()
             val rotationComponent = currentCamera.getComponent<RotationComponent>()

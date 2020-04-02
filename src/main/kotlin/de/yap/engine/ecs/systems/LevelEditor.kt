@@ -12,10 +12,24 @@ import org.joml.Vector3f
 import org.joml.Vector4f
 import org.lwjgl.glfw.GLFW
 
+
 class LevelEditor : ISystem(MeshComponent::class.java, PositionComponent::class.java) {
 
     private var clampedPoint: Vector3f? = null
     private var normal: Vector3f? = null
+
+    override fun init() {
+        // TODO open up a window to show current block settings and load/save buttons
+//        val frame = JFrame() // creating instance of JFrame
+//
+//        val button = JButton("click") // creating instance of JButton
+//        button.setBounds(130, 100, 100, 40) // x axis, y axis, width, height
+//        frame.add(button) // adding button in JFrame
+//
+//        frame.setSize(400, 500) // 400 width and 500 height
+//        frame.layout = null // using no layout managers
+//        frame.isVisible = true // making the frame visible
+    }
 
     @Subscribe
     fun onMouseClick(event: MouseClickEvent) {
@@ -25,6 +39,18 @@ class LevelEditor : ISystem(MeshComponent::class.java, PositionComponent::class.
         if (event.button == GLFW.GLFW_MOUSE_BUTTON_2 && event.action == GLFW.GLFW_RELEASE) {
             placeBlock()
         }
+    }
+
+    @Subscribe
+    fun onKeyboardPress(event: KeyboardEvent) {
+        if (event.key == GLFW.GLFW_KEY_LEFT_ALT && event.action == GLFW.GLFW_RELEASE) {
+            releaseMouse()
+        }
+    }
+
+    private fun releaseMouse() {
+        YapGame.getInstance().window.toggleMouseVisibility()
+        YapGame.getInstance().firstPersonCamera.toggleMouseMovementTracking()
     }
 
     private fun removeBlock() {
@@ -90,7 +116,7 @@ class LevelEditor : ISystem(MeshComponent::class.java, PositionComponent::class.
                     Matrix4f().translate(it.getComponent<PositionComponent>().position)
             )
         }
-        val cameraEntity = FirstPersonCamera.currentCameraEntity
+        val cameraEntity = YapGame.getInstance().firstPersonCamera.getCurrentCamera()
         var rayStart = Vector3f(0.0F)
         var direction = Vector3f(0.0F, 0.0F, -1.0F)
         cameraEntity?.let {

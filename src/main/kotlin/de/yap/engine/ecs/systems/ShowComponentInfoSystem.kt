@@ -64,12 +64,13 @@ class ShowComponentInfoSystem : ISystem(PositionComponent::class.java) {
         // TODO only render this info on mouse hover
         // TODO render this information as part of the HUD instead of in the world
 
-        if (entity == FirstPersonCamera.currentCameraEntity) {
+        val currentCamera = YapGame.getInstance().firstPersonCamera.getCurrentCamera()
+        if (entity == currentCamera) {
             return
         }
 
         var lookAt = Vector3f(0.0F)
-        FirstPersonCamera.currentCameraEntity?.let {
+        currentCamera?.let {
             val positionComponent = it.getComponent<PositionComponent>()
             lookAt = positionComponent.position
         }

@@ -47,6 +47,7 @@ class YapGame private constructor() : IGameLogic {
 
     val renderer = Renderer()
     val fontRenderer = FontRenderer()
+    lateinit var firstPersonCamera: FirstPersonCamera
 
     var view: Matrix4f = Matrix4f()
     var projection: Matrix4f = Matrix4f()
@@ -78,7 +79,8 @@ class YapGame private constructor() : IGameLogic {
     private fun initSystems() {
         entityManager.registerEventListener(this)
         entityManager.registerSystem(LevelEditor())
-        entityManager.registerSystem(FirstPersonCamera())
+        firstPersonCamera = FirstPersonCamera()
+        entityManager.registerSystem(firstPersonCamera)
         entityManager.registerSystem(MeshSystem())
         entityManager.registerSystem(ShowComponentInfoSystem())
         entityManager.registerSystem(DebugInterface())

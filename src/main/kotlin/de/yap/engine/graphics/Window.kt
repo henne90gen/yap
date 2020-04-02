@@ -12,7 +12,6 @@ import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
-import org.lwjgl.opengl.GLUtil
 import org.lwjgl.system.Callback
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
@@ -28,6 +27,7 @@ class Window(private val title: String, var width: Int, var height: Int, private
     private var debugCallback: Callback? = null
     private var ups = 0.0F
     private var fps = 0.0F
+    private var mouseVisible = true
 
     fun setMousePosition(x: Double, y: Double) {
         var xPos = x             // (-aspectRatio, aspectRatio) (left, right)
@@ -79,7 +79,7 @@ class Window(private val title: String, var width: Int, var height: Int, private
         }
 
         // Setup the mouse
-        glfwSetInputMode(windowHandle, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
+        toggleMouseVisibility()
         glfwSetCursorPosCallback(windowHandle) { _: Long, xpos: Double, ypos: Double ->
             val pair = mapPositionFromPixelSpaceToScreenSpace(xpos, ypos)
             YapGame.getInstance().entityManager.fireEvent(MouseMoveEvent(pair.first.toFloat(), pair.second.toFloat()))
@@ -213,5 +213,14 @@ class Window(private val title: String, var width: Int, var height: Int, private
             mousePosition.x = pair.first.toFloat()
             mousePosition.y = pair.second.toFloat()
         }
+    }
+
+    fun toggleMouseVisibility() {
+        if (mouseVisible) {
+            glfwSetInputMode(windowHandle, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
+        } else {
+            glfwSetInputMode(windowHandle, GLFW_CURSOR, GLFW_CURSOR_NORMAL)
+        }
+        mouseVisible = !mouseVisible
     }
 }

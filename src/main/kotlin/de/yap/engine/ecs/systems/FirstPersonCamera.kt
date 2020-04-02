@@ -23,9 +23,10 @@ class FirstPersonCamera : ISystem(PositionComponent::class.java, RotationCompone
 
     companion object {
         private val log = LogManager.getLogger()
-
-        var currentCameraEntity: Entity? = null
     }
+
+    private var currentCameraEntity: Entity? = null
+    private var trackMouseMovement = true
 
     override fun render(entities: List<Entity>) {
         for (entity in entities) {
@@ -54,6 +55,10 @@ class FirstPersonCamera : ISystem(PositionComponent::class.java, RotationCompone
     }
 
     override fun update(interval: Float, entities: List<Entity>) {
+        if (!trackMouseMovement) {
+            return
+        }
+
         for (entity in entities) {
             val cameraComponent = entity.getComponent<CameraComponent>()
             if (!cameraComponent.active) {
@@ -184,5 +189,14 @@ class FirstPersonCamera : ISystem(PositionComponent::class.java, RotationCompone
         val newActiveEntity = entities[activeIndex]
         val cameraComponent = newActiveEntity.getComponent<CameraComponent>()
         cameraComponent.active = true
+    }
+
+    fun toggleMouseMovementTracking() {
+        trackMouseMovement = !trackMouseMovement
+        YapGame.getInstance().window.setMousePosition(0.0, 0.0)
+    }
+
+    fun getCurrentCamera(): Entity? {
+        return currentCameraEntity
     }
 }
