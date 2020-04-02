@@ -3,19 +3,40 @@ package de.yap.engine.ecs.systems
 import de.yap.engine.ecs.*
 import de.yap.engine.ecs.entities.BlockEntity
 import de.yap.engine.ecs.entities.Entity
+import de.yap.engine.util.LevelUtils
 import de.yap.game.IntersectionResult
 import de.yap.game.TransformedMesh
 import de.yap.game.YapGame
 import de.yap.game.intersects
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.joml.Vector4f
 import org.lwjgl.glfw.GLFW
 import java.awt.event.WindowEvent
+import java.io.File
 import javax.swing.*
+import javax.swing.filechooser.FileFilter
 
+class LevelFileFilter : FileFilter() {
+    override fun accept(file: File?): Boolean {
+        if (file == null) {
+            return false
+        }
+        return file.isDirectory || file.extension == "hse"
+    }
+
+    override fun getDescription(): String {
+        return "Level Files (*.hse)"
+    }
+}
 
 class LevelEditor : ISystem(MeshComponent::class.java, PositionComponent::class.java) {
+
+    companion object {
+        val log: Logger = LogManager.getLogger()
+    }
 
     private var reactToMouseInput = true
     private var clampedPoint: Vector3f? = null
@@ -30,6 +51,8 @@ class LevelEditor : ISystem(MeshComponent::class.java, PositionComponent::class.
 
         val blockSettings = createBlockSettings()
         frame.add(blockSettings)
+
+        // add more settings panels here
 
         frame.add(Box.createVerticalGlue())
 
@@ -65,12 +88,41 @@ class LevelEditor : ISystem(MeshComponent::class.java, PositionComponent::class.
         saveLoadButtons.layout = BoxLayout(saveLoadButtons, BoxLayout.X_AXIS)
 
         val loadLevelBtn = JButton("Load Level")
-        loadLevelBtn.addActionListener { println("Loading level") }
+        loadLevelBtn.addActionListener {
+            val fc = createLevelFileChooser()
+            val returnVal = fc.showOpenDialog(frame)
+            if (returnVal != JFileChooser.APPROVE_OPTION) {
+                return@addActionListener
+            }
+            val file = fc.selectedFile
+            val entities = LevelUtils.loadLevel(file)
+            // TODO implement both of those methods
+//            YapGame.getInstance().entityManager.removeAllEntities()
+//            YapGame.getInstance().entityManager.addAllEntities(entities)
+        }
         saveLoadButtons.add(loadLevelBtn)
+
         val saveLevelBtn = JButton("Save Level")
-        saveLevelBtn.addActionListener { println("Saving level") }
+        saveLevelBtn.addActionListener {
+            val fc = createLevelFileChooser()
+            val returnValue = fc.showSaveDialog(frame)
+            if (returnValue != JFileChooser.APPROVE_OPTION) {
+                return@addActionListener
+            }
+            val file = fc.selectedFile
+            LevelUtils.saveLevel(file, YapGame.getInstance().entityManager.getEntities(Capability.ALL_CAPABILITIES))
+        }
         saveLoadButtons.add(saveLevelBtn)
         return saveLoadButtons
+    }
+
+    private fun createLevelFileChooser(): JFileChooser {
+        val fc = JFileChooser()
+        fc.fileSelectionMode = JFileChooser.FILES_ONLY
+        fc.currentDirectory = File(".")
+        fc.isAcceptAllFileFilterUsed = false
+        fc.addChoosableFileFilter(LevelFileFilter())
+        return fc
     }
 
     @Subscribe

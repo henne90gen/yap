@@ -27,7 +27,7 @@ class Renderer {
 
     private lateinit var quadMesh: Mesh
     private lateinit var cubeMesh: Mesh
-    lateinit var textureMapMaterial: Material
+    var textureMapMaterial: Material = Material("EmptyMaterial")
 
     val shader3D = Shader("shaders/vertex.glsl", "shaders/fragment.glsl")
 
