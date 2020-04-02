@@ -1,9 +1,6 @@
 package de.yap.engine.graphics
 
-import de.yap.engine.ecs.KeyboardEvent
-import de.yap.engine.ecs.MouseClickEvent
-import de.yap.engine.ecs.MouseMoveEvent
-import de.yap.engine.ecs.WindowResizeEvent
+import de.yap.engine.ecs.*
 import de.yap.game.YapGame
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -202,6 +199,7 @@ class Window(private val title: String, var width: Int, var height: Int, private
 
     fun close() {
         glfwSetWindowShouldClose(windowHandle, true)
+        YapGame.getInstance().entityManager.fireEvent(WindowCloseEvent())
     }
 
     fun getMousePosition(mousePosition: Vector2f) {
@@ -222,5 +220,9 @@ class Window(private val title: String, var width: Int, var height: Int, private
             glfwSetInputMode(windowHandle, GLFW_CURSOR, GLFW_CURSOR_NORMAL)
         }
         mouseVisible = !mouseVisible
+    }
+
+    fun focus() {
+        glfwFocusWindow(windowHandle)
     }
 }

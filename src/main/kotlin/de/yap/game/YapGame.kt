@@ -27,6 +27,8 @@ import org.joml.Vector3f
 import org.joml.Vector4f
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL20.glViewport
+import kotlin.math.abs
+import kotlin.random.Random
 
 
 class YapGame private constructor() : IGameLogic {
@@ -97,8 +99,11 @@ class YapGame private constructor() : IGameLogic {
         for ((pos, entity) in levelGenerator.generateLevelEntities()){
             entityManager.addEntity(entity)
         }
+
         val position = Vector3f(0.5F, 0.5F, 0.5F)
-        entityManager.addEntity(BlockEntity(position))
+        val num = abs(Random.nextInt()) % AVAILABLE_BLOCKS.size
+        val entity = BlockEntity(position, num)
+        entityManager.addEntity(entity)
     }
 
     @Subscribe

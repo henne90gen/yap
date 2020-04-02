@@ -11,32 +11,82 @@ import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.joml.Vector4f
 import org.lwjgl.glfw.GLFW
+import java.awt.event.WindowEvent
+import javax.swing.*
 
 
 class LevelEditor : ISystem(MeshComponent::class.java, PositionComponent::class.java) {
 
+    private var reactToMouseInput = true
     private var clampedPoint: Vector3f? = null
     private var normal: Vector3f? = null
+    private var selectedBlockId = 0
+
+    private val frame = JFrame("Settings")
 
     override fun init() {
-        // TODO open up a window to show current block settings and load/save buttons
-//        val frame = JFrame() // creating instance of JFrame
-//
-//        val button = JButton("click") // creating instance of JButton
-//        button.setBounds(130, 100, 100, 40) // x axis, y axis, width, height
-//        frame.add(button) // adding button in JFrame
-//
-//        frame.setSize(400, 500) // 400 width and 500 height
-//        frame.layout = null // using no layout managers
-//        frame.isVisible = true // making the frame visible
+        val saveLoadButtons = createSaveLoadButtons()
+        frame.add(saveLoadButtons)
+
+        val blockSettings = createBlockSettings()
+        frame.add(blockSettings)
+
+        frame.add(Box.createVerticalGlue())
+
+        frame.setSize(300, 500)
+        frame.focusableWindowState = false
+        frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+        frame.layout = BoxLayout(frame.contentPane, BoxLayout.Y_AXIS)
+        frame.isVisible = true
+    }
+
+    private fun createBlockSettings(): JPanel {
+        val blockSettings = JPanel()
+        blockSettings.layout = BoxLayout(blockSettings, BoxLayout.X_AXIS)
+
+        // TODO this has been copied from BlockEntity.AVAILABLE_BLOCKS
+        val items = arrayOf("Grass", "Sand", "Wood", "Rock")
+        val materialCombo = JComboBox(items)
+        materialCombo.addActionListener {
+            selectedBlockId = when (materialCombo.selectedItem) {
+                "Grass" -> 0
+                "Sand" -> 1
+                "Wood" -> 2
+                "Rock" -> 3
+                else -> selectedBlockId
+            }
+        }
+        blockSettings.add(materialCombo)
+        return blockSettings
+    }
+
+    private fun createSaveLoadButtons(): JPanel {
+        val saveLoadButtons = JPanel()
+        saveLoadButtons.layout = BoxLayout(saveLoadButtons, BoxLayout.X_AXIS)
+
+        val loadLevelBtn = JButton("Load Level")
+        loadLevelBtn.addActionListener { println("Loading level") }
+        saveLoadButtons.add(loadLevelBtn)
+        val saveLevelBtn = JButton("Save Level")
+        saveLevelBtn.addActionListener { println("Saving level") }
+        saveLoadButtons.add(saveLevelBtn)
+        return saveLoadButtons
+    }
+
+    @Subscribe
+    fun onWindowClose(event: WindowCloseEvent) {
+        frame.dispatchEvent(WindowEvent(frame, WindowEvent.WINDOW_CLOSING))
     }
 
     @Subscribe
     fun onMouseClick(event: MouseClickEvent) {
+        if (!reactToMouseInput) {
+            return
+        }
+
         if (event.button == GLFW.GLFW_MOUSE_BUTTON_1 && event.action == GLFW.GLFW_RELEASE) {
             removeBlock()
-        }
-        if (event.button == GLFW.GLFW_MOUSE_BUTTON_2 && event.action == GLFW.GLFW_RELEASE) {
+        } else if (event.button == GLFW.GLFW_MOUSE_BUTTON_2 && event.action == GLFW.GLFW_RELEASE) {
             placeBlock()
         }
     }
@@ -44,25 +94,28 @@ class LevelEditor : ISystem(MeshComponent::class.java, PositionComponent::class.
     @Subscribe
     fun onKeyboardPress(event: KeyboardEvent) {
         if (event.key == GLFW.GLFW_KEY_LEFT_ALT && event.action == GLFW.GLFW_RELEASE) {
-            releaseMouse()
+            toggleReactToMouseInput()
         }
     }
 
-    private fun releaseMouse() {
-        YapGame.getInstance().window.toggleMouseVisibility()
-        YapGame.getInstance().firstPersonCamera.toggleMouseMovementTracking()
+    private fun toggleReactToMouseInput() {
+        val game = YapGame.getInstance()
+        game.window.toggleMouseVisibility()
+        game.firstPersonCamera.toggleMouseMovementTracking()
+        reactToMouseInput = !reactToMouseInput
     }
 
     private fun removeBlock() {
         clampedPoint?.let { p ->
             normal?.let { n ->
+                val game = YapGame.getInstance()
                 val removalPoint = Vector3f(p).sub(n)
                 // TODO use a spacial query
-                val entities = YapGame.getInstance().entityManager.getEntities(capability)
+                val entities = game.entityManager.getEntities(capability)
                 for (entity in entities) {
                     val position = entity.getComponent<PositionComponent>().position
                     if (removalPoint == position) {
-                        YapGame.getInstance().entityManager.removeEntity(entity)
+                        game.entityManager.removeEntity(entity)
                         break
                     }
                 }
@@ -72,7 +125,7 @@ class LevelEditor : ISystem(MeshComponent::class.java, PositionComponent::class.
 
     private fun placeBlock() {
         clampedPoint?.let {
-            val entity = BlockEntity(it)
+            val entity = BlockEntity(it, selectedBlockId)
             YapGame.getInstance().entityManager.addEntity(entity)
         }
     }

@@ -16,3 +16,5 @@ data class MouseClickEvent(val button: Int = 0, val action: Int = 0, val mods: I
 data class MouseMoveEvent(val x: Float = 0.0F, val y: Float = 0.0F) : Event()
 
 data class WindowResizeEvent(val width: Int = 0, val height: Int = 0) : Event()
+
+class WindowCloseEvent : Event()
