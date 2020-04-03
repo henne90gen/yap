@@ -1,6 +1,7 @@
 package de.yap.game
 
 import de.yap.engine.ecs.entities.*
+import org.joml.Vector2i
 import org.joml.Vector3f
 import kotlin.math.PI
 import kotlin.random.Random
@@ -17,7 +18,7 @@ class LevelGenerator() {
         for (x in 0..width) {
             for (y in 0..depth) {
                 val position = Vector3f(x.toFloat(), -1F, y.toFloat())
-                entities[position] = BlockEntity.singleTextureBlock(position, CHECKER_BOARD)
+                entities[position] = BlockEntity.singleTextureBlock(position, Vector2i(0, 8))
 
                 val i = Random.nextInt(50)
                 val randPos = Vector3f(x.toFloat(), 0F, y.toFloat())
@@ -50,6 +51,7 @@ class LevelGenerator() {
                         }
                     }
                     7 ->{
+                        randPos.y += 1
                         entities[randPos] = OvenEntity(randPos, yaw = 0.0F, pitch = 0.0F)
                     }
                 }
@@ -59,25 +61,25 @@ class LevelGenerator() {
         // side walls
         for (x in -1..width+1) {
             val position1 = Vector3f(x.toFloat(), 0F, -1F)
-            entities[position1] = BlockEntity.singleTextureBlock(position1, RED)
+            entities[position1] = BlockEntity.singleTextureBlock(position1, Vector2i(1, 2))
             val position2 = Vector3f(x.toFloat(), 0F, depth.toFloat()+1)
-            entities[position2] = BlockEntity.singleTextureBlock(position2, RED)
+            entities[position2] = BlockEntity.singleTextureBlock(position2, Vector2i(1, 2))
 
             val position3 = Vector3f(x.toFloat(), 1F, -1F)
-            entities[position3] = BlockEntity.singleTextureBlock(position3, RED)
+            entities[position3] = BlockEntity.singleTextureBlock(position3, Vector2i(1, 2))
             val position4 = Vector3f(x.toFloat(), 1F, depth.toFloat()+1)
-            entities[position4] = BlockEntity.singleTextureBlock(position4, RED)
+            entities[position4] = BlockEntity.singleTextureBlock(position4, Vector2i(1, 2))
         }
         for (z in 0..depth) {
             val position1 = Vector3f(-1F, 0F, z.toFloat())
-            entities[position1] = BlockEntity.singleTextureBlock(position1, BLUE)
+            entities[position1] = BlockEntity.singleTextureBlock(position1, Vector2i(1, 1))
             val position2 = Vector3f(width.toFloat()+1, 0F, z.toFloat())
-            entities[position2] = BlockEntity.singleTextureBlock(position2, GREEN)
+            entities[position2] = BlockEntity.singleTextureBlock(position2, Vector2i(1, 6))
 
             val position3 = Vector3f(-1F, 1F, z.toFloat())
-            entities[position3] = BlockEntity.singleTextureBlock(position3, BLUE)
+            entities[position3] = BlockEntity.singleTextureBlock(position3, Vector2i(1, 1))
             val position4 = Vector3f(width.toFloat()+1, 1F, z.toFloat())
-            entities[position4] = BlockEntity.singleTextureBlock(position4, GREEN)
+            entities[position4] = BlockEntity.singleTextureBlock(position4, Vector2i(1, 6))
         }
 
         return entities
