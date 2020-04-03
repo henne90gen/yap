@@ -9,15 +9,15 @@ import kotlin.random.Random
 
 class LevelGenerator() {
 
-    private val width = Random.nextInt(15, 30)
-    private val depth = Random.nextInt(15, 30)
+    private val width = Random.nextInt(20, 50)
+    private val depth = Random.nextInt(20, 50)
 
     fun generateLevelEntities(): MutableCollection<Entity> {
         val entities = mutableMapOf<Vector3f, Entity>()
 
         addFloor(entities)
-        addFurniture(entities)
         addWalls(entities)
+        addFurniture(entities)
 
         return entities.values
     }
@@ -43,13 +43,13 @@ class LevelGenerator() {
                         entities[randPos] = TableEntity(randPos)
                     }
                     2 -> {
-                        entities[randPos] = ChairEntity(randPos, yaw = 0.0F, pitch = randOrientation )
+                        entities[randPos] = ChairEntity(randPos, pitch = randOrientation )
                     }
                     3 -> {
                         entities[randPos] = WasteBinEntity(randPos)
                     }
                     4 -> {
-                        entities[randPos] = ShoeShelfEntity(randPos, yaw = 0.0F, pitch = randOrientation)
+                        entities[randPos] = ShoeShelfEntity(randPos, pitch = randOrientation)
                     }
                     5 -> {
                         entities[randPos] = WardrobeEntity(randPos)
@@ -66,7 +66,10 @@ class LevelGenerator() {
                         }
                     }
                     7 -> {
-                        entities[randPos] = OvenEntity(randPos, yaw = 0.0F, pitch = randOrientation)
+                        entities[randPos] = OvenEntity(randPos, pitch = randOrientation)
+                    }
+                    8 -> {
+                        entities[randPos] = KitchenCabinetEntity(randPos, pitch = randOrientation)
                     }
                 }
             }
@@ -79,6 +82,9 @@ class LevelGenerator() {
                 entities[position] = WindowEntity(position, pitch = rotation)
             }
         }
+
+        val pos = Vector3f(3F, 2F, 0F)
+        entities[pos] = ClockEntity(pos)
 
         for (x in -1..width+1) {
             val wall1Layer1 = Vector3f(x.toFloat(), 0F, -1F)

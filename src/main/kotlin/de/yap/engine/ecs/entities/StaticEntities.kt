@@ -36,5 +36,11 @@ class FridgeEntity(position: Vector3f, yaw: Float = 0.0F, pitch: Float = 0.0F)
 class OvenEntity(position: Vector3f, yaw: Float = 0.0F, pitch: Float = 0.0F)
     : StaticEntity(position, Mesh.fromFile("models/oven.obj")[0], yaw, pitch)
 
+class KitchenCabinetEntity(position: Vector3f, yaw: Float = 0.0F, pitch: Float = 0.0F)
+    : StaticEntity(position, Mesh.fromFile("models/kitchen_cabinet.obj")[0], yaw, pitch)
+
 class WindowEntity(position: Vector3f, yaw: Float = 0.0F, pitch: Float = 0.0F)
     : StaticEntity(position, Mesh.fromFile("models/window.obj")[0], yaw, pitch)
+
+class ClockEntity(position: Vector3f, yaw: Float = 0.0F, pitch: Float = 0.0F)
+    : StaticEntity(position, Mesh.fromFile("models/clock.obj")[0], yaw, pitch)
