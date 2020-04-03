@@ -54,7 +54,7 @@ class LevelUtils {
                 val parts = rest.split(" ")
                 val position = Vector3f(parts[1].toFloat(), parts[2].toFloat(), parts[3].toFloat())
                 val id = parts[0].toInt()
-                result.add(BlockEntity(position, id))
+//                result.add(BlockEntity(position, id))
             } catch (e: NumberFormatException) {
                 log.warn("Could not parse block entity on line $lineNumber.")
             }

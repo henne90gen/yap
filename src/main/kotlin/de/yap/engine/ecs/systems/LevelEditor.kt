@@ -180,8 +180,8 @@ class LevelEditor : ISystem(MeshComponent::class.java, PositionComponent::class.
 
     private fun placeBlock() {
         clampedPoint?.let {
-            val entity = BlockEntity(it, selectedBlockId)
-            YapGame.getInstance().entityManager.addEntity(entity)
+//            val entity = BlockEntity(it, selectedBlockId)
+//            YapGame.getInstance().entityManager.addEntity(entity)
         }
     }
 
