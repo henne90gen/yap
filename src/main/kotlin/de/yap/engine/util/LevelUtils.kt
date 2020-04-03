@@ -1,6 +1,5 @@
 package de.yap.engine.util
 
-import de.yap.engine.ecs.BlockTypeComponent
 import de.yap.engine.ecs.PositionComponent
 import de.yap.engine.ecs.entities.BlockEntity
 import de.yap.engine.ecs.entities.Entity
@@ -87,8 +86,8 @@ class LevelUtils {
                         val x = positionComponent.position.x
                         val y = positionComponent.position.y
                         val z = positionComponent.position.z
-                        val id = entity.getComponent<BlockTypeComponent>().id
-                        it.write("b $id $x $y $z\n")
+//                        val id = entity.getComponent<BlockTypeComponent>().id
+//                        it.write("b $id $x $y $z\n")
                     }
                 }
             }
