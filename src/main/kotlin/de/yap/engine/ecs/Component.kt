@@ -54,8 +54,7 @@ class BoundingBoxComponent(
 ) : Component() {
     companion object {
         fun unitCube(): BoundingBoxComponent {
-            // TODO find correct coordinates
-            return BoundingBoxComponent(Vector3f(-0.5F), Vector3f(0.5F))
+            return BoundingBoxComponent(Vector3f(0.0F), Vector3f(1.0F))
         }
     }
 }

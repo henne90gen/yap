@@ -7,6 +7,7 @@ import de.yap.engine.ecs.systems.ISystem
 import de.yap.game.YapGame
 import org.joml.Matrix4f
 import org.joml.Vector3f
+import org.joml.Vector4f
 
 class DebugBoundingBox : ISystem(BoundingBoxComponent::class.java, PositionComponent::class.java) {
 
@@ -20,9 +21,10 @@ class DebugBoundingBox : ISystem(BoundingBoxComponent::class.java, PositionCompo
             val boundingBox = entity.getComponent<BoundingBoxComponent>()
             val scale = Vector3f(boundingBox.max).sub(boundingBox.min)
             val transformation = Matrix4f()
-                    .translate(position)
+                    .translate(Vector3f(position).add(Vector3f(0.5F)))
                     .scale(scale)
-            YapGame.getInstance().renderer.cube(transformation)
+            val color = Vector4f(1.0F, 0.078431373F, 0.576470588F, 1.0F)
+            YapGame.getInstance().renderer.cube(transformation, color)
         }
     }
 }
