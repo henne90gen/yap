@@ -1,6 +1,7 @@
 package de.yap.engine.ecs.systems
 
 import de.yap.engine.ecs.*
+import de.yap.engine.ecs.entities.BlockEntity
 import de.yap.engine.ecs.entities.Entity
 import de.yap.engine.util.LevelUtils
 import de.yap.game.IntersectionResult
@@ -10,12 +11,15 @@ import de.yap.game.intersects
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
+import org.joml.Vector2i
 import org.joml.Vector3f
 import org.joml.Vector4f
 import org.lwjgl.glfw.GLFW
 import java.awt.event.WindowEvent
 import java.io.File
 import javax.swing.*
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
 import javax.swing.filechooser.FileFilter
 
 class LevelFileFilter : FileFilter() {
@@ -40,7 +44,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
     private var reactToMouseInput = true
     private var clampedPoint: Vector3f? = null
     private var normal: Vector3f? = null
-    private var selectedBlockId = 0
+    private var selectedTextureIndex = Vector2i(0)
 
     private val frame = JFrame("Settings")
 
@@ -48,7 +52,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
         val saveLoadButtons = createSaveLoadButtons()
         frame.add(saveLoadButtons)
 
-        val blockSettings = createBlockSettings()
+        val blockSettings = createEntitySettings()
         frame.add(blockSettings)
 
         // add more settings panels here
@@ -56,30 +60,40 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
         frame.add(Box.createVerticalGlue())
 
         frame.setSize(300, 500)
-        frame.focusableWindowState = false
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         frame.layout = BoxLayout(frame.contentPane, BoxLayout.Y_AXIS)
         frame.isVisible = true
+
+        YapGame.getInstance().window.focus()
     }
 
-    private fun createBlockSettings(): JPanel {
-        val blockSettings = JPanel()
-        blockSettings.layout = BoxLayout(blockSettings, BoxLayout.X_AXIS)
+    private fun createEntitySettings(): JPanel {
+        val entitySettings = JPanel()
+        entitySettings.layout = BoxLayout(entitySettings, BoxLayout.X_AXIS)
 
-        // TODO this has been copied from BlockEntity.AVAILABLE_BLOCKS
-        val items = arrayOf("Grass", "Sand", "Wood", "Rock")
-        val materialCombo = JComboBox(items)
-        materialCombo.addActionListener {
-            selectedBlockId = when (materialCombo.selectedItem) {
-                "Grass" -> 0
-                "Sand" -> 1
-                "Wood" -> 2
-                "Rock" -> 3
-                else -> selectedBlockId
+        val textFieldX = JTextField(selectedTextureIndex.x.toString())
+        textFieldX.isEditable = true
+        textFieldX.document.addDocumentListener(CustomDocumentListener {
+            try {
+                selectedTextureIndex.x = textFieldX.text.toInt()
+            } catch (e: NumberFormatException) {
+                // ignore
             }
-        }
-        blockSettings.add(materialCombo)
-        return blockSettings
+        })
+        entitySettings.add(textFieldX)
+
+        val textFieldY = JTextField(selectedTextureIndex.y.toString())
+        textFieldY.isEditable = true
+        textFieldY.document.addDocumentListener(CustomDocumentListener {
+            try {
+                selectedTextureIndex.y = textFieldY.text.toInt()
+            } catch (e: NumberFormatException) {
+                // ignore
+            }
+        })
+        entitySettings.add(textFieldY)
+
+        return entitySettings
     }
 
     private fun createSaveLoadButtons(): JPanel {
@@ -179,8 +193,8 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
 
     private fun placeBlock() {
         clampedPoint?.let {
-//            val entity = BlockEntity(it, selectedBlockId)
-//            YapGame.getInstance().entityManager.addEntity(entity)
+            val entity = BlockEntity.singleTextureBlock(it, selectedTextureIndex)
+            YapGame.getInstance().entityManager.addEntity(entity)
         }
     }
 
@@ -195,6 +209,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
             renderer.wireframe {
                 val transformation = Matrix4f()
                         .translate(it)
+                        .translate(0.5F, 0.5F, 0.5F)
                 val color = Vector4f(1.0F, 1.0F, 1.0F, 1.0F)
                 renderer.cube(transformation, color)
             }
@@ -246,30 +261,30 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
         }
 
         val normal = intersectionResult.normal
-        val point = Vector3f(intersectionResult.point).add(Vector3f(normal).absolute().mul(0.01F))
+        val point = Vector3f(intersectionResult.point).add(Vector3f(normal).mul(-0.01F))
 
         var x = point.x
         x = clamp(x)
         x += if (normal.x == 0.0F) {
-            0.5F
+            0.0F
         } else {
-            0.5F * normal.x
+            normal.x
         }
 
         var y = point.y
         y = clamp(y)
         y += if (normal.y == 0.0F) {
-            0.5F
+            0.0F
         } else {
-            0.5F * normal.y
+            normal.y
         }
 
         var z = point.z
         z = clamp(z)
         z += if (normal.z == 0.0F) {
-            0.5F
+            0.0F
         } else {
-            0.5F * normal.z
+            normal.z
         }
 
         return Vector3f(x, y, z)
@@ -281,5 +296,19 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
         } else {
             num.toInt().toFloat()
         }
+    }
+}
+
+class CustomDocumentListener(val function: () -> Unit) : DocumentListener {
+    override fun changedUpdate(p0: DocumentEvent?) {
+        function()
+    }
+
+    override fun insertUpdate(p0: DocumentEvent?) {
+        function()
+    }
+
+    override fun removeUpdate(p0: DocumentEvent?) {
+        function()
     }
 }
