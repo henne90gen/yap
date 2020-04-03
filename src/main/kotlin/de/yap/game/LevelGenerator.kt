@@ -18,7 +18,7 @@ class LevelGenerator() {
         for (x in 0..width) {
             for (y in 0..depth) {
                 val position = Vector3f(x.toFloat(), -1F, y.toFloat())
-                entities[position] = BlockEntity.singleTextureBlock(position, Vector2i(0, 8))
+                entities[position] = BlockEntity.singleTextureBlock(position, Vector2i(8, 0))
 
                 val i = Random.nextInt(50)
                 val randPos = Vector3f(x.toFloat(), 0F, y.toFloat())
@@ -51,7 +51,6 @@ class LevelGenerator() {
                         }
                     }
                     7 ->{
-                        randPos.y += 1
                         entities[randPos] = OvenEntity(randPos, yaw = 0.0F, pitch = 0.0F)
                     }
                 }

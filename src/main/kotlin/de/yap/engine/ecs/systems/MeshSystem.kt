@@ -18,17 +18,13 @@ class MeshSystem : ISystem(PositionComponent::class.java, RotationComponent::cla
         val rotationComponent = entity.getComponent<RotationComponent>()
         val meshComponent = entity.getComponent<MeshComponent>()
 
-        // ToDo add generic centering the object before rotating
-        // ToDo needed since we need to rotate around the mesh center point, this will not work if the mesh is not 1x1x1 cube
-        // Not sure why z is negative, maybe it is inverted in blender
-        val modelRotationCenter = Vector3f(0.5F, 0.5F, 0.5F)
+        val offset = Vector3f(0.5f, 0.5f, 0.5f)
         val transformation = Matrix4f()
                 .translate(positionComponent.position)
-                .translate(modelRotationCenter)
+                .translate(offset)
                 .rotate(rotationComponent.yaw, Vector3f(0F, 1F, 0F))
                 .rotate(rotationComponent.pitch, Vector3f(0F, 0F, 1F))
-                .translate(-modelRotationCenter.x, -modelRotationCenter.y, -modelRotationCenter.z)
-
+        
         YapGame.getInstance().renderer.mesh(meshComponent.mesh, transformation, meshComponent.color)
     }
 }
