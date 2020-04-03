@@ -8,6 +8,7 @@ import de.yap.engine.mesh.Mesh
 import de.yap.engine.mesh.MeshUtils
 import de.yap.game.YapGame
 import org.joml.Vector2f
+import org.joml.Vector2i
 import org.joml.Vector3f
 
 data class BlockTextureCoords(val texMin: Vector2f, val texMax: Vector2f) {
@@ -36,8 +37,9 @@ val GREEN = BlockTextureCoords.fromIndex(6, 1)
 class BlockEntity(position: Vector3f, mesh: Mesh) : Entity() {
 
     companion object {
-        fun singleTextureBlock(position: Vector3f, textureCoords: BlockTextureCoords): BlockEntity {
-            val mesh = MeshUtils.unitCube(YapGame.getInstance().renderer.textureMapMaterial, textureCoords.texMin, textureCoords.texMax)
+        fun singleTextureBlock(position: Vector3f, textureCoords: Vector2i): BlockEntity {
+            val blockTextureCoords = BlockTextureCoords.fromIndex(textureCoords.x, textureCoords.y)
+            val mesh = MeshUtils.unitCube(YapGame.getInstance().renderer.textureMapMaterial, blockTextureCoords.texMin, blockTextureCoords.texMax)
             return BlockEntity(position, mesh)
         }
     }
