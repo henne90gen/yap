@@ -108,12 +108,13 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
                 return@addActionListener
             }
             val file = fc.selectedFile
-            val entities = LevelUtils.loadLevel(file)
-            YapGame.getInstance().entityManager.removeAllEntities()
-            YapGame.getInstance().entityManager.addAllEntities(entities)
-            val camera = YapGame.getInstance().firstPersonCamera.getCurrentCamera()
-            camera?.let {
-                YapGame.getInstance().entityManager.addEntity(it)
+            LevelUtils.loadLevel(file) {
+                YapGame.getInstance().entityManager.removeAllEntities()
+                YapGame.getInstance().entityManager.addAllEntities(it)
+                val camera = YapGame.getInstance().firstPersonCamera.getCurrentCamera()
+                camera?.let {
+                    YapGame.getInstance().entityManager.addEntity(it)
+                }
             }
         }
         saveLoadButtons.add(loadLevelBtn)

@@ -5,6 +5,7 @@ import de.yap.engine.ecs.systems.ISystem
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.lang.reflect.Method
+import java.util.concurrent.LinkedBlockingQueue
 
 data class EventListener(val obj: Any, val method: Method)
 
@@ -32,21 +33,23 @@ class Capability(vararg val components: Class<out Component>) {
     }
 }
 
+abstract class WorkItem
+
+class AddEntityWork(val entity: Entity) : WorkItem()
+class AddAllEntitiesWork(val entities: List<Entity>) : WorkItem()
+class RemoveEntityWork(val entity: Entity) : WorkItem()
+class RemoveAllEntitiesWork : WorkItem()
+
 class EntityManager {
 
     companion object {
         private val log: Logger = LogManager.getLogger()
     }
 
-    // Player: Position Rotation
-    // NPC: Position Rotation
-    // Block: Position
-
-    // RotationsSachen: Position Rotation
-
     private val capabilityMap: MutableMap<Capability, MutableList<Entity>> = LinkedHashMap()
     private val systems: MutableList<ISystem> = ArrayList()
     private val eventListeners: MutableMap<String, MutableList<EventListener>> = LinkedHashMap()
+    private val workQueue = LinkedBlockingQueue<WorkItem>()
 
     init {
         capabilityMap[Capability.ALL_CAPABILITIES] = ArrayList()
@@ -66,6 +69,15 @@ class EntityManager {
     }
 
     fun update(interval: Float) {
+        while (workQueue.isNotEmpty()) {
+            when (val workItem = workQueue.take()) {
+                is AddEntityWork -> processAddEntity(workItem)
+                is AddAllEntitiesWork -> processAddAllEntities(workItem)
+                is RemoveEntityWork -> processRemoveEntity(workItem)
+                is RemoveAllEntitiesWork -> processRemoveAllEntities()
+            }
+        }
+
         for (system in systems) {
             val entities = capabilityMap.getOrDefault(system.capability, mutableListOf())
             system.update(interval, entities)
@@ -132,16 +144,6 @@ class EntityManager {
         return false
     }
 
-    fun addEntity(entity: Entity) {
-        for (entry in capabilityMap) {
-            if (entity.hasCapability(entry.key)) {
-                entry.value.add(entity)
-            }
-        }
-
-        log.debug("Added $entity")
-    }
-
     fun getEntities(capability: Capability): List<Entity> {
         return capabilityMap[capability] ?: emptyList()
     }
@@ -157,7 +159,27 @@ class EntityManager {
         }
     }
 
+    fun addEntity(entity: Entity) {
+        workQueue.put(AddEntityWork(entity))
+    }
+
+    private fun processAddEntity(work: AddEntityWork) {
+        val entity = work.entity
+        for (entry in capabilityMap) {
+            if (entity.hasCapability(entry.key)) {
+                entry.value.add(entity)
+            }
+        }
+
+        log.debug("Added $entity")
+    }
+
     fun removeEntity(entity: Entity) {
+        workQueue.put(RemoveEntityWork(entity))
+    }
+
+    private fun processRemoveEntity(work: RemoveEntityWork) {
+        val entity = work.entity
         for (capability in capabilityMap) {
             if (!entity.hasCapability(capability.key)) {
                 continue
@@ -167,6 +189,10 @@ class EntityManager {
     }
 
     fun removeAllEntities() {
+        workQueue.put(RemoveAllEntitiesWork())
+    }
+
+    private fun processRemoveAllEntities() {
         for (capability in capabilityMap) {
             capability.value.clear()
         }
@@ -174,6 +200,14 @@ class EntityManager {
 
     fun addAllEntities(entities: List<Entity>) {
         // TODO maybe we can optimize this
+        for (entity in entities) {
+            addEntity(entity)
+        }
+    }
+
+    private fun processAddAllEntities(work: AddAllEntitiesWork) {
+        // TODO maybe we can optimize this
+        val entities = work.entities
         for (entity in entities) {
             addEntity(entity)
         }

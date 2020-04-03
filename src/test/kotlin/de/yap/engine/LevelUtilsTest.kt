@@ -64,16 +64,18 @@ class LevelUtilsTest {
                 BlockEntity.singleTextureBlock(Vector3f(1.0F, 2.0F, 3.0F), TextureCoords(Vector2f(0.0F), Vector2f(0.5F))),
                 BlockEntity.singleTextureBlock(Vector3f(4.0F, 5.0F, 6.0F), TextureCoords(Vector2f(0.5F), Vector2f(1.0F)))
         )
-        val entities = LevelUtils.loadLevel(file)
-        assertEquals(expectedEntities.size, entities.size)
-        for (entity in entities.withIndex()) {
-            val textureCoords = entity.value.getComponent<TextureAtlasIndexComponent>().textureCoords
-            val expectedTextureCoords = expectedEntities[entity.index].getComponent<TextureAtlasIndexComponent>().textureCoords
-            assertEquals(expectedTextureCoords, textureCoords)
+        LevelUtils.loadLevel(file) {
+            assertEquals(expectedEntities.size, it.size)
 
-            val blockPosition = entity.value.getComponent<PositionComponent>().position
-            val expectedBlockPosition = expectedEntities[entity.index].getComponent<PositionComponent>().position
-            assertEquals(expectedBlockPosition, blockPosition)
+            for (entity in it.withIndex()) {
+                val textureCoords = entity.value.getComponent<TextureAtlasIndexComponent>().textureCoords
+                val expectedTextureCoords = expectedEntities[entity.index].getComponent<TextureAtlasIndexComponent>().textureCoords
+                assertEquals(expectedTextureCoords, textureCoords)
+
+                val blockPosition = entity.value.getComponent<PositionComponent>().position
+                val expectedBlockPosition = expectedEntities[entity.index].getComponent<PositionComponent>().position
+                assertEquals(expectedBlockPosition, blockPosition)
+            }
         }
     }
 }

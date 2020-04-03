@@ -17,10 +17,10 @@ class LevelUtils {
         private const val LEVEL_FILE_VERSION = 1
         private val log = LogManager.getLogger()
 
-        fun loadLevel(file: File?): List<Entity> {
+        fun loadLevel(file: File?, func: (List<Entity>) -> Unit) {
             if (file == null) {
                 log.info("Could not load level. (No file selected)")
-                return emptyList()
+                return
             }
 
             log.info("Loading level $file...")
@@ -42,12 +42,13 @@ class LevelUtils {
 
                 if (version != LEVEL_FILE_VERSION) {
                     log.error("Could not load level. (Wrong version, expected version $LEVEL_FILE_VERSION but got version $version)")
-                    return emptyList()
+                    return
                 }
             }
 
+            func(result)
+
             log.info("Done.")
-            return result
         }
 
         private fun readBlock(line: String, lineNumber: Int, result: MutableList<Entity>) {
