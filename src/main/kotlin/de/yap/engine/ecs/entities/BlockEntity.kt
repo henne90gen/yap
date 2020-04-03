@@ -29,5 +29,6 @@ class BlockEntity(position: Vector3f, mesh: Mesh) : Entity() {
         addComponent(MeshComponent(mesh))
         addComponent(RotationComponent(0.0F, 0.0F))
         addComponent(BoundingBoxComponent.unitCube())
+        addComponent(TextureAtlasIndexComponent(textureCoords))
     }
 }
