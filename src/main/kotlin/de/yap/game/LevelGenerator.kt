@@ -1,24 +1,39 @@
 package de.yap.game
 
 import de.yap.engine.ecs.entities.*
-import org.joml.Vector2i
+import de.yap.engine.graphics.*
+
 import org.joml.Vector3f
 import kotlin.math.PI
 import kotlin.random.Random
 
 class LevelGenerator() {
 
-    fun generateLevelEntities(): MutableMap<Vector3f, Entity> {
+    private val width = Random.nextInt(15, 30)
+    private val depth = Random.nextInt(15, 30)
 
-        val width = Random.nextInt(15, 30)
-        val depth = Random.nextInt(15, 30)
+    fun generateLevelEntities(): MutableCollection<Entity> {
         val entities = mutableMapOf<Vector3f, Entity>()
 
-        // ground floor
+        addFloor(entities)
+        addFurniture(entities)
+        addWalls(entities)
+
+        return entities.values
+    }
+
+    private fun addFloor(entities: MutableMap<Vector3f, Entity>) {
         for (x in 0..width) {
             for (y in 0..depth) {
                 val position = Vector3f(x.toFloat(), -1F, y.toFloat())
-                entities[position] = BlockEntity.singleTextureBlock(position, Vector2i(8, 0))
+                entities[position] = BlockEntity.singleTextureBlock(position, CHECKER_BOARD)
+            }
+        }
+    }
+
+    private fun addFurniture(entities: MutableMap<Vector3f, Entity>) {
+        for (x in 0..width) {
+            for (y in 0..depth) {
 
                 val i = Random.nextInt(50)
                 val randPos = Vector3f(x.toFloat(), 0F, y.toFloat())
@@ -50,38 +65,58 @@ class LevelGenerator() {
                             entities[aboveRandPos] = FridgeEntity(aboveRandPos)
                         }
                     }
-                    7 ->{
-                        entities[randPos] = OvenEntity(randPos, yaw = 0.0F, pitch = 0.0F)
+                    7 -> {
+                        entities[randPos] = OvenEntity(randPos, yaw = 0.0F, pitch = randOrientation)
                     }
                 }
             }
         }
+    }
 
-        // side walls
+    private fun addWalls(entities: MutableMap<Vector3f, Entity>) {
+        fun genWindow(position: Vector3f, rotation: Float) {
+            if (Random.nextInt(7) == 1) {
+                entities[position] = WindowEntity(position, pitch = rotation)
+            }
+        }
+
         for (x in -1..width+1) {
-            val position1 = Vector3f(x.toFloat(), 0F, -1F)
-            entities[position1] = BlockEntity.singleTextureBlock(position1, Vector2i(1, 2))
-            val position2 = Vector3f(x.toFloat(), 0F, depth.toFloat()+1)
-            entities[position2] = BlockEntity.singleTextureBlock(position2, Vector2i(1, 2))
+            val wall1Layer1 = Vector3f(x.toFloat(), 0F, -1F)
+            entities[wall1Layer1] = BlockEntity.singleTextureBlock(wall1Layer1, RED)
+            val wall2Layer1 = Vector3f(x.toFloat(), 0F, depth.toFloat()+1)
+            entities[wall2Layer1] = BlockEntity.singleTextureBlock(wall2Layer1, RED)
 
-            val position3 = Vector3f(x.toFloat(), 1F, -1F)
-            entities[position3] = BlockEntity.singleTextureBlock(position3, Vector2i(1, 2))
-            val position4 = Vector3f(x.toFloat(), 1F, depth.toFloat()+1)
-            entities[position4] = BlockEntity.singleTextureBlock(position4, Vector2i(1, 2))
+            val wall1Layer2 = Vector3f(x.toFloat(), 1F, -1F)
+            entities[wall1Layer2] = BlockEntity.singleTextureBlock(wall1Layer2, RED)
+            genWindow(wall1Layer2,  0F)
+            val wall2Layer2 = Vector3f(x.toFloat(), 1F, depth.toFloat()+1)
+            entities[wall2Layer2] = BlockEntity.singleTextureBlock(wall2Layer2, RED)
+            genWindow(wall2Layer2,  0F)
+
+            val wall1Layer3 = Vector3f(x.toFloat(), 2F, -1F)
+            entities[wall1Layer3] = BlockEntity.singleTextureBlock(wall1Layer3, RED)
+            val wall2Layer3 = Vector3f(x.toFloat(), 2F, depth.toFloat()+1)
+            entities[wall2Layer3] = BlockEntity.singleTextureBlock(wall2Layer3, RED)
         }
         for (z in 0..depth) {
-            val position1 = Vector3f(-1F, 0F, z.toFloat())
-            entities[position1] = BlockEntity.singleTextureBlock(position1, Vector2i(1, 1))
-            val position2 = Vector3f(width.toFloat()+1, 0F, z.toFloat())
-            entities[position2] = BlockEntity.singleTextureBlock(position2, Vector2i(1, 6))
+            val wall3Layer1 = Vector3f(-1F, 0F, z.toFloat())
+            entities[wall3Layer1] = BlockEntity.singleTextureBlock(wall3Layer1, BLUE)
+            val wall4Layer1 = Vector3f(width.toFloat()+1, 0F, z.toFloat())
+            entities[wall4Layer1] = BlockEntity.singleTextureBlock(wall4Layer1, GREEN)
 
-            val position3 = Vector3f(-1F, 1F, z.toFloat())
-            entities[position3] = BlockEntity.singleTextureBlock(position3, Vector2i(1, 1))
-            val position4 = Vector3f(width.toFloat()+1, 1F, z.toFloat())
-            entities[position4] = BlockEntity.singleTextureBlock(position4, Vector2i(1, 6))
+            val wall3Layer2 = Vector3f(-1F, 1F, z.toFloat())
+            entities[wall3Layer2] = BlockEntity.singleTextureBlock(wall3Layer2, BLUE)
+            genWindow(wall3Layer2,  0.5F * PI.toFloat())
+
+            val wall4Layer2 = Vector3f(width.toFloat() + 1, 1F, z.toFloat())
+            entities[wall4Layer2] = BlockEntity.singleTextureBlock(wall4Layer2, GREEN)
+            genWindow(wall4Layer2,  0.5F * PI.toFloat())
+
+            val wall3Layer3 = Vector3f(-1F, 2F, z.toFloat())
+            entities[wall3Layer3] = BlockEntity.singleTextureBlock(wall3Layer3, BLUE)
+            val wall4Layer3 = Vector3f(width.toFloat() + 1F, 2F, z.toFloat())
+            entities[wall4Layer3] = BlockEntity.singleTextureBlock(wall4Layer3, GREEN)
         }
-
-        return entities
     }
 
     private fun placeChairs(entities: Map<Vector3f, Entity>) {

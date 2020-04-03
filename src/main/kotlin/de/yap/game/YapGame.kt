@@ -96,7 +96,7 @@ class YapGame private constructor() : IGameLogic {
         entityManager.addEntity(PlayerEntity(Vector3f(0.0F, 1.0F, 2.0F), Vector4f(0.0F, 1.0F, 0.0F, 1.0F), hasInput = false))
 
         val levelGenerator = LevelGenerator()
-        for ((pos, entity) in levelGenerator.generateLevelEntities()){
+        for (entity in levelGenerator.generateLevelEntities()){
             entityManager.addEntity(entity)
         }
     }
