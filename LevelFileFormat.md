@@ -20,13 +20,18 @@ Pronunciation: dot house
 ## Blocks
 
 `b <id> <x> <y> <z> <state>=<value>`
-`b 7 11 12 13 rotation=90`
+`b 7 11 12 13 someProperty=123`
 
 - block type id
 - position
 - block state
     - name of state
     - value of state
+
+## Static Entities
+
+`s <type> <x> <y> <z> <pitch> <yaw>`
+`s 7 11 12 13 rotation=90`
 
 ## Start/End Position
 
