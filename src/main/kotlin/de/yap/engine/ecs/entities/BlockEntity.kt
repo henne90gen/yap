@@ -1,9 +1,6 @@
 package de.yap.engine.ecs.entities
 
-import de.yap.engine.ecs.BoundingBoxComponent
-import de.yap.engine.ecs.MeshComponent
-import de.yap.engine.ecs.PositionComponent
-import de.yap.engine.ecs.RotationComponent
+import de.yap.engine.ecs.*
 import de.yap.engine.graphics.TextureCoords
 import de.yap.engine.mesh.Mesh
 import de.yap.engine.mesh.MeshUtils
@@ -11,12 +8,12 @@ import de.yap.game.YapGame
 import org.joml.Vector2i
 import org.joml.Vector3f
 
-class BlockEntity(position: Vector3f, mesh: Mesh) : Entity() {
+class BlockEntity(position: Vector3f, textureCoords: TextureCoords, mesh: Mesh) : Entity() {
 
     companion object {
         fun singleTextureBlock(position: Vector3f, textureCoords: TextureCoords): BlockEntity {
             val mesh = MeshUtils.unitCube(YapGame.getInstance().renderer.textureMapMaterial, textureCoords.texMin, textureCoords.texMax)
-            return BlockEntity(position, mesh)
+            return BlockEntity(position, textureCoords, mesh)
         }
 
         fun singleTextureBlock(position: Vector3f, textureIndex: Vector2i): BlockEntity {

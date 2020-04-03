@@ -5,10 +5,12 @@ import de.yap.engine.ecs.TextureAtlasIndexComponent
 import de.yap.engine.ecs.entities.BlockEntity
 import de.yap.engine.ecs.entities.Entity
 import de.yap.engine.ecs.entities.PlayerEntity
+import de.yap.engine.graphics.TextureCoords
 import org.apache.logging.log4j.LogManager
-import org.joml.Vector2i
+import org.joml.Vector2f
 import org.joml.Vector3f
 import java.io.File
+import java.io.OutputStreamWriter
 
 class LevelUtils {
     companion object {
@@ -34,8 +36,8 @@ class LevelUtils {
 
                 val lineNumber = lineWithIndex.index + 1
                 when (line[0]) {
-                    'v' -> version = parseVersion(line)
-                    'b' -> parseBlock(line, lineNumber, result)
+                    'v' -> version = readVersion(line)
+                    'b' -> readBlock(line, lineNumber, result)
                 }
 
                 if (version != LEVEL_FILE_VERSION) {
@@ -48,21 +50,21 @@ class LevelUtils {
             return result
         }
 
-        private fun parseBlock(line: String, lineNumber: Int, result: MutableList<Entity>) {
+        private fun readBlock(line: String, lineNumber: Int, result: MutableList<Entity>) {
             try {
 
                 val rest = line.substring(2)
                 val parts = rest.split(" ")
                 val position = Vector3f(parts[0].toFloat(), parts[1].toFloat(), parts[2].toFloat())
-                val tx = parts[3].toInt()
-                val ty = parts[4].toInt()
-                result.add(BlockEntity.singleTextureBlock(position, Vector2i(tx, ty)))
+                val tMin = Vector2f(parts[3].toFloat(), parts[4].toFloat())
+                val tMax = Vector2f(parts[5].toFloat(), parts[6].toFloat())
+                result.add(BlockEntity.singleTextureBlock(position, TextureCoords(tMin, tMax)))
             } catch (e: NumberFormatException) {
                 log.warn("Could not parse block entity on line $lineNumber.")
             }
         }
 
-        private fun parseVersion(line: String): Int {
+        private fun readVersion(line: String): Int {
             return try {
                 line.substring(2).toInt()
             } catch (e: NumberFormatException) {
@@ -80,23 +82,27 @@ class LevelUtils {
 
             levelFile.writer().use {
                 it.write("v $LEVEL_FILE_VERSION\n")
-                for (entity in entities) {
-                    if (entity is PlayerEntity) {
-                        continue
-                    }
-                    if (entity is BlockEntity) {
-                        val positionComponent = entity.getComponent<PositionComponent>()
-                        val x = positionComponent.position.x
-                        val y = positionComponent.position.y
-                        val z = positionComponent.position.z
-                        val id = entity.getComponent<TextureAtlasIndexComponent>().textureCoords
-                        val tx = id.x
-                        val ty = id.y
-                        it.write("b $x $y $z $tx $ty\n")
+                loop@ for (entity in entities) {
+                    when (entity) {
+                        is PlayerEntity -> continue@loop
+                        is BlockEntity -> writeBlock(entity, it)
                     }
                 }
             }
             log.info("Done.")
+        }
+
+        private fun writeBlock(entity: Entity, it: OutputStreamWriter) {
+            val positionComponent = entity.getComponent<PositionComponent>()
+            val x = positionComponent.position.x
+            val y = positionComponent.position.y
+            val z = positionComponent.position.z
+            val id = entity.getComponent<TextureAtlasIndexComponent>().textureCoords
+            val tMinX = id.texMin.x
+            val tMinY = id.texMin.y
+            val tMaxX = id.texMax.x
+            val tMaxY = id.texMax.y
+            it.write("b $x $y $z $tMinX $tMinY $tMaxX $tMaxY\n")
         }
 
         fun addLevelFileExtension(file: File): File {
