@@ -35,7 +35,7 @@ class LevelFileFilter : FileFilter() {
 class LevelEditor : ISystem(MeshComponent::class.java, PositionComponent::class.java) {
 
     companion object {
-        val log: Logger = LogManager.getLogger()
+        private val log: Logger = LogManager.getLogger()
     }
 
     private var reactToMouseInput = true
@@ -96,9 +96,12 @@ class LevelEditor : ISystem(MeshComponent::class.java, PositionComponent::class.
             }
             val file = fc.selectedFile
             val entities = LevelUtils.loadLevel(file)
-            // TODO implement both of those methods
-//            YapGame.getInstance().entityManager.removeAllEntities()
-//            YapGame.getInstance().entityManager.addAllEntities(entities)
+            YapGame.getInstance().entityManager.removeAllEntities()
+            YapGame.getInstance().entityManager.addAllEntities(entities)
+            val camera = YapGame.getInstance().firstPersonCamera.getCurrentCamera()
+            camera?.let {
+                YapGame.getInstance().entityManager.addEntity(it)
+            }
         }
         saveLoadButtons.add(loadLevelBtn)
 

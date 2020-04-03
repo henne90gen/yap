@@ -165,4 +165,17 @@ class EntityManager {
             capability.value.remove(entity)
         }
     }
+
+    fun removeAllEntities() {
+        for (capability in capabilityMap) {
+            capability.value.clear()
+        }
+    }
+
+    fun addAllEntities(entities: List<Entity>) {
+        // TODO maybe we can optimize this
+        for (entity in entities) {
+            addEntity(entity)
+        }
+    }
 }

@@ -22,8 +22,8 @@ Pronunciation: dot house
 `b <id> <x> <y> <z> <state>=<value>`
 `b 7 11 12 13 rotation=90`
 
-- position
 - block type id
+- position
 - block state
     - name of state
     - value of state

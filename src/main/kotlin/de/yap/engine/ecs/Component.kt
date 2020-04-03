@@ -52,3 +52,5 @@ class BoundingBoxComponent(
         var min: Vector3f,
         var max: Vector3f
 ) : Component()
+
+class BlockTypeComponent(val id: Int) : Component()

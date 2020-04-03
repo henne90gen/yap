@@ -1,5 +1,6 @@
 package de.yap.engine.ecs.entities
 
+import de.yap.engine.ecs.BlockTypeComponent
 import de.yap.engine.ecs.MeshComponent
 import de.yap.engine.ecs.PositionComponent
 import de.yap.engine.ecs.RotationComponent
