@@ -1,10 +1,12 @@
 package de.yap.engine.util
 
 import de.yap.engine.ecs.PositionComponent
+import de.yap.engine.ecs.TextureAtlasIndexComponent
 import de.yap.engine.ecs.entities.BlockEntity
 import de.yap.engine.ecs.entities.Entity
 import de.yap.engine.ecs.entities.PlayerEntity
 import org.apache.logging.log4j.LogManager
+import org.joml.Vector2i
 import org.joml.Vector3f
 import java.io.File
 
@@ -51,9 +53,10 @@ class LevelUtils {
 
                 val rest = line.substring(2)
                 val parts = rest.split(" ")
-                val position = Vector3f(parts[1].toFloat(), parts[2].toFloat(), parts[3].toFloat())
-                val id = parts[0].toInt()
-//                result.add(BlockEntity(position, id))
+                val position = Vector3f(parts[0].toFloat(), parts[1].toFloat(), parts[2].toFloat())
+                val tx = parts[3].toInt()
+                val ty = parts[4].toInt()
+                result.add(BlockEntity.singleTextureBlock(position, Vector2i(tx, ty)))
             } catch (e: NumberFormatException) {
                 log.warn("Could not parse block entity on line $lineNumber.")
             }
@@ -86,8 +89,10 @@ class LevelUtils {
                         val x = positionComponent.position.x
                         val y = positionComponent.position.y
                         val z = positionComponent.position.z
-//                        val id = entity.getComponent<BlockTypeComponent>().id
-//                        it.write("b $id $x $y $z\n")
+                        val id = entity.getComponent<TextureAtlasIndexComponent>().textureCoords
+                        val tx = id.x
+                        val ty = id.y
+                        it.write("b $x $y $z $tx $ty\n")
                     }
                 }
             }

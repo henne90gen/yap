@@ -3,10 +3,7 @@ package de.yap.engine.ecs
 import de.yap.engine.mesh.Mesh
 import de.yap.engine.util.X_AXIS
 import de.yap.engine.util.Y_AXIS
-import org.joml.Matrix4f
-import org.joml.Vector2f
-import org.joml.Vector3f
-import org.joml.Vector4f
+import org.joml.*
 
 abstract class Component
 
@@ -58,3 +55,5 @@ class BoundingBoxComponent(
         }
     }
 }
+
+class TextureAtlasIndexComponent(val textureCoords: Vector2i) : Component()

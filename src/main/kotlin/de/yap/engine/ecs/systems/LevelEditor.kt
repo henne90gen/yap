@@ -178,7 +178,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
             normal?.let { n ->
                 val game = YapGame.getInstance()
                 val removalPoint = Vector3f(p).sub(n)
-                // TODO use a spacial query
+                // TODO use a spatial query
                 val entities = game.entityManager.getEntities(capability)
                 for (entity in entities) {
                     val position = entity.getComponent<PositionComponent>().position
@@ -232,7 +232,8 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
     }
 
     override fun update(interval: Float, entities: List<Entity>) {
-        val meshes = entities.map {
+        // TODO use a spatial query
+        val boundingBoxes = entities.map {
             TransformedBoundingBox(
                     it.getComponent(),
                     Matrix4f().translate(it.getComponent<PositionComponent>().position)
@@ -245,7 +246,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
             rayStart = it.getComponent<PositionComponent>().position
             direction = it.getComponent<RotationComponent>().direction()
         }
-        val intersectionResult = intersects(rayStart, direction, meshes)
+        val intersectionResult = intersects(rayStart, direction, boundingBoxes)
         if (intersectionResult.hasValue()) {
             clampedPoint = clampPoint(intersectionResult)
             normal = intersectionResult.normal
