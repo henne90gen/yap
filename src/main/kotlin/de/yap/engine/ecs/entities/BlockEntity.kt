@@ -2,6 +2,7 @@ package de.yap.engine.ecs.entities
 
 import de.yap.engine.ecs.MeshComponent
 import de.yap.engine.ecs.PositionComponent
+import de.yap.engine.ecs.RotationComponent
 import de.yap.engine.mesh.Mesh
 import de.yap.engine.mesh.MeshUtils
 import de.yap.game.YapGame
@@ -43,6 +44,7 @@ class BlockEntity(position: Vector3f, mesh: Mesh) : Entity() {
     init {
         addComponent(PositionComponent(position))
         addComponent(MeshComponent(mesh))
+        addComponent(RotationComponent(0.0F, 0.0F))
     }
 
 

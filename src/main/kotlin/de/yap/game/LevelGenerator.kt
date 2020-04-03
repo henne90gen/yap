@@ -2,6 +2,7 @@ package de.yap.game
 
 import de.yap.engine.ecs.entities.*
 import org.joml.Vector3f
+import kotlin.math.PI
 import kotlin.random.Random
 
 class LevelGenerator() {
@@ -20,18 +21,19 @@ class LevelGenerator() {
 
                 val i = Random.nextInt(50)
                 val randPos = Vector3f(x.toFloat(), 0F, y.toFloat())
+                val randOrientation = Random.nextInt(4) * 0.5F * PI.toFloat()
                 when (i) {
                     1 -> {
                         entities[randPos] = TableEntity(randPos)
                     }
                     2 -> {
-                        entities[randPos] = ChairEntity(randPos)
+                        entities[randPos] = ChairEntity(randPos, yaw = 0.0F, pitch = randOrientation )
                     }
                     3 -> {
                         entities[randPos] = WasteBinEntity(randPos)
                     }
                     4 -> {
-                        entities[randPos] = ShoeShelfEntity(randPos)
+                        entities[randPos] = ShoeShelfEntity(randPos, yaw = 0.0F, pitch = randOrientation)
                     }
                     5 -> {
                         entities[randPos] = WardrobeEntity(randPos)
@@ -39,6 +41,16 @@ class LevelGenerator() {
                             val aboveRandPos = Vector3f(randPos.x, randPos.y + 1, randPos.z)
                             entities[aboveRandPos] = WardrobeEntity(aboveRandPos)
                         }
+                    }
+                    6 -> {
+                        entities[randPos] = FridgeEntity(randPos)
+                        if (Random.nextInt(2) == 1) {
+                            val aboveRandPos = Vector3f(randPos.x, randPos.y + 1, randPos.z)
+                            entities[aboveRandPos] = FridgeEntity(aboveRandPos)
+                        }
+                    }
+                    7 ->{
+                        entities[randPos] = OvenEntity(randPos, yaw = 0.0F, pitch = 0.0F)
                     }
                 }
             }
