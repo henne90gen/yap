@@ -1,11 +1,10 @@
 package de.yap.engine.ecs.systems
 
 import de.yap.engine.ecs.*
-import de.yap.engine.ecs.entities.BlockEntity
 import de.yap.engine.ecs.entities.Entity
 import de.yap.engine.util.LevelUtils
 import de.yap.game.IntersectionResult
-import de.yap.game.TransformedMesh
+import de.yap.game.TransformedBoundingBox
 import de.yap.game.YapGame
 import de.yap.game.intersects
 import org.apache.logging.log4j.LogManager
@@ -32,7 +31,7 @@ class LevelFileFilter : FileFilter() {
     }
 }
 
-class LevelEditor : ISystem(MeshComponent::class.java, PositionComponent::class.java) {
+class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent::class.java) {
 
     companion object {
         private val log: Logger = LogManager.getLogger()
@@ -219,8 +218,8 @@ class LevelEditor : ISystem(MeshComponent::class.java, PositionComponent::class.
 
     override fun update(interval: Float, entities: List<Entity>) {
         val meshes = entities.map {
-            TransformedMesh(
-                    it.getComponent<MeshComponent>().mesh,
+            TransformedBoundingBox(
+                    it.getComponent(),
                     Matrix4f().translate(it.getComponent<PositionComponent>().position)
             )
         }

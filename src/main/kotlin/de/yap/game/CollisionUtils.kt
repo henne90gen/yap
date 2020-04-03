@@ -1,10 +1,10 @@
 package de.yap.game
 
-import de.yap.engine.mesh.Mesh
-import org.joml.Intersectionf
-import org.joml.Matrix4f
-import org.joml.Vector3f
-import org.joml.Vector4f
+import de.yap.engine.ecs.BoundingBoxComponent
+import de.yap.engine.util.X_AXIS
+import de.yap.engine.util.Y_AXIS
+import de.yap.engine.util.Z_AXIS
+import org.joml.*
 
 data class IntersectionResult(
         val point: Vector3f = Vector3f(),
@@ -16,40 +16,45 @@ data class IntersectionResult(
     }
 }
 
-data class TransformedMesh(val mesh: Mesh, val transformation: Matrix4f)
+data class TransformedBoundingBox(val boundingBox: BoundingBoxComponent, val transformation: Matrix4f)
 
-fun intersects(rayStart: Vector3f, direction: Vector3f, transformedMeshes: List<TransformedMesh>): IntersectionResult {
+fun intersects(rayStart: Vector3f, direction: Vector3f, transformedBoundingBoxes: List<TransformedBoundingBox>): IntersectionResult {
     var closestIntersection = IntersectionResult()
 
-    for (transformedMesh in transformedMeshes) {
-        val mesh = transformedMesh.mesh
-        val transformation = transformedMesh.transformation
-        for (i in mesh.indices.indices) {
-            val triangle = mesh.indices[i]
+    for (transformedBoundingBox in transformedBoundingBoxes) {
+        val mesh = transformedBoundingBox.boundingBox
+        val transformation = transformedBoundingBox.transformation
 
-            val origV1 = mesh.vertices[triangle.x]
-            val origV2 = mesh.vertices[triangle.y]
-            val origV3 = mesh.vertices[triangle.z]
-            val v1 = Vector4f(origV1.x, origV1.y, origV1.z, 1.0F).mul(transformation)
-            val v2 = Vector4f(origV2.x, origV2.y, origV2.z, 1.0F).mul(transformation)
-            val v3 = Vector4f(origV3.x, origV3.y, origV3.z, 1.0F).mul(transformation)
-            val vec1 = Vector3f(v1.x, v1.y, v1.z)
-            val vec2 = Vector3f(v2.x, v2.y, v2.z)
-            val vec3 = Vector3f(v3.x, v3.y, v3.z)
-
-            val intersectionResult = intersects(rayStart, direction, vec1, vec2, vec3)
-            if (intersectionResult.distanceSquared < closestIntersection.distanceSquared) {
-                closestIntersection = intersectionResult
-            }
+        val minV4 = Vector4f(mesh.min.x, mesh.min.y, mesh.min.z, 1.0F)
+        val maxV4 = Vector4f(mesh.max.x, mesh.max.y, mesh.max.z, 1.0F)
+        val newMinV4 = transformation.transform(minV4)
+        val newMaxV4 = transformation.transform(maxV4)
+        val min = Vector3f(newMinV4.x, newMinV4.y, newMinV4.z)
+        val max = Vector3f(newMaxV4.x, newMaxV4.y, newMaxV4.z)
+        val intersectionResult = intersects(rayStart, direction, min, max)
+        if (intersectionResult.distanceSquared < closestIntersection.distanceSquared) {
+            closestIntersection = intersectionResult
         }
     }
 
     return closestIntersection
 }
 
-private fun intersects(rayStart: Vector3f, direction: Vector3f, vec1: Vector3f, vec2: Vector3f, vec3: Vector3f): IntersectionResult {
-    val epsilon = 0.0000001F
-    val t = Intersectionf.intersectRayTriangle(rayStart, direction, vec1, vec2, vec3, epsilon)
+private fun intersects(rayStart: Vector3f, direction: Vector3f, min: Vector3f, max: Vector3f): IntersectionResult {
+    val result = Vector2f()
+    val success = Intersectionf.intersectRayAab(rayStart, direction, min, max, result)
+    if (!success) {
+        return IntersectionResult()
+    }
+
+    val t = if (result.x > 0.0F && result.x <= result.y) {
+        result.x
+    } else if (result.y > 0.0F && result.y <= result.x) {
+        result.y
+    } else {
+        -1.0F
+    }
+
     if (t < 0.0F) {
         // negative t means we intersected behind rayStart, we don't want that
         return IntersectionResult()
@@ -59,8 +64,32 @@ private fun intersects(rayStart: Vector3f, direction: Vector3f, vec1: Vector3f, 
             .normalize()
             .mul(t)
     val point = Vector3f(rayStart).add(dir)
-    val edge1 = Vector3f(vec2).sub(vec1)
-    val edge2 = Vector3f(vec3).sub(vec1)
-    val normal = edge1.cross(edge2)
+    val normal = getNormal(min, max, point)
     return IntersectionResult(point, dir.lengthSquared(), normal)
+}
+
+private fun getNormal(min: Vector3f, max: Vector3f, point: Vector3f): Vector3f {
+    return when {
+        min.x == point.x -> {
+            Vector3f(X_AXIS).mul(-1.0F)
+        }
+        max.x == point.x -> {
+            X_AXIS
+        }
+        min.y == point.y -> {
+            Vector3f(Y_AXIS).mul(-1.0F)
+        }
+        max.y == point.y -> {
+            Y_AXIS
+        }
+        min.z == point.z -> {
+            Vector3f(Z_AXIS).mul(-1.0F)
+        }
+        max.z == point.z -> {
+            Z_AXIS
+        }
+        else -> {
+            Vector3f()
+        }
+    }
 }
