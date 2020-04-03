@@ -1,6 +1,7 @@
 package de.yap.game
 
 import de.yap.engine.IGameLogic
+import de.yap.engine.debug.DebugBoundingBox
 import de.yap.engine.debug.DebugFontTexture
 import de.yap.engine.debug.DebugFrameTiming
 import de.yap.engine.debug.DebugInterface
@@ -27,8 +28,6 @@ import org.joml.Vector3f
 import org.joml.Vector4f
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL20.glViewport
-import kotlin.math.abs
-import kotlin.random.Random
 
 
 class YapGame private constructor() : IGameLogic {
@@ -88,6 +87,7 @@ class YapGame private constructor() : IGameLogic {
         entityManager.registerSystem(DebugInterface())
         entityManager.registerSystem(DebugFrameTiming())
         entityManager.registerSystem(DebugFontTexture())
+        entityManager.registerSystem(DebugBoundingBox())
         entityManager.init()
     }
 

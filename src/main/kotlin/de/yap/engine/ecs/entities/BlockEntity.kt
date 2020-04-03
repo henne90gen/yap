@@ -1,6 +1,6 @@
 package de.yap.engine.ecs.entities
 
-import de.yap.engine.ecs.BlockTypeComponent
+import de.yap.engine.ecs.BoundingBoxComponent
 import de.yap.engine.ecs.MeshComponent
 import de.yap.engine.ecs.PositionComponent
 import de.yap.engine.ecs.RotationComponent
@@ -48,5 +48,6 @@ class BlockEntity(position: Vector3f, mesh: Mesh) : Entity() {
         addComponent(PositionComponent(position))
         addComponent(MeshComponent(mesh))
         addComponent(RotationComponent(0.0F, 0.0F))
+        addComponent(BoundingBoxComponent.unitCube())
     }
 }
