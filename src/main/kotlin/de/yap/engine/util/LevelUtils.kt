@@ -70,8 +70,8 @@ class LevelUtils {
                 }
                 val entity = when (type) {
                     StaticEntities.TABLE -> TableEntity(position)
-                    StaticEntities.CHAIR -> ChairEntity(position)
-                    StaticEntities.WASTE_BIN -> WasteBinEntity(position)
+                    StaticEntities.CHAIR -> ChairEntity(position, pitch, yaw)
+                    StaticEntities.WASTE_BIN -> WasteBinEntity(position, pitch, yaw)
                     StaticEntities.SHOE_SHELF -> ShoeShelfEntity(position, pitch, yaw)
                     StaticEntities.WARDROBE -> WardrobeEntity(position, pitch, yaw)
                     StaticEntities.FRIDGE -> FridgeEntity(position, pitch, yaw)
@@ -137,7 +137,7 @@ class LevelUtils {
             val rotationComponent = entity.getComponent<RotationComponent>()
             val pitch = rotationComponent.pitch
             val yaw = rotationComponent.yaw
-            it.write("s $id $x $y $z $pitch $yaw")
+            it.write("s $id $x $y $z $pitch $yaw\n")
         }
 
         private fun writeBlock(it: OutputStreamWriter, entity: Entity) {
