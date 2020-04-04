@@ -10,7 +10,7 @@ import org.lwjgl.opengl.GL11.*
 
 class DebugFontTexture : ISystem() {
 
-    private var enabled = false
+    var enabled = false
 
     override fun render(entities: List<Entity>) {
         if (!enabled) {

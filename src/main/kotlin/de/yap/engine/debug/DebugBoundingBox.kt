@@ -14,7 +14,7 @@ import org.lwjgl.glfw.GLFW
 
 class DebugBoundingBox : ISystem(BoundingBoxComponent::class.java, PositionComponent::class.java) {
 
-    private var enabled = false
+    var enabled = false
 
     override fun render(entities: List<Entity>) {
         if (!enabled) {
@@ -34,13 +34,6 @@ class DebugBoundingBox : ISystem(BoundingBoxComponent::class.java, PositionCompo
                     .scale(scale)
             val color = Vector4f(1.0F, 0.078431373F, 0.576470588F, 1.0F)
             YapGame.getInstance().renderer.cube(transformation, color)
-        }
-    }
-
-    @Subscribe
-    fun keyCallback(event: KeyboardEvent) {
-        if (event.key == GLFW.GLFW_KEY_F7 && event.action == GLFW.GLFW_RELEASE) {
-            enabled = !enabled
         }
     }
 }

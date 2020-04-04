@@ -1,5 +1,7 @@
 package de.yap.engine.debug
 
+import de.yap.engine.ecs.entities.Entity
+import de.yap.engine.ecs.systems.ISystem
 import de.yap.engine.graphics.Renderer
 import de.yap.engine.graphics.Text
 import de.yap.game.YapGame
@@ -9,7 +11,7 @@ import org.joml.Matrix4f
 import org.joml.Vector4f
 import java.lang.management.ManagementFactory
 
-class DebugMemory {
+class DebugMemory : ISystem() {
     companion object {
         private val log: Logger = LogManager.getLogger()
 
@@ -34,6 +36,8 @@ class DebugMemory {
         }
     }
 
+    var enabled = false
+
     private var physicalText: Text? = null
     private var virtualText: Text? = null
     private var jvmText: Text? = null
@@ -46,9 +50,9 @@ class DebugMemory {
     private var totalJvmMemoryInBytes: Long = 0
     private var freeJvmMemoryInBytes: Long = 0
 
-    fun init() {
+    override fun init() {
         val fontRenderer = YapGame.getInstance().fontRenderer
-        update(0.0F)
+        update(0.0F, emptyList())
         usedPhysicalMemoryAtStartInBytes = totalPhysicalMemoryInBytes - freePhysicalMemoryInBytes
 
         val physicalTextTransformation = Matrix4f()
@@ -67,7 +71,11 @@ class DebugMemory {
         jvmText = Text("JVM Memory:", fontRenderer.font, jvmTextTransformation)
     }
 
-    fun update(interval: Float) {
+    override fun update(interval: Float, entities: List<Entity>) {
+        if (!enabled) {
+            return
+        }
+
         totalJvmMemoryInBytes = Runtime.getRuntime().totalMemory()
         freeJvmMemoryInBytes = Runtime.getRuntime().freeMemory()
 
@@ -77,26 +85,32 @@ class DebugMemory {
         committedVirtualMemoryInBytes = systemMXBean.committedVirtualMemorySize
     }
 
-    fun render() {
+    override fun render(entities: List<Entity>) {
+        if (!enabled) {
+            return
+        }
+
         val renderer = YapGame.getInstance().renderer
-        renderer.disableDepthTest {
-            val fontRenderer = YapGame.getInstance().fontRenderer
-            physicalText?.let { fontRenderer.string(it) }
-            virtualText?.let { fontRenderer.string(it) }
-            jvmText?.let { fontRenderer.string(it) }
+        renderer.inScreenSpace {
+            renderer.disableDepthTest {
+                val fontRenderer = YapGame.getInstance().fontRenderer
+                physicalText?.let { fontRenderer.string(it) }
+                virtualText?.let { fontRenderer.string(it) }
+                jvmText?.let { fontRenderer.string(it) }
 
-            val usedJvmMemoryInBytes = totalJvmMemoryInBytes - freeJvmMemoryInBytes
-            val usedPhysicalMemoryInBytes = totalPhysicalMemoryInBytes - freePhysicalMemoryInBytes
+                val usedJvmMemoryInBytes = totalJvmMemoryInBytes - freeJvmMemoryInBytes
+                val usedPhysicalMemoryInBytes = totalPhysicalMemoryInBytes - freePhysicalMemoryInBytes
 
-            renderTotalMemory(renderer, totalPhysicalMemoryBarTransformation)
-            renderUsedMemory(renderer, yOffsetPhysical, usedPhysicalMemoryInBytes, totalPhysicalMemoryInBytes)
-            renderUsedMemory(renderer, yOffsetPhysical, usedPhysicalMemoryAtStartInBytes, totalPhysicalMemoryInBytes, true)
+                renderTotalMemory(renderer, totalPhysicalMemoryBarTransformation)
+                renderUsedMemory(renderer, yOffsetPhysical, usedPhysicalMemoryInBytes, totalPhysicalMemoryInBytes)
+                renderUsedMemory(renderer, yOffsetPhysical, usedPhysicalMemoryAtStartInBytes, totalPhysicalMemoryInBytes, true)
 
-            renderTotalMemory(renderer, totalVirtualMemoryBarTransformation)
-            renderUsedMemory(renderer, yOffsetVirtual, committedVirtualMemoryInBytes, totalPhysicalMemoryInBytes)
+                renderTotalMemory(renderer, totalVirtualMemoryBarTransformation)
+                renderUsedMemory(renderer, yOffsetVirtual, committedVirtualMemoryInBytes, totalPhysicalMemoryInBytes)
 
-            renderTotalMemory(renderer, totalJvmMemoryBarTransformation)
-            renderUsedMemory(renderer, yOffsetJvm, usedJvmMemoryInBytes, totalJvmMemoryInBytes)
+                renderTotalMemory(renderer, totalJvmMemoryBarTransformation)
+                renderUsedMemory(renderer, yOffsetJvm, usedJvmMemoryInBytes, totalJvmMemoryInBytes)
+            }
         }
     }
 

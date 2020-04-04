@@ -1,47 +1,76 @@
 package de.yap.engine.debug
 
-import de.yap.engine.ecs.KeyboardEvent
-import de.yap.engine.ecs.PositionComponent
-import de.yap.engine.ecs.RotationComponent
-import de.yap.engine.ecs.Subscribe
+import de.yap.engine.ecs.*
 import de.yap.engine.ecs.entities.Entity
 import de.yap.engine.ecs.systems.ISystem
 import de.yap.game.YapGame
 import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.joml.Vector4f
-import org.lwjgl.glfw.GLFW
+import java.awt.event.ItemEvent
+import java.awt.event.WindowEvent
+import javax.swing.BoxLayout
+import javax.swing.JCheckBox
+import javax.swing.JFrame
+import javax.swing.JPanel
 
 
 class DebugInterface : ISystem() {
 
-    private var enabled = false
+    var enabled = false
 
-    private val memory = DebugMemory()
-    private val cpu = DebugCPU()
+    private val frame = JFrame("Debug Settings")
 
     override fun init() {
-        memory.init()
-        cpu.init()
+        val debugToggles = createDebugToggles()
+        frame.add(debugToggles)
+
+        frame.setSize(300, 500)
+        frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+        frame.layout = BoxLayout(frame.contentPane, BoxLayout.Y_AXIS)
+        frame.isVisible = true
+        frame.setLocation(1600, 100)
     }
 
-    override fun update(interval: Float, entities: List<Entity>) {
-        if (!enabled) {
-            return
-        }
+    private fun createDebugToggles(): JPanel {
+        val debugToggles = JPanel()
+        debugToggles.layout = BoxLayout(debugToggles, BoxLayout.Y_AXIS)
 
-        memory.update(interval)
-        cpu.update(interval)
+        val cpu = JCheckBox("CPU Info")
+        cpu.addItemListener { YapGame.getInstance().debugCPU.enabled = it.stateChange == ItemEvent.SELECTED }
+        debugToggles.add(cpu)
+
+        val memory = JCheckBox("Memory Info")
+        memory.addItemListener { YapGame.getInstance().debugMemory.enabled = it.stateChange == ItemEvent.SELECTED }
+        debugToggles.add(memory)
+
+        val frameTiming = JCheckBox("Frame Timings")
+        frameTiming.addItemListener { YapGame.getInstance().debugFrameTiming.enabled = it.stateChange == ItemEvent.SELECTED }
+        debugToggles.add(frameTiming)
+
+        val boundingBox = JCheckBox("Bounding Boxes")
+        boundingBox.addItemListener { YapGame.getInstance().debugBoundingBox.enabled = it.stateChange == ItemEvent.SELECTED }
+        debugToggles.add(boundingBox)
+
+        val fontTexture = JCheckBox("Font Texture")
+        fontTexture.addItemListener { YapGame.getInstance().debugFontTexture.enabled = it.stateChange == ItemEvent.SELECTED }
+        debugToggles.add(fontTexture)
+
+        val coordinateSystem = JCheckBox("Show Coordinate System")
+        coordinateSystem.addItemListener { enabled = it.stateChange == ItemEvent.SELECTED }
+        debugToggles.add(coordinateSystem)
+
+        return debugToggles
+    }
+
+    @Subscribe
+    fun onWindowClose(event: WindowCloseEvent) {
+        frame.dispatchEvent(WindowEvent(frame, WindowEvent.WINDOW_CLOSING))
     }
 
     override fun render(entities: List<Entity>) {
         if (!enabled) {
             return
-        }
-
-        YapGame.getInstance().renderer.inScreenSpace {
-            memory.render()
-            cpu.render()
         }
 
         renderCoordinateSystem()
@@ -73,13 +102,6 @@ class DebugInterface : ISystem() {
             renderer.line(origin, xEnd, Vector4f(1.0F, 0.0F, 0.0F, 1.0F))
             renderer.line(origin, yEnd, Vector4f(0.0F, 1.0F, 0.0F, 1.0F))
             renderer.line(origin, zEnd, Vector4f(0.0F, 0.0F, 1.0F, 1.0F))
-        }
-    }
-
-    @Subscribe
-    fun keyCallback(event: KeyboardEvent) {
-        if (event.key == GLFW.GLFW_KEY_F1 && event.action == GLFW.GLFW_RELEASE) {
-            enabled = !enabled
         }
     }
 }

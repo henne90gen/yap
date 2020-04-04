@@ -15,7 +15,7 @@ class DebugFrameTiming : ISystem() {
         private const val TARGET_FRAME_TIME = 1000.0F / 60.0F
     }
 
-    private var enabled = false
+    var enabled = false
     private var lastTime: Instant = Instant.now()
     private var currentIndex = 0
     private val timings: Array<Duration> = Array(NUMBER_OF_TIMINGS) { Duration.ZERO }

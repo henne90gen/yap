@@ -1,5 +1,7 @@
 package de.yap.engine.debug
 
+import de.yap.engine.ecs.entities.Entity
+import de.yap.engine.ecs.systems.ISystem
 import de.yap.engine.graphics.Text
 import de.yap.game.YapGame
 import org.joml.Matrix4f
@@ -7,7 +9,9 @@ import java.lang.management.ManagementFactory
 import java.text.DecimalFormat
 
 
-class DebugCPU {
+class DebugCPU : ISystem() {
+
+    var enabled = false
 
     private val df = DecimalFormat("#.00")
 
@@ -16,7 +20,7 @@ class DebugCPU {
 
     private var updateCounter = 0
 
-    fun init() {
+    override fun init() {
         val fontRenderer = YapGame.getInstance().fontRenderer
         val processTextTransform = Matrix4f()
                 .translate(0.25F, 0.90F, 0.0F)
@@ -29,7 +33,10 @@ class DebugCPU {
         processLoadText = Text("", fontRenderer.font, processLoadTransform)
     }
 
-    fun update(interval: Float) {
+    override fun update(interval: Float, entities: List<Entity>) {
+        if (!enabled) {
+            return
+        }
         updateCounter++
         if (updateCounter % 4 != 0) {
             return
@@ -41,7 +48,11 @@ class DebugCPU {
         processLoadText?.updateString("${df.format(processLoad)}%")
     }
 
-    fun render() {
+    override fun render(entities: List<Entity>) {
+        if (!enabled) {
+            return
+        }
+
         val fontRenderer = YapGame.getInstance().fontRenderer
         processText?.let { fontRenderer.string(it) }
         processLoadText?.let { fontRenderer.string(it) }

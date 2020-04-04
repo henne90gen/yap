@@ -1,10 +1,7 @@
 package de.yap.game
 
 import de.yap.engine.IGameLogic
-import de.yap.engine.debug.DebugBoundingBox
-import de.yap.engine.debug.DebugFontTexture
-import de.yap.engine.debug.DebugFrameTiming
-import de.yap.engine.debug.DebugInterface
+import de.yap.engine.debug.*
 import de.yap.engine.ecs.EntityManager
 import de.yap.engine.ecs.KeyboardEvent
 import de.yap.engine.ecs.Subscribe
@@ -61,6 +58,13 @@ class YapGame private constructor() : IGameLogic {
     private val position = Vector3f(negativeScaleHalf)
     private val roomTransformation = Matrix4f().translate(position).scale(scale)
 
+    val debugMemory = DebugMemory()
+    val debugCPU = DebugCPU()
+    val debugFrameTiming = DebugFrameTiming()
+    val debugFontTexture = DebugFontTexture()
+    val debugBoundingBox = DebugBoundingBox()
+    val debugInterface = DebugInterface()
+
     override fun init(window: Window) {
         this.window = window
 
@@ -84,11 +88,17 @@ class YapGame private constructor() : IGameLogic {
         entityManager.registerSystem(firstPersonCamera)
         entityManager.registerSystem(MeshSystem())
         entityManager.registerSystem(ShowComponentInfoSystem())
-        entityManager.registerSystem(DebugInterface())
-        entityManager.registerSystem(DebugFrameTiming())
-        entityManager.registerSystem(DebugFontTexture())
-        entityManager.registerSystem(DebugBoundingBox())
+        initDebugSystems()
         entityManager.init()
+    }
+
+    private fun initDebugSystems() {
+        entityManager.registerSystem(debugMemory)
+        entityManager.registerSystem(debugCPU)
+        entityManager.registerSystem(debugFrameTiming)
+        entityManager.registerSystem(debugFontTexture)
+        entityManager.registerSystem(debugBoundingBox)
+        entityManager.registerSystem(debugInterface)
     }
 
     private fun initEntities() {
@@ -96,7 +106,7 @@ class YapGame private constructor() : IGameLogic {
         entityManager.addEntity(PlayerEntity(Vector3f(0.0F, 1.0F, 2.0F), Vector4f(0.0F, 1.0F, 0.0F, 1.0F), hasInput = false))
 
         val levelGenerator = LevelGenerator()
-        for (entity in levelGenerator.generateLevelEntities()){
+        for (entity in levelGenerator.generateLevelEntities()) {
             entityManager.addEntity(entity)
         }
     }
