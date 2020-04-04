@@ -52,6 +52,36 @@ class LevelUtils {
             log.info("Done.")
         }
 
+        fun saveLevel(file: File?, entities: List<Entity>) {
+            if (file == null) {
+                log.info("Could not save level. (No file selected)")
+                return
+            }
+            val levelFile = addLevelFileExtension(file)
+            log.info("Saving level $levelFile...")
+
+            levelFile.writer().use {
+                it.write("v $LEVEL_FILE_VERSION\n")
+                loop@ for (entity in entities) {
+                    when (entity) {
+                        is PlayerEntity -> continue@loop
+                        is BlockEntity -> writeBlock(it, entity)
+                        is StaticEntity -> writeStaticEntity(it, entity)
+                    }
+                }
+            }
+            log.info("Done.")
+        }
+
+        fun addLevelFileExtension(file: File): File {
+            if (file.extension == "hse") {
+                return file
+            }
+            val dir = file.parentFile
+            val name = file.name + ".hse"
+            return File(dir, name)
+        }
+
         private fun readStaticEntity(line: String, lineNumber: Int, result: MutableList<Entity>) {
             try {
                 val rest = line.substring(2)
@@ -107,27 +137,6 @@ class LevelUtils {
             }
         }
 
-        fun saveLevel(file: File?, entities: List<Entity>) {
-            if (file == null) {
-                log.info("Could not save level. (No file selected)")
-                return
-            }
-            val levelFile = addLevelFileExtension(file)
-            log.info("Saving level $levelFile...")
-
-            levelFile.writer().use {
-                it.write("v $LEVEL_FILE_VERSION\n")
-                loop@ for (entity in entities) {
-                    when (entity) {
-                        is PlayerEntity -> continue@loop
-                        is BlockEntity -> writeBlock(it, entity)
-                        is StaticEntity -> writeStaticEntity(it, entity)
-                    }
-                }
-            }
-            log.info("Done.")
-        }
-
         private fun writeStaticEntity(it: OutputStreamWriter, entity: StaticEntity) {
             val id = entity.getComponent<StaticEntityComponent>().id.ordinal
             val position = entity.getComponent<PositionComponent>().position
@@ -151,15 +160,6 @@ class LevelUtils {
             val tMaxX = id.texMax.x
             val tMaxY = id.texMax.y
             it.write("b $x $y $z $tMinX $tMinY $tMaxX $tMaxY\n")
-        }
-
-        fun addLevelFileExtension(file: File): File {
-            if (file.extension == "hse") {
-                return file
-            }
-            val dir = file.parentFile
-            val name = file.name + ".hse"
-            return File(dir, name)
         }
     }
 }
