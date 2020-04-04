@@ -6,6 +6,7 @@ import de.yap.engine.ecs.EntityManager
 import de.yap.engine.ecs.KeyboardEvent
 import de.yap.engine.ecs.Subscribe
 import de.yap.engine.ecs.WindowResizeEvent
+import de.yap.engine.ecs.entities.MeshAtlas
 import de.yap.engine.ecs.entities.PlayerEntity
 import de.yap.engine.ecs.systems.FirstPersonCamera
 import de.yap.engine.ecs.systems.LevelEditor
@@ -46,13 +47,11 @@ class YapGame private constructor() : IGameLogic {
     val renderer = Renderer()
     val fontRenderer = FontRenderer()
     lateinit var firstPersonCamera: FirstPersonCamera
+    val meshAtlas = MeshAtlas()
 
     var view: Matrix4f = Matrix4f()
     var projection: Matrix4f = Matrix4f()
 
-    private var roomWireframe = false
-
-    private var roomMeshes: List<Mesh> = emptyList()
     private val scale = 2.0F
     private val negativeScaleHalf = -0.5F * scale
     private val position = Vector3f(negativeScaleHalf)
@@ -70,8 +69,7 @@ class YapGame private constructor() : IGameLogic {
 
         renderer.init()
         fontRenderer.init()
-
-        roomMeshes = Mesh.fromFile("models/scene.obj")
+        meshAtlas.init()
 
         initSystems()
 
@@ -120,9 +118,6 @@ class YapGame private constructor() : IGameLogic {
         if (keyReleased(GLFW.GLFW_KEY_ESCAPE)) {
             window.close()
         }
-        if (keyReleased(GLFW.GLFW_KEY_F)) {
-            roomWireframe = !roomWireframe
-        }
     }
 
     override fun update(interval: Float) {
@@ -151,14 +146,5 @@ class YapGame private constructor() : IGameLogic {
                         window.aspectRatio(),
                         Z_NEAR, Z_FAR
                 )
-    }
-
-    private fun renderRoom() {
-        renderer.wireframe(roomWireframe) {
-            for (roomMesh in roomMeshes) {
-                val color = Vector4f(1.0F, 1.0F, 1.0F, 1.0F)
-                renderer.mesh(roomMesh, roomTransformation, color)
-            }
-        }
     }
 }

@@ -4,8 +4,8 @@ import de.yap.engine.ecs.PositionComponent
 import de.yap.engine.ecs.RotationComponent
 import de.yap.engine.ecs.TextureAtlasIndexComponent
 import de.yap.engine.ecs.entities.BlockEntity
-import de.yap.engine.ecs.entities.ChairEntity
-import de.yap.engine.ecs.entities.WasteBinEntity
+import de.yap.engine.ecs.entities.StaticEntities
+import de.yap.engine.ecs.entities.StaticEntity
 import de.yap.engine.graphics.TextureCoords
 import de.yap.engine.util.LevelUtils
 import org.joml.Vector2f
@@ -89,8 +89,8 @@ class LevelUtilsTest {
         file.writeText(lines.joinToString("\n"))
 
         val expectedEntities = listOf(
-                ChairEntity(Vector3f(1.0F, 2.0F, 3.0F), 4.0F, 5.0F),
-                WasteBinEntity(Vector3f(1.0F, 2.0F, 3.0F), 4.0F, 5.0F)
+                StaticEntity(StaticEntities.CHAIR, Vector3f(1.0F, 2.0F, 3.0F), 4.0F, 5.0F),
+                StaticEntity(StaticEntities.WASTE_BIN, Vector3f(1.0F, 2.0F, 3.0F), 4.0F, 5.0F)
         )
         LevelUtils.loadLevel(file) {
             assertEquals(expectedEntities.size, it.size)

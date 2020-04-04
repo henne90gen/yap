@@ -40,36 +40,36 @@ class LevelGenerator() {
                 val randOrientation = Random.nextInt(4) * 0.5F * PI.toFloat()
                 when (i) {
                     1 -> {
-                        entities[randPos] = TableEntity(randPos)
+                        entities[randPos] = StaticEntity(StaticEntities.TABLE, randPos)
                     }
                     2 -> {
-                        entities[randPos] = ChairEntity(randPos, pitch = randOrientation )
+                        entities[randPos] = StaticEntity(StaticEntities.CHAIR, randPos, pitch = randOrientation)
                     }
                     3 -> {
-                        entities[randPos] = WasteBinEntity(randPos)
+                        entities[randPos] = StaticEntity(StaticEntities.WASTE_BIN, randPos)
                     }
                     4 -> {
-                        entities[randPos] = ShoeShelfEntity(randPos, pitch = randOrientation)
+                        entities[randPos] = StaticEntity(StaticEntities.SHOE_SHELF, randPos, pitch = randOrientation)
                     }
                     5 -> {
-                        entities[randPos] = WardrobeEntity(randPos)
+                        entities[randPos] = StaticEntity(StaticEntities.WARDROBE, randPos)
                         if (Random.nextInt(2) == 1) {
                             val aboveRandPos = Vector3f(randPos.x, randPos.y + 1, randPos.z)
-                            entities[aboveRandPos] = WardrobeEntity(aboveRandPos)
+                            entities[aboveRandPos] = StaticEntity(StaticEntities.WARDROBE, aboveRandPos)
                         }
                     }
                     6 -> {
-                        entities[randPos] = FridgeEntity(randPos)
+                        entities[randPos] = StaticEntity(StaticEntities.FRIDGE, randPos)
                         if (Random.nextInt(2) == 1) {
                             val aboveRandPos = Vector3f(randPos.x, randPos.y + 1, randPos.z)
-                            entities[aboveRandPos] = FridgeEntity(aboveRandPos)
+                            entities[aboveRandPos] = StaticEntity(StaticEntities.FRIDGE, aboveRandPos)
                         }
                     }
                     7 -> {
-                        entities[randPos] = OvenEntity(randPos, pitch = randOrientation)
+                        entities[randPos] = StaticEntity(StaticEntities.OVEN, randPos, pitch = randOrientation)
                     }
                     8 -> {
-                        entities[randPos] = KitchenCabinetEntity(randPos, pitch = randOrientation)
+                        entities[randPos] = StaticEntity(StaticEntities.KITCHEN_CABINET, randPos, pitch = randOrientation)
                     }
                 }
             }
@@ -79,12 +79,12 @@ class LevelGenerator() {
     private fun addWalls(entities: MutableMap<Vector3f, Entity>) {
         fun genWindow(position: Vector3f, rotation: Float) {
             if (Random.nextInt(7) == 1) {
-                entities[position] = WindowEntity(position, pitch = rotation)
+                entities[position] = StaticEntity(StaticEntities.WINDOW, position, pitch = rotation)
             }
         }
 
         val pos = Vector3f(3F, 2F, 0F)
-        entities[pos] = ClockEntity(pos)
+        entities[pos] = StaticEntity(StaticEntities.CLOCK, pos)
 
         for (x in -1..width+1) {
             val wall1Layer1 = Vector3f(x.toFloat(), 0F, -1F)

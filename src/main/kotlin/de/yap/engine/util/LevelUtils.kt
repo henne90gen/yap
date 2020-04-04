@@ -98,18 +98,7 @@ class LevelUtils {
                 } else {
                     0.0F
                 }
-                val entity = when (type) {
-                    StaticEntities.TABLE -> TableEntity(position)
-                    StaticEntities.CHAIR -> ChairEntity(position, pitch, yaw)
-                    StaticEntities.WASTE_BIN -> WasteBinEntity(position, pitch, yaw)
-                    StaticEntities.SHOE_SHELF -> ShoeShelfEntity(position, pitch, yaw)
-                    StaticEntities.WARDROBE -> WardrobeEntity(position, pitch, yaw)
-                    StaticEntities.FRIDGE -> FridgeEntity(position, pitch, yaw)
-                    StaticEntities.OVEN -> OvenEntity(position, pitch, yaw)
-                    StaticEntities.KITCHEN_CABINET -> KitchenCabinetEntity(position, pitch, yaw)
-                    StaticEntities.WINDOW -> WindowEntity(position, pitch, yaw)
-                    StaticEntities.CLOCK -> ClockEntity(position, pitch, yaw)
-                }
+                val entity = StaticEntity(type, position, pitch, yaw)
                 result.add(entity)
             } catch (e: NumberFormatException) {
                 log.warn("Could not parse static entity on line $lineNumber.")
