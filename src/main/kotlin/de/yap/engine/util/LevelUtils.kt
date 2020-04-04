@@ -1,10 +1,10 @@
 package de.yap.engine.util
 
 import de.yap.engine.ecs.PositionComponent
+import de.yap.engine.ecs.RotationComponent
+import de.yap.engine.ecs.StaticEntityComponent
 import de.yap.engine.ecs.TextureAtlasIndexComponent
-import de.yap.engine.ecs.entities.BlockEntity
-import de.yap.engine.ecs.entities.Entity
-import de.yap.engine.ecs.entities.PlayerEntity
+import de.yap.engine.ecs.entities.*
 import de.yap.engine.graphics.TextureCoords
 import org.apache.logging.log4j.LogManager
 import org.joml.Vector2f
@@ -38,6 +38,7 @@ class LevelUtils {
                 when (line[0]) {
                     'v' -> version = readVersion(line)
                     'b' -> readBlock(line, lineNumber, result)
+                    's' -> readStaticEntity(line, lineNumber, result)
                 }
 
                 if (version != LEVEL_FILE_VERSION) {
@@ -51,9 +52,42 @@ class LevelUtils {
             log.info("Done.")
         }
 
+        private fun readStaticEntity(line: String, lineNumber: Int, result: MutableList<Entity>) {
+            try {
+                val rest = line.substring(2)
+                val parts = rest.split(" ")
+                val type = StaticEntities.values()[parts[0].toInt()]
+                val position = Vector3f(parts[1].toFloat(), parts[2].toFloat(), parts[3].toFloat())
+                val pitch = if (parts.size >= 5) {
+                    parts[4].toFloat()
+                } else {
+                    0.0F
+                }
+                val yaw = if (parts.size >= 6) {
+                    parts[5].toFloat()
+                } else {
+                    0.0F
+                }
+                val entity = when (type) {
+                    StaticEntities.TABLE -> TableEntity(position)
+                    StaticEntities.CHAIR -> ChairEntity(position)
+                    StaticEntities.WASTE_BIN -> WasteBinEntity(position)
+                    StaticEntities.SHOE_SHELF -> ShoeShelfEntity(position, pitch, yaw)
+                    StaticEntities.WARDROBE -> WardrobeEntity(position, pitch, yaw)
+                    StaticEntities.FRIDGE -> FridgeEntity(position, pitch, yaw)
+                    StaticEntities.OVEN -> OvenEntity(position, pitch, yaw)
+                    StaticEntities.KITCHEN_CABINET -> KitchenCabinetEntity(position, pitch, yaw)
+                    StaticEntities.WINDOW -> WindowEntity(position, pitch, yaw)
+                    StaticEntities.CLOCK -> ClockEntity(position, pitch, yaw)
+                }
+                result.add(entity)
+            } catch (e: NumberFormatException) {
+                log.warn("Could not parse static entity on line $lineNumber.")
+            }
+        }
+
         private fun readBlock(line: String, lineNumber: Int, result: MutableList<Entity>) {
             try {
-
                 val rest = line.substring(2)
                 val parts = rest.split(" ")
                 val position = Vector3f(parts[0].toFloat(), parts[1].toFloat(), parts[2].toFloat())
@@ -86,14 +120,27 @@ class LevelUtils {
                 loop@ for (entity in entities) {
                     when (entity) {
                         is PlayerEntity -> continue@loop
-                        is BlockEntity -> writeBlock(entity, it)
+                        is BlockEntity -> writeBlock(it, entity)
+                        is StaticEntity -> writeStaticEntity(it, entity)
                     }
                 }
             }
             log.info("Done.")
         }
 
-        private fun writeBlock(entity: Entity, it: OutputStreamWriter) {
+        private fun writeStaticEntity(it: OutputStreamWriter, entity: StaticEntity) {
+            val id = entity.getComponent<StaticEntityComponent>().id.ordinal
+            val position = entity.getComponent<PositionComponent>().position
+            val x = position.x
+            val y = position.y
+            val z = position.z
+            val rotationComponent = entity.getComponent<RotationComponent>()
+            val pitch = rotationComponent.pitch
+            val yaw = rotationComponent.yaw
+            it.write("s $id $x $y $z $pitch $yaw")
+        }
+
+        private fun writeBlock(it: OutputStreamWriter, entity: Entity) {
             val positionComponent = entity.getComponent<PositionComponent>()
             val x = positionComponent.position.x
             val y = positionComponent.position.y

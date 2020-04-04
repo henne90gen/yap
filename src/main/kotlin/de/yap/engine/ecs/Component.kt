@@ -1,5 +1,6 @@
 package de.yap.engine.ecs
 
+import de.yap.engine.ecs.entities.StaticEntities
 import de.yap.engine.graphics.TextureCoords
 import de.yap.engine.mesh.Mesh
 import de.yap.engine.util.X_AXIS
@@ -58,3 +59,5 @@ class BoundingBoxComponent(
 }
 
 class TextureAtlasIndexComponent(val textureCoords: TextureCoords) : Component()
+
+class StaticEntityComponent(val id: StaticEntities) : Component()
