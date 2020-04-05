@@ -43,13 +43,13 @@ class LevelGenerator() {
                         entities[randPos] = StaticEntity(StaticEntities.TABLE, randPos)
                     }
                     2 -> {
-                        entities[randPos] = StaticEntity(StaticEntities.CHAIR, randPos, pitch = randOrientation)
+                        entities[randPos] = StaticEntity(StaticEntities.CHAIR, randPos, yaw = randOrientation)
                     }
                     3 -> {
                         entities[randPos] = StaticEntity(StaticEntities.WASTE_BIN, randPos)
                     }
                     4 -> {
-                        entities[randPos] = StaticEntity(StaticEntities.SHOE_SHELF, randPos, pitch = randOrientation)
+                        entities[randPos] = StaticEntity(StaticEntities.SHOE_SHELF, randPos, yaw = randOrientation)
                     }
                     5 -> {
                         entities[randPos] = StaticEntity(StaticEntities.WARDROBE, randPos)
@@ -66,10 +66,10 @@ class LevelGenerator() {
                         }
                     }
                     7 -> {
-                        entities[randPos] = StaticEntity(StaticEntities.OVEN, randPos, pitch = randOrientation)
+                        entities[randPos] = StaticEntity(StaticEntities.OVEN, randPos, yaw = randOrientation)
                     }
                     8 -> {
-                        entities[randPos] = StaticEntity(StaticEntities.KITCHEN_CABINET, randPos, pitch = randOrientation)
+                        entities[randPos] = StaticEntity(StaticEntities.KITCHEN_CABINET, randPos, yaw = randOrientation)
                     }
                 }
             }
@@ -79,7 +79,7 @@ class LevelGenerator() {
     private fun addWalls(entities: MutableMap<Vector3f, Entity>) {
         fun genWindow(position: Vector3f, rotation: Float) {
             if (Random.nextInt(7) == 1) {
-                entities[position] = StaticEntity(StaticEntities.WINDOW, position, pitch = rotation)
+                entities[position] = StaticEntity(StaticEntities.WINDOW, position, yaw = rotation)
             }
         }
 
