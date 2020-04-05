@@ -8,6 +8,7 @@ import de.yap.engine.ecs.entities.StaticEntities
 import de.yap.engine.ecs.entities.StaticEntity
 import de.yap.engine.graphics.TextureCoords
 import de.yap.engine.util.LevelUtils
+import de.yap.game.YapGame
 import org.joml.Vector2f
 import org.joml.Vector3f
 import org.junit.Rule
@@ -84,6 +85,7 @@ class LevelUtilsTest {
 
     @Test
     fun testLoadLevelStaticEntity() {
+        YapGame.getInstance().meshAtlas.init()
         val lines = listOf("v 1", "s 1 1.0 2.0 3.0 4.0 5.0", "s 2 1.0 2.0 3.0 4.0 5.0")
         val file = tempFolder.newFile("level.hse")
         file.writeText(lines.joinToString("\n"))
