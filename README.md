@@ -23,6 +23,19 @@
     - along the voxel grid
 - character animation
 
+### Model Ideas
+- bed
+- door
+- shower
+- toilet
+- bedside lamp
+- microwave
+- TV
+- kitchen cabinet mounted on wall
+- lamp on wall
+- carpet?
+
+
 ## Story
 
 - house at night

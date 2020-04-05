@@ -14,6 +14,7 @@ val GREEN = TextureCoords.fromIndex(6, 1)
 val YELLOW = TextureCoords.fromIndex(6, 3)
 
 val CHECKER_BOARD = TextureCoords.fromIndex(8, 0)
+val PLANKS = TextureCoords.fromIndex(9, 0)
 
 data class TextureCoords(val texMin: Vector2f, val texMax: Vector2f) {
     companion object {
