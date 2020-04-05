@@ -21,6 +21,7 @@
 - complete physics system
 - path finding
     - along the voxel grid
+- character animation
 
 ## Story
 
