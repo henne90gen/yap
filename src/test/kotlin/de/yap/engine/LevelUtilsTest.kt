@@ -86,6 +86,7 @@ class LevelUtilsTest {
     @Test
     fun testLoadLevelStaticEntity() {
         YapGame.getInstance().meshAtlas.init()
+
         val lines = listOf("v 1", "s 1 1.0 2.0 3.0 4.0 5.0", "s 2 1.0 2.0 3.0 4.0 5.0")
         val file = tempFolder.newFile("level.hse")
         file.writeText(lines.joinToString("\n"))

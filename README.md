@@ -6,21 +6,19 @@
     - game does not terminate correctly after pressing ESC
     - font does not load correctly on windows
     - when rendering text, game crashes after a while
-- complete physics system
-- level file format
 - level generator (Max)
+    - create rooms
+    - furnish rooms
 - level editor (Henne)
-    - place blocks with right click
-    - remove blocks with left click
-    - show outline of block that will be placed
-    - press Alt to release mouse
     - add UI
         - to configure which block to place
-        - save/load level files
+        - to configure which static entity to place
+- create player model
 - top down camera (try different variants)
     - third person camera
     - direct control
     - move only when player gets too close to edge
+- complete physics system
 - path finding
     - along the voxel grid
 
