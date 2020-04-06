@@ -62,6 +62,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
     private var clampedPoint: Vector3f? = null
     private var normal: Vector3f? = null
     private var selectedTextureIndex = Vector2i(0)
+    private var rotation = Vector3f(0.0F)
     private var entityTypeCombo: JComboBox<ComboItem>? = null
 
     private val frame = JFrame("Settings")
@@ -160,7 +161,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
         pitch.isEditable = true
         pitch.document.addDocumentListener(CustomDocumentListener {
             try {
-                selectedTextureIndex.x = pitch.text.toInt()
+                rotation.x = pitch.text.toFloat()
             } catch (e: NumberFormatException) {
                 // ignore
             }
@@ -180,7 +181,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
         yaw.isEditable = true
         yaw.document.addDocumentListener(CustomDocumentListener {
             try {
-                selectedTextureIndex.y = yaw.text.toInt()
+                rotation.y = yaw.text.toFloat()
             } catch (e: NumberFormatException) {
                 // ignore
             }
@@ -301,7 +302,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
                 BlockEntity.singleTextureBlock(it, selectedTextureIndex)
             } else {
                 val id = (entityTypeCombo?.selectedItem as ComboItem).id
-                StaticEntity(StaticEntities.values()[id], it)
+                StaticEntity(StaticEntities.values()[id], it, rotation.x, rotation.y)
             }
             YapGame.getInstance().entityManager.addEntity(entity)
         }
