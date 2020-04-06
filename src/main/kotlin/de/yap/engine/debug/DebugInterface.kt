@@ -4,7 +4,10 @@ import de.yap.engine.ecs.PositionComponent
 import de.yap.engine.ecs.RotationComponent
 import de.yap.engine.ecs.Subscribe
 import de.yap.engine.ecs.WindowCloseEvent
+import de.yap.engine.ecs.entities.BlockEntity
 import de.yap.engine.ecs.entities.Entity
+import de.yap.engine.ecs.entities.PlayerEntity
+import de.yap.engine.ecs.entities.StaticEntity
 import de.yap.engine.ecs.systems.ISystem
 import de.yap.game.YapGame
 import org.joml.Matrix4f
@@ -12,28 +15,51 @@ import org.joml.Vector3f
 import org.joml.Vector4f
 import java.awt.event.ItemEvent
 import java.awt.event.WindowEvent
-import javax.swing.BoxLayout
-import javax.swing.JCheckBox
-import javax.swing.JFrame
-import javax.swing.JPanel
+import javax.swing.*
 
 
 class DebugInterface : ISystem() {
 
     private lateinit var frame: JFrame
+    private lateinit var entitiesCount: JLabel
+    private lateinit var blockEntitiesCount: JLabel
+    private lateinit var staticEntitiesCount: JLabel
+    private lateinit var playerEntitiesCount: JLabel
 
-    var enabled = false
+    private var enabled = false
 
     override fun init() {
         frame = JFrame("Debug Settings")
         val debugToggles = createDebugToggles()
         frame.add(debugToggles)
 
+        val entitiesInfo = createEntitiesInformation()
+        frame.add(entitiesInfo)
+
         frame.setSize(300, 500)
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         frame.layout = BoxLayout(frame.contentPane, BoxLayout.Y_AXIS)
         frame.isVisible = true
         frame.setLocation(1600, 100)
+    }
+
+    private fun createEntitiesInformation(): JPanel {
+        val infoPanel = JPanel()
+        infoPanel.layout = BoxLayout(infoPanel, BoxLayout.Y_AXIS)
+
+        entitiesCount = JLabel("Entities")
+        infoPanel.add(entitiesCount)
+
+        blockEntitiesCount = JLabel("Block Entities")
+        infoPanel.add(blockEntitiesCount)
+
+        staticEntitiesCount = JLabel("Static Entities")
+        infoPanel.add(staticEntitiesCount)
+
+        playerEntitiesCount = JLabel("Player Entities")
+        infoPanel.add(playerEntitiesCount)
+
+        return infoPanel
     }
 
     private fun createDebugToggles(): JPanel {
@@ -73,10 +99,25 @@ class DebugInterface : ISystem() {
     }
 
     override fun render(entities: List<Entity>) {
+        entitiesCount.text = "${entities.size} Entities"
+
+        var blockEntities = 0
+        var staticEntities = 0
+        var playerEntities = 0
+        for (entity in entities) {
+            when (entity) {
+                is BlockEntity -> blockEntities++
+                is StaticEntity -> staticEntities++
+                is PlayerEntity -> playerEntities++
+            }
+        }
+        blockEntitiesCount.text = "$blockEntities Block Entities"
+        staticEntitiesCount.text = "$staticEntities Static Entities"
+        playerEntitiesCount.text = "$playerEntities Player Entities"
+
         if (!enabled) {
             return
         }
-
         renderCoordinateSystem()
     }
 
