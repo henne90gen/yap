@@ -12,7 +12,9 @@ class BlockEntity(position: Vector3f, textureCoords: TextureCoords, mesh: Mesh) 
 
     companion object {
         fun singleTextureBlock(position: Vector3f, textureCoords: TextureCoords): BlockEntity {
-            val mesh = MeshUtils.unitCube(YapGame.getInstance().renderer.textureMapMaterial, textureCoords.texMin, textureCoords.texMax)
+            val game = YapGame.getInstance()
+            val material = game.renderer.textureMapMaterial
+            val mesh = MeshUtils.unitCube(material, textureCoords.texMin, textureCoords.texMax)
             return BlockEntity(position, textureCoords, mesh)
         }
 

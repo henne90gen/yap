@@ -58,6 +58,8 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
         private val log: Logger = LogManager.getLogger()
     }
 
+    private lateinit var frame: JFrame
+
     private var reactToMouseInput = true
     private var clampedPoint: Vector3f? = null
     private var normal: Vector3f? = null
@@ -65,9 +67,8 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
     private var rotation = Vector3f(0.0F)
     private var entityTypeCombo: JComboBox<ComboItem>? = null
 
-    private val frame = JFrame("Settings")
-
     override fun init() {
+        frame = JFrame("Settings")
         frame.layout = GridBagLayout()
         val constraints = GridBagConstraints()
         constraints.insets = Insets(10, 10, 10, 10)

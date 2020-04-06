@@ -105,3 +105,6 @@ distributions {
         }
     }
 }
+
+val test: Test by tasks
+test.systemProperty("java.awt.headless", true)

@@ -1,6 +1,9 @@
 package de.yap.engine.debug
 
-import de.yap.engine.ecs.*
+import de.yap.engine.ecs.PositionComponent
+import de.yap.engine.ecs.RotationComponent
+import de.yap.engine.ecs.Subscribe
+import de.yap.engine.ecs.WindowCloseEvent
 import de.yap.engine.ecs.entities.Entity
 import de.yap.engine.ecs.systems.ISystem
 import de.yap.game.YapGame
@@ -17,11 +20,12 @@ import javax.swing.JPanel
 
 class DebugInterface : ISystem() {
 
+    private lateinit var frame: JFrame
+
     var enabled = false
 
-    private val frame = JFrame("Debug Settings")
-
     override fun init() {
+        frame = JFrame("Debug Settings")
         val debugToggles = createDebugToggles()
         frame.add(debugToggles)
 
