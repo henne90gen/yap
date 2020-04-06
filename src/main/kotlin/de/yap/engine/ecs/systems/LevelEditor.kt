@@ -3,6 +3,8 @@ package de.yap.engine.ecs.systems
 import de.yap.engine.ecs.*
 import de.yap.engine.ecs.entities.BlockEntity
 import de.yap.engine.ecs.entities.Entity
+import de.yap.engine.ecs.entities.StaticEntities
+import de.yap.engine.ecs.entities.StaticEntity
 import de.yap.engine.util.LevelUtils
 import de.yap.game.IntersectionResult
 import de.yap.game.TransformedBoundingBox
@@ -15,12 +17,17 @@ import org.joml.Vector2i
 import org.joml.Vector3f
 import org.joml.Vector4f
 import org.lwjgl.glfw.GLFW
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
+import java.awt.Insets
+import java.awt.event.ActionEvent
 import java.awt.event.WindowEvent
 import java.io.File
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.filechooser.FileFilter
+
 
 class LevelFileFilter : FileFilter() {
     override fun accept(file: File?): Boolean {
@@ -35,6 +42,16 @@ class LevelFileFilter : FileFilter() {
     }
 }
 
+class ComboItem(val id: Int) {
+    override fun toString(): String {
+        return if (id == -1) {
+            "Simple Block"
+        } else {
+            StaticEntities.values()[id].toString()
+        }
+    }
+}
+
 class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent::class.java) {
 
     companion object {
@@ -45,33 +62,64 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
     private var clampedPoint: Vector3f? = null
     private var normal: Vector3f? = null
     private var selectedTextureIndex = Vector2i(0)
+    private var entityTypeCombo: JComboBox<ComboItem>? = null
 
     private val frame = JFrame("Settings")
 
     override fun init() {
-        val saveLoadButtons = createSaveLoadButtons()
-        frame.add(saveLoadButtons)
+        frame.layout = GridBagLayout()
+        val constraints = GridBagConstraints()
+        constraints.insets = Insets(10, 10, 10, 10)
 
-        val blockSettings = createEntitySettings()
-        frame.add(blockSettings)
+        addSaveLoadButtons(frame, constraints)
+        addEntitySettings(frame, constraints)
 
         // add more settings panels here
 
-        frame.add(Box.createVerticalGlue())
-
         frame.setSize(300, 500)
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
-        frame.layout = BoxLayout(frame.contentPane, BoxLayout.Y_AXIS)
+        frame.pack()
         frame.isVisible = true
 
         YapGame.getInstance().window.focus()
     }
 
-    private fun createEntitySettings(): JPanel {
-        val entitySettings = JPanel()
-        entitySettings.layout = BoxLayout(entitySettings, BoxLayout.X_AXIS)
+    private fun addEntitySettings(frame: JFrame, constraints: GridBagConstraints) {
+        val specificSettingsPanel = JPanel()
+        specificSettingsPanel.layout = GridBagLayout()
+        val specificConstraints = GridBagConstraints()
+        specificConstraints.insets = Insets(5, 5, 5, 5)
 
+        val items = mutableListOf(-1)
+        items.addAll(StaticEntities.values().map { it.ordinal })
+        val finalItems = items.map { ComboItem(it) }.toTypedArray()
+        entityTypeCombo = JComboBox(finalItems)
+        entityTypeCombo?.addActionListener {
+            specificSettingsPanel.removeAll()
+            if ((entityTypeCombo?.selectedItem as ComboItem).id == -1) {
+                addTextureSelection(specificSettingsPanel, specificConstraints)
+            } else {
+                addPitchAndYaw(specificSettingsPanel, specificConstraints)
+            }
+            frame.pack()
+        }
+        constraints.fill = GridBagConstraints.HORIZONTAL
+        constraints.gridwidth = 2
+        constraints.gridx = 0
+        constraints.gridy = 1
+        frame.add(entityTypeCombo, constraints)
+
+        addTextureSelection(specificSettingsPanel, specificConstraints)
+        constraints.fill = GridBagConstraints.BOTH
+        constraints.gridwidth = 2
+        constraints.gridx = 0
+        constraints.gridy = 2
+        frame.add(specificSettingsPanel, constraints)
+    }
+
+    private fun addTextureSelection(panel: JPanel, constraints: GridBagConstraints) {
         val textFieldX = JTextField(selectedTextureIndex.x.toString())
+        textFieldX.columns = 7
         textFieldX.isEditable = true
         textFieldX.document.addDocumentListener(CustomDocumentListener {
             try {
@@ -80,9 +128,13 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
                 // ignore
             }
         })
-        entitySettings.add(textFieldX)
+        constraints.fill = GridBagConstraints.HORIZONTAL
+        constraints.gridx = 0
+        constraints.gridy = 0
+        panel.add(textFieldX, constraints)
 
         val textFieldY = JTextField(selectedTextureIndex.y.toString())
+        textFieldY.columns = 7
         textFieldY.isEditable = true
         textFieldY.document.addDocumentListener(CustomDocumentListener {
             try {
@@ -91,46 +143,97 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
                 // ignore
             }
         })
-        entitySettings.add(textFieldY)
-
-        return entitySettings
+        constraints.fill = GridBagConstraints.HORIZONTAL
+        constraints.gridx = 1
+        constraints.gridy = 0
+        panel.add(textFieldY, constraints)
     }
 
-    private fun createSaveLoadButtons(): JPanel {
-        val saveLoadButtons = JPanel()
-        saveLoadButtons.layout = BoxLayout(saveLoadButtons, BoxLayout.X_AXIS)
+    private fun addPitchAndYaw(panel: JPanel, constraints: GridBagConstraints) {
+        val pitchLabel = JLabel("Pitch")
+        constraints.gridx = 0
+        constraints.gridy = 0
+        panel.add(pitchLabel, constraints)
 
+        val pitch = JTextField()
+        pitch.columns = 7
+        pitch.isEditable = true
+        pitch.document.addDocumentListener(CustomDocumentListener {
+            try {
+                selectedTextureIndex.x = pitch.text.toInt()
+            } catch (e: NumberFormatException) {
+                // ignore
+            }
+        })
+        constraints.fill = GridBagConstraints.HORIZONTAL
+        constraints.gridx = 1
+        constraints.gridy = 0
+        panel.add(pitch, constraints)
+
+        val yawLabel = JLabel("Yaw")
+        constraints.gridx = 0
+        constraints.gridy = 1
+        panel.add(yawLabel, constraints)
+
+        val yaw = JTextField()
+        yaw.columns = 7
+        yaw.isEditable = true
+        yaw.document.addDocumentListener(CustomDocumentListener {
+            try {
+                selectedTextureIndex.y = yaw.text.toInt()
+            } catch (e: NumberFormatException) {
+                // ignore
+            }
+        })
+        constraints.fill = GridBagConstraints.HORIZONTAL
+        constraints.gridx = 1
+        constraints.gridy = 1
+        panel.add(yaw, constraints)
+    }
+
+    private fun addSaveLoadButtons(frame: JFrame, constraints: GridBagConstraints) {
         val loadLevelBtn = JButton("Load Level")
-        loadLevelBtn.addActionListener {
-            val fc = createLevelFileChooser()
-            val returnVal = fc.showOpenDialog(frame)
-            if (returnVal != JFileChooser.APPROVE_OPTION) {
-                return@addActionListener
-            }
-            val file = fc.selectedFile
-            LevelUtils.loadLevel(file) {
-                YapGame.getInstance().entityManager.removeAllEntities()
-                YapGame.getInstance().entityManager.addAllEntities(it)
-                val camera = YapGame.getInstance().firstPersonCamera.getCurrentCamera()
-                camera?.let {
-                    YapGame.getInstance().entityManager.addEntity(it)
-                }
-            }
-        }
-        saveLoadButtons.add(loadLevelBtn)
+        loadLevelBtn.addActionListener(this::loadLevel)
+        constraints.fill = GridBagConstraints.HORIZONTAL
+        constraints.gridx = 0
+        constraints.gridy = 0
+        frame.add(loadLevelBtn, constraints)
 
         val saveLevelBtn = JButton("Save Level")
-        saveLevelBtn.addActionListener {
-            val fc = createLevelFileChooser()
-            val returnValue = fc.showSaveDialog(frame)
-            if (returnValue != JFileChooser.APPROVE_OPTION) {
-                return@addActionListener
-            }
-            val file = fc.selectedFile
-            LevelUtils.saveLevel(file, YapGame.getInstance().entityManager.getEntities(Capability.ALL_CAPABILITIES))
+        saveLevelBtn.addActionListener(this::saveLevel)
+        constraints.fill = GridBagConstraints.HORIZONTAL
+        constraints.gridx = 1
+        constraints.gridy = 0
+        frame.add(saveLevelBtn, constraints)
+    }
+
+    private fun loadLevel(e: ActionEvent) {
+        val fc = createLevelFileChooser()
+        val returnVal = fc.showOpenDialog(frame)
+        if (returnVal != JFileChooser.APPROVE_OPTION) {
+            return
         }
-        saveLoadButtons.add(saveLevelBtn)
-        return saveLoadButtons
+
+        val file = fc.selectedFile
+        LevelUtils.loadLevel(file) {
+            YapGame.getInstance().entityManager.removeAllEntities()
+            YapGame.getInstance().entityManager.addAllEntities(it)
+            val camera = YapGame.getInstance().firstPersonCamera.getCurrentCamera()
+            camera?.let {
+                YapGame.getInstance().entityManager.addEntity(it)
+            }
+        }
+    }
+
+    private fun saveLevel(e: ActionEvent) {
+        val fc = createLevelFileChooser()
+        val returnValue = fc.showSaveDialog(frame)
+        if (returnValue != JFileChooser.APPROVE_OPTION) {
+            return
+        }
+
+        val file = fc.selectedFile
+        LevelUtils.saveLevel(file, YapGame.getInstance().entityManager.getEntities(Capability.ALL_CAPABILITIES))
     }
 
     private fun createLevelFileChooser(): JFileChooser {
@@ -194,7 +297,12 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
 
     private fun placeBlock() {
         clampedPoint?.let {
-            val entity = BlockEntity.singleTextureBlock(it, selectedTextureIndex)
+            val entity = if ((entityTypeCombo?.selectedItem as ComboItem).id == -1) {
+                BlockEntity.singleTextureBlock(it, selectedTextureIndex)
+            } else {
+                val id = (entityTypeCombo?.selectedItem as ComboItem).id
+                StaticEntity(StaticEntities.values()[id], it)
+            }
             YapGame.getInstance().entityManager.addEntity(entity)
         }
     }
