@@ -34,6 +34,7 @@ class LevelGenerator() {
 
         entities.putAll(genFloor())
         entities.putAll(genWalls())
+
         //addFurniture(entities)
 
         return entities.values
@@ -90,7 +91,8 @@ class LevelGenerator() {
                 walls[Vector3f(head.pos)] = BlockEntity.singleTextureBlock(Vector3f(head.pos), GREEN)
                 if (Random.nextFloat() < head.turnProbability
                         && head.movesSinceLastTurnOrSplit > 5
-                        && distanceToOuterWall(head.pos) > 5) {
+                        && distanceToOuterWall(head.pos) > 3
+                        && distanceToNextInnerWall(head.pos, head.direction, walls) > 1) {
                     // turn
                     if (Random.nextFloat() < head.splitProbability) {
                         // ... and split head
@@ -111,8 +113,14 @@ class LevelGenerator() {
                     // continue in same direction
                     val pos = Vector3f(head.pos).add(head.direction)
 
-                    newHeads.add(Head(pos, head.direction, head.turnProbability + 0.15F,
-                            head.splitProbability + 0.15F, head.movesSinceLastTurnOrSplit + 1))
+                    if (head.movesSinceLastTurnOrSplit > 5) {
+                        newHeads.add(Head(pos, head.direction, head.turnProbability + 0.15F,
+                                head.splitProbability + 0.15F, head.movesSinceLastTurnOrSplit + 1))
+                    } else {
+                        newHeads.add(Head(pos, head.direction, head.turnProbability , head.splitProbability,
+                                head.movesSinceLastTurnOrSplit + 1))
+                    }
+
                 }
             }
             heads = newHeads
@@ -124,6 +132,16 @@ class LevelGenerator() {
         val distanceX = min(pos.x + 1, width - pos.x)
         val distanceZ = min(pos.z + 1, depth - pos.z)
         return min(distanceX, distanceZ)
+    }
+
+    private fun distanceToNextInnerWall(pos: Vector3f, direction: Vector3f, walls: Map<Vector3f, Entity>): Int {
+        var distance = 0
+        var next = Vector3f(pos).add(direction)
+        while (next !in walls && distanceToOuterWall(next) > 1) {
+            distance += 1
+            next = next.add(direction)
+        }
+        return distance
     }
 
     private fun newRandomDirection(oldDirection: Vector3f): Vector3f {

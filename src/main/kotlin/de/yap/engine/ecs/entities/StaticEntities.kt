@@ -25,7 +25,10 @@ enum class StaticEntities(val meshPath: String) {
     OVEN("models/oven.obj"),
     KITCHEN_CABINET("models/kitchen_cabinet.obj"),
     WINDOW("models/window.obj"),
-    CLOCK("models/clock.obj")
+    CLOCK("models/clock.obj"),
+    DOOR("models/door.obj"),
+    SINK("models/sink.obj"),
+    BATHTUB("models/bathtub.obj"),
 }
 
 class MeshAtlas {
