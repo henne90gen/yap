@@ -19,39 +19,44 @@ import org.lwjgl.glfw.GLFW
  *  - Q,E - move along the y-axis
  *  - TAB - switch to next camera
  */
-class FirstPersonCamera : ISystem(PositionComponent::class.java, RotationComponent::class.java, CameraComponent::class.java) {
+class CameraSystem : ISystem(PositionComponent::class.java, RotationComponent::class.java, CameraComponent::class.java) {
 
     companion object {
         private val log = LogManager.getLogger()
     }
 
     private var currentCameraEntity: Entity? = null
-    private var trackMouseMovement = true
+    private var trackMouseMovement = false
 
     override fun render(entities: List<Entity>) {
         for (entity in entities) {
-            val cameraComponent = entity.getComponent<CameraComponent>()
-            if (cameraComponent.active) {
-                continue
-            }
-
-            val positionComponent = entity.getComponent<PositionComponent>()
-            val rotationComponent = entity.getComponent<RotationComponent>()
-
-            // show position
-            val position = positionComponent.position
-            val transformation = Matrix4f()
-                    .translate(position)
-                    .scale(0.4F)
-            YapGame.getInstance().renderer.cube(transformation, cameraComponent.color)
-
-            // show viewing direction
-            val dir = rotationComponent.direction()
-            val end = Vector3f(position)
-                    .add(dir)
-            val viewDirColor = Vector4f(1.0F, 0.0F, 0.0F, 1.0F)
-            YapGame.getInstance().renderer.line(position, end, viewDirColor)
+            renderEntity(entity)
         }
+    }
+
+    private fun renderEntity(entity: Entity) {
+        val cameraComponent = entity.getComponent<CameraComponent>()
+        if (cameraComponent.active) {
+            return
+        }
+
+        val positionComponent = entity.getComponent<PositionComponent>()
+        val rotationComponent = entity.getComponent<RotationComponent>()
+
+        // show position
+        val position = positionComponent.position
+        val transformation = Matrix4f()
+                .translate(position)
+                .translate(cameraComponent.offset)
+                .scale(0.4F)
+        YapGame.getInstance().renderer.cube(transformation, cameraComponent.color)
+
+        // show viewing direction
+        val dir = rotationComponent.direction()
+        val end = Vector3f(position)
+                .add(dir)
+        val viewDirColor = Vector4f(1.0F, 0.0F, 0.0F, 1.0F)
+        YapGame.getInstance().renderer.line(position, end, viewDirColor)
     }
 
     override fun update(interval: Float, entities: List<Entity>) {
@@ -60,36 +65,78 @@ class FirstPersonCamera : ISystem(PositionComponent::class.java, RotationCompone
         }
 
         for (entity in entities) {
-            val cameraComponent = entity.getComponent<CameraComponent>()
-            if (!cameraComponent.active) {
-                continue
-            }
-
-            val positionComponent = entity.getComponent<PositionComponent>()
-            val rotationComponent = entity.getComponent<RotationComponent>()
-
-            currentCameraEntity = entity
-
-            pollDirection(cameraComponent.direction)
-            pollMousePosition(cameraComponent)
-
-            val offset = Vector3f(cameraComponent.direction).mul(MOVEMENT_SPEED)
-            val rotatedOffset = Vector4f(offset.x, offset.y, offset.z, 0.0F)
-                    .mul(Matrix4f().rotate(rotationComponent.yaw, Y_AXIS).invert())
-
-            positionComponent.position.add(rotatedOffset.x, rotatedOffset.y, rotatedOffset.z)
-
-            val mouseRot = Vector2f(cameraComponent.mousePosition.x, cameraComponent.mousePosition.y)
-                    .mul(MOUSE_SENSITIVITY)
-            rotate(rotationComponent, mouseRot)
-
-            val pos = Vector3f(positionComponent.position)
-            YapGame.getInstance().view = Matrix4f()
-                    .mul(rotationComponent.rotationMatrix())
-                    .translate(pos.mul(-1.0f))
-
-            cameraComponent.mousePosition = Vector2f(0.0F)
+            updateEntity(entity)
         }
+    }
+
+    private fun updateEntity(entity: Entity) {
+        val cameraComponent = entity.getComponent<CameraComponent>()
+        if (!cameraComponent.active) {
+            return
+        }
+
+        currentCameraEntity = entity
+
+        when (cameraComponent.type) {
+            CameraType.FIRST_PERSON -> updateFirstPersonCamera(entity, cameraComponent)
+            CameraType.THIRD_PERSON -> updateThirdPersonCamera(entity, cameraComponent)
+        }
+    }
+
+    private fun updateFirstPersonCamera(entity: Entity, cameraComponent: CameraComponent) {
+        val positionComponent = entity.getComponent<PositionComponent>()
+        val rotationComponent = entity.getComponent<RotationComponent>()
+
+        pollDirection(cameraComponent.direction)
+        pollMousePosition(cameraComponent)
+
+        val offset = Vector3f(cameraComponent.direction).mul(MOVEMENT_SPEED)
+        val rotatedOffset = Vector4f(offset.x, offset.y, offset.z, 0.0F)
+                .mul(Matrix4f().rotate(rotationComponent.yaw, Y_AXIS).invert())
+
+        positionComponent.position.add(rotatedOffset.x, rotatedOffset.y, rotatedOffset.z)
+
+        val mouseRot = Vector2f(cameraComponent.mousePosition.x, cameraComponent.mousePosition.y)
+                .mul(MOUSE_SENSITIVITY)
+        rotate(rotationComponent, mouseRot)
+
+        val pos = Vector3f(positionComponent.position)
+        YapGame.getInstance().view = Matrix4f()
+                .mul(rotationComponent.rotationMatrix())
+                .translate(pos.mul(-1.0f))
+
+        cameraComponent.mousePosition = Vector2f(0.0F)
+    }
+
+    private fun updateThirdPersonCamera(entity: Entity, cameraComponent: CameraComponent) {
+        val positionComponent = entity.getComponent<PositionComponent>()
+        val rotationComponent = entity.getComponent<RotationComponent>()
+
+        pollDirection(cameraComponent.direction)
+        pollMousePosition(cameraComponent)
+
+        val offset = Vector3f(cameraComponent.direction).mul(MOVEMENT_SPEED)
+        val rotatedOffset = Vector4f(offset.x, offset.y, offset.z, 0.0F)
+                .mul(Matrix4f().rotate(rotationComponent.yaw, Y_AXIS).invert())
+
+        positionComponent.position.add(rotatedOffset.x, rotatedOffset.y, rotatedOffset.z)
+
+//        val mouseRot = Vector2f(cameraComponent.mousePosition.x, cameraComponent.mousePosition.y)
+//                .mul(MOUSE_SENSITIVITY)
+//        rotate(rotationComponent, mouseRot)
+        if (offset != Vector3f(0.0F)) {
+            cameraComponent.offset = Vector3f(rotatedOffset.x, rotatedOffset.y, rotatedOffset.z).normalize().mul(-1.0F)
+            cameraComponent.offset.y += 1.0F
+            cameraComponent.offset.mul(2.0F)
+        }
+
+        val pos = Vector3f(positionComponent.position).add(cameraComponent.offset)
+        YapGame.getInstance().view = Matrix4f()
+//                .mul(rotationComponent.rotationMatrix())
+//                .translate(pos.mul(-1.0f))
+                .lookAt(pos, positionComponent.position, Vector3f(0.0F, 1.0F, 0.0F))
+
+        cameraComponent.mousePosition = Vector2f(0.0F)
     }
 
     private fun pollDirection(direction: Vector3f) {

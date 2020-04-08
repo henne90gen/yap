@@ -76,7 +76,7 @@ class Window(private val title: String, var width: Int, var height: Int, private
         }
 
         // Setup the mouse
-        toggleMouseVisibility()
+//        toggleMouseVisibility()
         glfwSetCursorPosCallback(windowHandle) { _: Long, xpos: Double, ypos: Double ->
             val pair = mapPositionFromPixelSpaceToScreenSpace(xpos, ypos)
             YapGame.getInstance().entityManager.fireEvent(MouseMoveEvent(pair.first.toFloat(), pair.second.toFloat()))

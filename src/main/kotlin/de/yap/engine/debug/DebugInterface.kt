@@ -123,7 +123,7 @@ class DebugInterface : ISystem() {
 
     private fun renderCoordinateSystem() {
         val renderer = YapGame.getInstance().renderer
-        val currentCamera = YapGame.getInstance().firstPersonCamera.getCurrentCamera()
+        val currentCamera = YapGame.getInstance().cameraSystem.getCurrentCamera()
         currentCamera?.let {
             val positionComponent = currentCamera.getComponent<PositionComponent>()
             val rotationComponent = currentCamera.getComponent<RotationComponent>()

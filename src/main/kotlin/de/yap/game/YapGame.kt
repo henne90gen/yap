@@ -8,14 +8,13 @@ import de.yap.engine.ecs.Subscribe
 import de.yap.engine.ecs.WindowResizeEvent
 import de.yap.engine.ecs.entities.MeshAtlas
 import de.yap.engine.ecs.entities.PlayerEntity
-import de.yap.engine.ecs.systems.FirstPersonCamera
+import de.yap.engine.ecs.systems.CameraSystem
 import de.yap.engine.ecs.systems.LevelEditor
 import de.yap.engine.ecs.systems.MeshSystem
 import de.yap.engine.ecs.systems.ShowComponentInfoSystem
 import de.yap.engine.graphics.FontRenderer
 import de.yap.engine.graphics.Renderer
 import de.yap.engine.graphics.Window
-import de.yap.engine.mesh.Mesh
 import de.yap.engine.util.FIELD_OF_VIEW
 import de.yap.engine.util.Z_FAR
 import de.yap.engine.util.Z_NEAR
@@ -46,23 +45,18 @@ class YapGame private constructor() : IGameLogic {
 
     val renderer = Renderer()
     val fontRenderer = FontRenderer()
-    lateinit var firstPersonCamera: FirstPersonCamera
+    lateinit var cameraSystem: CameraSystem
     val meshAtlas = MeshAtlas()
 
     var view: Matrix4f = Matrix4f()
     var projection: Matrix4f = Matrix4f()
-
-    private val scale = 2.0F
-    private val negativeScaleHalf = -0.5F * scale
-    private val position = Vector3f(negativeScaleHalf)
-    private val roomTransformation = Matrix4f().translate(position).scale(scale)
 
     val debugMemory = DebugMemory()
     val debugCPU = DebugCPU()
     val debugFrameTiming = DebugFrameTiming()
     val debugFontTexture = DebugFontTexture()
     val debugBoundingBox = DebugBoundingBox()
-    val debugInterface = DebugInterface()
+    private val debugInterface = DebugInterface()
 
     override fun init(window: Window) {
         this.window = window
@@ -82,8 +76,8 @@ class YapGame private constructor() : IGameLogic {
     private fun initSystems() {
         entityManager.registerEventListener(this)
         entityManager.registerSystem(LevelEditor())
-        firstPersonCamera = FirstPersonCamera()
-        entityManager.registerSystem(firstPersonCamera)
+        cameraSystem = CameraSystem()
+        entityManager.registerSystem(cameraSystem)
         entityManager.registerSystem(MeshSystem())
         entityManager.registerSystem(ShowComponentInfoSystem())
         initDebugSystems()
@@ -101,7 +95,7 @@ class YapGame private constructor() : IGameLogic {
 
     private fun initEntities() {
         entityManager.addEntity(PlayerEntity(Vector3f(0.5F, 0.0F, 3.0F), Vector4f(1.0F, 0.0F, 0.0F, 1.0F), hasInput = true))
-        entityManager.addEntity(PlayerEntity(Vector3f(0.0F, 1.0F, 2.0F), Vector4f(0.0F, 1.0F, 0.0F, 1.0F), hasInput = false))
+        entityManager.addEntity(PlayerEntity(Vector3f(2.0F, 2.0F, 2.0F), Vector4f(0.0F, 1.0F, 0.0F, 1.0F), hasInput = false))
 
         val levelGenerator = LevelGenerator()
         for (entity in levelGenerator.generateLevelEntities()) {

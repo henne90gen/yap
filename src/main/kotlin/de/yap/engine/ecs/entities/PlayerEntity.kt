@@ -1,9 +1,8 @@
 package de.yap.engine.ecs.entities
 
-import de.yap.engine.ecs.CameraComponent
-import de.yap.engine.ecs.PhysicsComponent
-import de.yap.engine.ecs.PositionComponent
-import de.yap.engine.ecs.RotationComponent
+import de.yap.engine.ecs.*
+import de.yap.engine.mesh.MeshUtils
+import de.yap.game.YapGame
 import org.joml.Vector3f
 import org.joml.Vector4f
 
@@ -11,7 +10,10 @@ class PlayerEntity(position: Vector3f = Vector3f(0.0F), color: Vector4f = Vector
     init {
         addComponent(PositionComponent(position))
         addComponent(RotationComponent())
-        addComponent(CameraComponent(color = color, active = hasInput))
+        val cameraType = if (hasInput) CameraType.FIRST_PERSON else CameraType.THIRD_PERSON
+        addComponent(CameraComponent(cameraType, color = color, active = hasInput))
         addComponent(PhysicsComponent())
+        val material = YapGame.getInstance().renderer.textureMapMaterial
+        addComponent(MeshComponent(MeshUtils.unitCube(material)))
     }
 }

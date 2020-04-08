@@ -157,7 +157,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
         constraints.gridy = 0
         panel.add(pitchLabel, constraints)
 
-        val pitch = JTextField()
+        val pitch = JTextField(rotation.x.toString())
         pitch.columns = 7
         pitch.isEditable = true
         pitch.document.addDocumentListener(CustomDocumentListener {
@@ -177,7 +177,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
         constraints.gridy = 1
         panel.add(yawLabel, constraints)
 
-        val yaw = JTextField()
+        val yaw = JTextField(rotation.y.toString())
         yaw.columns = 7
         yaw.isEditable = true
         yaw.document.addDocumentListener(CustomDocumentListener {
@@ -220,7 +220,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
         LevelUtils.loadLevel(file) {
             YapGame.getInstance().entityManager.removeAllEntities()
             YapGame.getInstance().entityManager.addAllEntities(it)
-            val camera = YapGame.getInstance().firstPersonCamera.getCurrentCamera()
+            val camera = YapGame.getInstance().cameraSystem.getCurrentCamera()
             camera?.let {
                 YapGame.getInstance().entityManager.addEntity(it)
             }
@@ -275,7 +275,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
     private fun toggleReactToMouseInput() {
         val game = YapGame.getInstance()
         game.window.toggleMouseVisibility()
-        game.firstPersonCamera.toggleMouseMovementTracking()
+        game.cameraSystem.toggleMouseMovementTracking()
         reactToMouseInput = !reactToMouseInput
     }
 
@@ -350,7 +350,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
                     Matrix4f().translate(it.getComponent<PositionComponent>().position)
             )
         }
-        val cameraEntity = YapGame.getInstance().firstPersonCamera.getCurrentCamera()
+        val cameraEntity = YapGame.getInstance().cameraSystem.getCurrentCamera()
         var rayStart = Vector3f(0.0F)
         var direction = Vector3f(0.0F, 0.0F, -1.0F)
         cameraEntity?.let {
