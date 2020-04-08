@@ -7,6 +7,8 @@ plugins {
 
     // Apply the application plugin to add support for building a CLI application.
     application
+
+    id("com.palantir.graal") version "0.6.0-114-gfe95739"
 }
 
 repositories {
@@ -108,3 +110,20 @@ distributions {
 
 val test: Test by tasks
 test.systemProperty("java.awt.headless", true)
+
+graal {
+    mainClass("de.yap.AppKt")
+    outputName("yap")
+    graalVersion("20.0.0")
+    option("--verbose")
+    option("--no-fallback")
+    option("--initialize-at-run-time=sun.awt.dnd.SunDropTargetContextPeer\$EventDispatcher")
+    option("--initialize-at-run-time=sun.awt.X11GraphicsConfig")
+    option("--initialize-at-run-time=sun.awt.X11.XWindow")
+    option("--initialize-at-run-time=sun.awt.X11.XWM")
+    option("--initialize-at-run-time=sun.awt.X11.XSelection")
+    option("--initialize-at-run-time=sun.awt.X11.XDnDConstants")
+    option("--initialize-at-run-time=sun.awt.X11.XDataTransferer")
+    option("--initialize-at-run-time=sun.awt.X11.WindowPropertyGetter")
+    option("--initialize-at-run-time=sun.awt.X11.MotifDnDConstants")
+}
