@@ -121,20 +121,10 @@ class CameraSystem : ISystem(PositionComponent::class.java, RotationComponent::c
 
         positionComponent.position.add(rotatedOffset.x, rotatedOffset.y, rotatedOffset.z)
 
-//        val mouseRot = Vector2f(cameraComponent.mousePosition.x, cameraComponent.mousePosition.y)
-//                .mul(MOUSE_SENSITIVITY)
-//        rotate(rotationComponent, mouseRot)
-        if (offset != Vector3f(0.0F)) {
-            cameraComponent.offset = Vector3f(rotatedOffset.x, rotatedOffset.y, rotatedOffset.z).normalize().mul(-1.0F)
-            cameraComponent.offset.y += 1.0F
-            cameraComponent.offset.mul(2.0F)
-        }
-
-        val pos = Vector3f(positionComponent.position).add(cameraComponent.offset)
+        val modelPos = Vector3f(positionComponent.position).add(0.5F, 0.5F, 0.5F)
+        val pos = Vector3f(modelPos).add(cameraComponent.offset)
         YapGame.getInstance().view = Matrix4f()
-//                .mul(rotationComponent.rotationMatrix())
-//                .translate(pos.mul(-1.0f))
-                .lookAt(pos, positionComponent.position, Vector3f(0.0F, 1.0F, 0.0F))
+                .lookAt(pos, modelPos, Vector3f(0.0F, 1.0F, 0.0F))
 
         cameraComponent.mousePosition = Vector2f(0.0F)
     }
