@@ -48,7 +48,7 @@ class CameraComponent(
         var type: CameraType,
 
         // offset to the position of the entity
-        var offset: Vector3f = Vector3f(0.0F, 2.0F, 2.0F),
+        var offset: Vector3f = Vector3f(0.0F),
 
         // current movement direction
         var direction: Vector3f = Vector3f(0.0F),

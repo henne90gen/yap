@@ -11,7 +11,8 @@ class PlayerEntity(position: Vector3f = Vector3f(0.0F), color: Vector4f = Vector
         addComponent(PositionComponent(position))
         addComponent(RotationComponent())
         val cameraType = if (hasInput) CameraType.FIRST_PERSON else CameraType.THIRD_PERSON
-        addComponent(CameraComponent(cameraType, color = color, active = hasInput))
+        val offset = if (hasInput) Vector3f(0.0F) else Vector3f(0.0F, 2.0F, 2.0F)
+        addComponent(CameraComponent(cameraType, offset = offset, color = color, active = hasInput))
         addComponent(PhysicsComponent())
         val material = YapGame.getInstance().renderer.textureMapMaterial
         addComponent(MeshComponent(MeshUtils.unitCube(material)))
