@@ -322,13 +322,17 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
 
     private fun placeBlock() {
         clampedPoint?.let {
-            val entity = if ((entityTypeCombo?.selectedItem as ComboItem).id == -1) {
-                BlockEntity.singleTextureBlock(it, selectedTextureIndex)
-            } else {
-                val id = (entityTypeCombo?.selectedItem as ComboItem).id
-                StaticEntity(StaticEntities.values()[id], it, rotation.x, rotation.y)
-            }
+            val entity = createSelectedEntity(it)
             YapGame.getInstance().entityManager.addEntity(entity)
+        }
+    }
+
+    private fun createSelectedEntity(clampedPoint: Vector3f): Entity {
+        return if ((entityTypeCombo?.selectedItem as ComboItem).id == -1) {
+            BlockEntity.singleTextureBlock(clampedPoint, selectedTextureIndex)
+        } else {
+            val id = (entityTypeCombo?.selectedItem as ComboItem).id
+            StaticEntity(StaticEntities.values()[id], clampedPoint, rotation.x, rotation.y)
         }
     }
 
@@ -339,7 +343,21 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
 
     private fun renderSelectedBlock() {
         clampedPoint?.let {
+            val entity = createSelectedEntity(it)
+            val meshComponent = entity.getComponent<MeshComponent>()
             val renderer = YapGame.getInstance().renderer
+
+            val isBlock = entity is BlockEntity
+            renderer.wireframe(isBlock) {
+                val transformation = Matrix4f()
+                        .translate(it)
+                        .translate(0.5F, 0.5F, 0.5F)
+                renderer.mesh(meshComponent.mesh, transformation, meshComponent.color)
+            }
+            if (isBlock) {
+                return@let
+            }
+
             renderer.wireframe {
                 val transformation = Matrix4f()
                         .translate(it)
@@ -368,9 +386,10 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
     override fun update(interval: Float, entities: List<Entity>) {
         // TODO use a spatial query
         val boundingBoxes = entities.map {
+            val position = it.getComponent<PositionComponent>().position
             TransformedBoundingBox(
                     it.getComponent(),
-                    Matrix4f().translate(it.getComponent<PositionComponent>().position)
+                    Matrix4f().translate(Vector3f(position).sub(0.5F, 0.5F, 0.5F))
             )
         }
         val cameraEntity = YapGame.getInstance().cameraSystem.getCurrentCamera()
