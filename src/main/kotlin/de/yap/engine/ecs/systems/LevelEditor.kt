@@ -20,10 +20,7 @@ import org.lwjgl.glfw.GLFW
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Insets
-import java.awt.event.ActionEvent
-import java.awt.event.MouseEvent
-import java.awt.event.MouseListener
-import java.awt.event.WindowEvent
+import java.awt.event.*
 import java.io.File
 import javax.swing.*
 import javax.swing.event.DocumentEvent
@@ -66,7 +63,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
     private var clampedPoint: Vector3f? = null
     private var normal: Vector3f? = null
     private var selectedTextureIndex = Vector2i(0)
-    private var rotation = Vector3f(0.0F)
+    private var rotationInDegrees = Vector3f(0.0F)
     private var entityTypeCombo: JComboBox<ComboItem>? = null
 
     override fun init() {
@@ -155,7 +152,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
 
         val scaledImage = ImageIcon("models/texture_atlas.png", "Texture Atlas")
                 .image
-                .getScaledInstance(384, 384,  java.awt.Image.SCALE_SMOOTH)
+                .getScaledInstance(384, 384, java.awt.Image.SCALE_SMOOTH)
         val textureImage = JLabel(ImageIcon(scaledImage))
         textureImage.addMouseListener(CustomMouseListener { mouseEvent ->
             try {
@@ -177,14 +174,20 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
         val pitchLabel = JLabel("Pitch")
         constraints.gridx = 0
         constraints.gridy = 0
+        constraints.gridwidth = 1
+        constraints.gridheight = 1
         panel.add(pitchLabel, constraints)
 
-        val pitch = JTextField(rotation.x.toString())
-        pitch.columns = 7
-        pitch.isEditable = true
-        pitch.document.addDocumentListener(CustomDocumentListener {
+        val pitchTF = JTextField(rotationInDegrees.x.toString())
+        val pitchSlider = JSlider(0, 360, 0)
+        pitchTF.columns = 5
+        pitchTF.isEditable = true
+        pitchTF.addKeyListener(CustomKeyListener {
             try {
-                rotation.x = Math.toRadians(pitch.text.toDouble()).toFloat()
+                rotationInDegrees.x = pitchTF.text.toFloat()
+                SwingUtilities.invokeLater {
+                    pitchSlider.value = rotationInDegrees.x.toInt()
+                }
             } catch (e: NumberFormatException) {
                 // ignore
             }
@@ -192,19 +195,38 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
         constraints.fill = GridBagConstraints.HORIZONTAL
         constraints.gridx = 1
         constraints.gridy = 0
-        panel.add(pitch, constraints)
+        panel.add(pitchTF, constraints)
+
+        pitchSlider.minimum = 0
+        pitchSlider.maximum = 360
+        val pitchFunction: () -> Unit = {
+            rotationInDegrees.x = pitchSlider.value.toFloat()
+            SwingUtilities.invokeLater {
+                pitchTF.text = rotationInDegrees.x.toString()
+            }
+        }
+        pitchSlider.addMouseListener(CustomMouseListener { pitchFunction() })
+        pitchSlider.addMouseMotionListener(CustomMouseMotionListener(pitchFunction))
+        constraints.fill = GridBagConstraints.HORIZONTAL
+        constraints.gridx = 2
+        constraints.gridy = 0
+        panel.add(pitchSlider, constraints)
 
         val yawLabel = JLabel("Yaw")
         constraints.gridx = 0
         constraints.gridy = 1
         panel.add(yawLabel, constraints)
 
-        val yaw = JTextField(rotation.y.toString())
-        yaw.columns = 7
-        yaw.isEditable = true
-        yaw.document.addDocumentListener(CustomDocumentListener {
+        val yawTF = JTextField(rotationInDegrees.y.toString())
+        val yawSlider = JSlider(0, 360, 0)
+        yawTF.columns = 5
+        yawTF.isEditable = true
+        yawTF.addKeyListener(CustomKeyListener {
             try {
-                rotation.y = Math.toRadians(yaw.text.toDouble()).toFloat()
+                rotationInDegrees.y = yawTF.text.toFloat()
+                SwingUtilities.invokeLater {
+                    yawSlider.value = rotationInDegrees.y.toInt()
+                }
             } catch (e: NumberFormatException) {
                 // ignore
             }
@@ -212,7 +234,20 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
         constraints.fill = GridBagConstraints.HORIZONTAL
         constraints.gridx = 1
         constraints.gridy = 1
-        panel.add(yaw, constraints)
+        panel.add(yawTF, constraints)
+
+        val yawFunction = {
+            rotationInDegrees.y = yawSlider.value.toFloat()
+            SwingUtilities.invokeLater {
+                yawTF.text = rotationInDegrees.y.toString()
+            }
+        }
+        yawSlider.addMouseMotionListener(CustomMouseMotionListener(yawFunction))
+        yawSlider.addMouseListener(CustomMouseListener { yawFunction() })
+        constraints.fill = GridBagConstraints.HORIZONTAL
+        constraints.gridx = 2
+        constraints.gridy = 1
+        panel.add(yawSlider, constraints)
     }
 
     private fun addSaveLoadButtons(frame: JFrame, constraints: GridBagConstraints) {
@@ -294,7 +329,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
         }
 
         if (event.key == GLFW.GLFW_KEY_R && event.action == GLFW.GLFW_RELEASE) {
-            rotation.y += 0.5F * Math.PI.toFloat()
+            rotationInDegrees.y += 0.5F * Math.PI.toFloat()
         }
     }
 
@@ -335,7 +370,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
             BlockEntity.singleTextureBlock(clampedPoint, selectedTextureIndex)
         } else {
             val id = (entityTypeCombo?.selectedItem as ComboItem).id
-            StaticEntity(StaticEntities.values()[id], clampedPoint, rotation.x, rotation.y)
+            StaticEntity(StaticEntities.values()[id], clampedPoint, rotationInDegrees.x, rotationInDegrees.y)
         }
     }
 
@@ -456,6 +491,18 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
     }
 }
 
+class CustomKeyListener(val function: () -> Unit) : KeyListener {
+    override fun keyTyped(e: KeyEvent?) {
+    }
+
+    override fun keyPressed(e: KeyEvent?) {
+    }
+
+    override fun keyReleased(e: KeyEvent?) {
+        function()
+    }
+}
+
 class CustomDocumentListener(val function: () -> Unit) : DocumentListener {
     override fun changedUpdate(p0: DocumentEvent?) {
         function()
@@ -470,7 +517,16 @@ class CustomDocumentListener(val function: () -> Unit) : DocumentListener {
     }
 }
 
-class CustomMouseListener(val function: (MouseEvent?) -> Unit): MouseListener {
+class CustomMouseMotionListener(val function: () -> Unit) : MouseMotionListener {
+    override fun mouseMoved(e: MouseEvent?) {
+    }
+
+    override fun mouseDragged(e: MouseEvent?) {
+        function()
+    }
+}
+
+class CustomMouseListener(val function: (MouseEvent?) -> Unit) : MouseListener {
     override fun mouseReleased(mouseEvent: MouseEvent?) {
     }
 
@@ -486,5 +542,4 @@ class CustomMouseListener(val function: (MouseEvent?) -> Unit): MouseListener {
 
     override fun mousePressed(mouseEvent: MouseEvent?) {
     }
-
 }
