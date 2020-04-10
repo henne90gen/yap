@@ -22,13 +22,11 @@ import java.awt.GridBagLayout
 import java.awt.Insets
 import java.awt.event.*
 import java.io.File
-import java.lang.NullPointerException
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.filechooser.FileFilter
 import kotlin.math.floor
-import kotlin.math.roundToInt
 
 
 class LevelFileFilter : FileFilter() {
@@ -64,7 +62,6 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
 
     private var reactToMouseInput = false
 
-    private var intersectionPoint: Vector3f? = null
     private var clampedPoint: Vector3f? = null
     private var normal: Vector3f? = null
 
@@ -351,7 +348,8 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
         }
 
         if (event.key == GLFW.GLFW_KEY_R && event.action == GLFW.GLFW_RELEASE) {
-            rotationInDegrees.y += 0.5F * Math.PI.toFloat()
+            rotationInDegrees.y += 90.0F
+            // TODO update the UI accordingly
         }
     }
 
@@ -392,44 +390,37 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
             BlockEntity.singleTextureBlock(clampedPoint, selectedTextureIndex)
         } else {
             val id = (entityTypeCombo?.selectedItem as ComboItem).id
-            StaticEntity(StaticEntities.values()[id], clampedPoint, rotationInDegrees.x, rotationInDegrees.y)
+            val pitch = Math.toRadians(rotationInDegrees.x.toDouble()).toFloat()
+            val yaw = Math.toRadians(rotationInDegrees.y.toDouble()).toFloat()
+            StaticEntity(StaticEntities.values()[id], clampedPoint, pitch, yaw)
         }
     }
 
     override fun render(entities: List<Entity>) {
         renderCrosshair()
         renderSelectedBlock()
-
-        clampedPoint?.let {
-//            val transform = Matrix4f()
-//                    .scale(0.4F)
-//            YapGame.getInstance().fontRenderer.string("$it", transform)
-
-            val cubeTransform = Matrix4f()
-                    .translate(intersectionPoint!!)
-                    .scale(0.1F)
-            val color = Vector4f(0.0F, 1.0F, 0.0F, 1.0F)
-            YapGame.getInstance().renderer.cube(cubeTransform, color)
-        }
     }
 
     private fun renderSelectedBlock() {
         clampedPoint?.let {
             val entity = createSelectedEntity(it)
             val meshComponent = entity.getComponent<MeshComponent>()
+            val rotationComponent = entity.getComponent<RotationComponent>()
             val renderer = YapGame.getInstance().renderer
 
             val isBlock = entity is BlockEntity
             renderer.wireframe(isBlock) {
                 val transformation = Matrix4f()
                         .translate(it)
-                        .translate(0.5F, 0.5F, 0.5F)
+                        .translate(meshComponent.offset)
+                        .rotate(rotationComponent.yaw, Vector3f(0F, 1F, 0F))
+                        .rotate(rotationComponent.pitch, Vector3f(0F, 0F, 1F))
                 renderer.mesh(meshComponent.mesh, transformation)
             }
+
             if (isBlock) {
                 return@let
             }
-
             renderer.wireframe {
                 val transformation = Matrix4f()
                         .translate(it)
@@ -479,7 +470,6 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
 
         val intersectionResult = intersects(rayStart, direction, boundingBoxes)
         if (intersectionResult.hasValue()) {
-            intersectionPoint = intersectionResult.point
             clampedPoint = clampPoint(intersectionResult)
             normal = intersectionResult.normal
         } else {
@@ -495,7 +485,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
 
         val normal = intersectionResult.normal
         val point = Vector3f(intersectionResult.point)
-                .add(Vector3f(normal).mul(-0.05F))
+                .add(Vector3f(normal).mul(-0.1F))
 
         var x = point.x
         x = clamp(x)
