@@ -34,7 +34,8 @@ class LevelGenerator() {
         */
 
         entities.putAll(genFloor())
-        entities.putAll(genWalls())
+        entities.putAll(genOutsideWalls())
+        entities.putAll(genInsideWallsSimple())
 
         //addFurniture(entities)
 
@@ -58,7 +59,7 @@ class LevelGenerator() {
         while (roomRatio > 120) {
             walls = mutableMapOf()
             walls.putAll(genOutsideWalls())
-            walls.putAll(genInsideWalls(walls))
+            walls.putAll(genInsideWallsComplex(walls))
 
             val roomAssignments = assignRooms(walls)
             val levelSize = width * depth
@@ -73,7 +74,78 @@ class LevelGenerator() {
             val movesSinceLastTurnOrSplit: Int
     )
 
-    private fun genInsideWalls(entities: MutableMap<Vector3f, Entity>): MutableMap<Vector3f, Entity> {
+    private fun genInsideWallsSimple(): MutableMap<Vector3f, Entity> {
+        val roomLengthMin = 5
+        val roomLengthMax = 10
+        val doorDistanceMin = 4
+        val doorDistanceMax = 8
+
+        val walls = mutableMapOf<Vector3f, Entity>()
+
+        var lastWall = roomLengthMin
+        var lastDoor = doorDistanceMax
+        for (x in roomLengthMin until width-roomLengthMin) {
+            val placeWall = (Random.nextFloat() > 0.9F && lastWall >= roomLengthMin) || lastWall >= roomLengthMax
+            if (placeWall) {
+                for (z in 0..depth) {
+                    for (y in 0..2) {
+                        val pos = Vector3f(x.toFloat(), y.toFloat(), z.toFloat())
+                        walls[pos] = BlockEntity.singleTextureBlock(pos, RED)
+
+                    }
+                    val placeDoor = (Random.nextFloat() > 0.8F && lastDoor >= doorDistanceMin) || lastDoor >= doorDistanceMax
+                    if (placeDoor) {
+                        val pos = Vector3f(x.toFloat(), 0F, z.toFloat())
+                        walls[pos] = StaticEntity(StaticEntities.DOOR, pos, yaw = 0.5F * PI.toFloat())
+                        val pos2 = Vector3f(x.toFloat(), 1F, z.toFloat())
+                        walls.remove(pos2)
+                        lastDoor = 0
+                    } else {
+                        lastDoor += 1
+                    }
+                }
+                lastWall = 0
+            } else {
+                lastWall += 1
+            }
+        }
+
+        lastWall = roomLengthMin
+        lastDoor = doorDistanceMax
+        for (z in roomLengthMin until (depth-roomLengthMin)) {
+            val placeWall = (Random.nextFloat() > 0.7F && lastWall >= roomLengthMin) || lastWall >= roomLengthMax
+            if (placeWall) {
+                for (x in 0..width) {
+                    for (y in 0..2) {
+                        val pos = Vector3f(x.toFloat(), y.toFloat(), z.toFloat())
+                        walls[pos] = BlockEntity.singleTextureBlock(pos, RED)
+                    }
+
+                    val placeDoor = (Random.nextFloat() > 0.8F && lastDoor >= doorDistanceMin)
+                            || lastDoor >= doorDistanceMax
+                            && Vector3f(x.toFloat() - 1, 0F, z.toFloat()) !in walls
+                            && Vector3f(x.toFloat() + 1, 0F, z.toFloat()) !in walls
+
+                    if (placeDoor) {
+                        val pos = Vector3f(x.toFloat(), 0F, z.toFloat())
+                        walls[pos] = StaticEntity(StaticEntities.DOOR, pos)
+                        val pos2 = Vector3f(x.toFloat(), 1F, z.toFloat())
+                        walls.remove(pos2)
+                        lastDoor = 0
+                    } else {
+                        lastDoor += 1
+                    }
+                }
+                lastWall = 0
+            } else {
+                lastWall += 1
+            }
+        }
+
+        return walls
+    }
+
+    private fun genInsideWallsComplex(entities: MutableMap<Vector3f, Entity>): MutableMap<Vector3f, Entity> {
         /** uses a snake like approach
          * -> snake has a hat and goes into one direction, over time probability to turn or split the head increases
          * -> collision with one self or a wall eliminates the snake head
