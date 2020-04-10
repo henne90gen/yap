@@ -103,7 +103,7 @@ class CameraSystem : ISystem(PositionComponent::class.java, RotationComponent::c
         rotate(rotationComponent, mouseRot)
 
         val pos = Vector3f(positionComponent.position)
-                .add(0.5F, 0.5F, 0.5F)
+                .add(cameraComponent.offset)
         YapGame.getInstance().view = Matrix4f()
                 .mul(rotationComponent.rotationMatrix())
                 .translate(pos.mul(-1.0f))

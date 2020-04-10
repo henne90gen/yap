@@ -63,8 +63,11 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
     private lateinit var frame: JFrame
 
     private var reactToMouseInput = false
+
+    private var intersectionPoint: Vector3f? = null
     private var clampedPoint: Vector3f? = null
     private var normal: Vector3f? = null
+
     private var selectedTextureIndex = Vector2i(0)
     private var rotationInDegrees = Vector3f(0.0F)
     private var entityTypeCombo: JComboBox<ComboItem>? = null
@@ -396,6 +399,18 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
     override fun render(entities: List<Entity>) {
         renderCrosshair()
         renderSelectedBlock()
+
+        clampedPoint?.let {
+//            val transform = Matrix4f()
+//                    .scale(0.4F)
+//            YapGame.getInstance().fontRenderer.string("$it", transform)
+
+            val cubeTransform = Matrix4f()
+                    .translate(intersectionPoint!!)
+                    .scale(0.1F)
+            val color = Vector4f(0.0F, 1.0F, 0.0F, 1.0F)
+            YapGame.getInstance().renderer.cube(cubeTransform, color)
+        }
     }
 
     private fun renderSelectedBlock() {
@@ -441,23 +456,30 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
     }
 
     override fun update(interval: Float, entities: List<Entity>) {
+        val cameraEntity = YapGame.getInstance().cameraSystem.getCurrentCamera()
+                ?: return
+        if (cameraEntity.getComponent<CameraComponent>().type != CameraType.FIRST_PERSON) {
+            return
+        }
+
         // TODO use a spatial query
         val boundingBoxes = entities.map {
             val position = it.getComponent<PositionComponent>().position
             TransformedBoundingBox(
                     it.getComponent(),
-                    Matrix4f().translate(Vector3f(position).sub(0.5F, 0.5F, 0.5F))
+                    Matrix4f().translate(position)
             )
         }
-        val cameraEntity = YapGame.getInstance().cameraSystem.getCurrentCamera()
-        var rayStart = Vector3f(0.0F)
-        var direction = Vector3f(0.0F, 0.0F, -1.0F)
-        cameraEntity?.let {
-            rayStart = it.getComponent<PositionComponent>().position
-            direction = it.getComponent<RotationComponent>().direction()
-        }
+
+        val rayStart = cameraEntity.getComponent<PositionComponent>().position
+        val cameraOffset = cameraEntity.getComponent<CameraComponent>().offset
+        rayStart.add(cameraOffset)
+
+        val direction = cameraEntity.getComponent<RotationComponent>().direction()
+
         val intersectionResult = intersects(rayStart, direction, boundingBoxes)
         if (intersectionResult.hasValue()) {
+            intersectionPoint = intersectionResult.point
             clampedPoint = clampPoint(intersectionResult)
             normal = intersectionResult.normal
         } else {
@@ -472,7 +494,8 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
         }
 
         val normal = intersectionResult.normal
-        val point = Vector3f(intersectionResult.point).add(Vector3f(normal).mul(-0.01F))
+        val point = Vector3f(intersectionResult.point)
+                .add(Vector3f(normal).mul(-0.05F))
 
         var x = point.x
         x = clamp(x)
