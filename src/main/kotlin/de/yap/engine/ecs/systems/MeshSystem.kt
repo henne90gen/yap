@@ -24,13 +24,12 @@ class MeshSystem : ISystem(PositionComponent::class.java, RotationComponent::cla
             }
         }
 
-        val offset = Vector3f(0.5f, 0.5f, 0.5f)
         val transformation = Matrix4f()
                 .translate(positionComponent.position)
-                .translate(offset)
+                .translate(meshComponent.offset)
                 .rotate(rotationComponent.yaw, Vector3f(0F, 1F, 0F))
                 .rotate(rotationComponent.pitch, Vector3f(0F, 0F, 1F))
 
-        YapGame.getInstance().renderer.mesh(meshComponent.mesh, transformation, meshComponent.color)
+        YapGame.getInstance().renderer.mesh(meshComponent.mesh, transformation)
     }
 }

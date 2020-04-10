@@ -20,7 +20,10 @@ import org.lwjgl.glfw.GLFW
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Insets
-import java.awt.event.*
+import java.awt.event.ActionEvent
+import java.awt.event.MouseEvent
+import java.awt.event.MouseListener
+import java.awt.event.WindowEvent
 import java.io.File
 import javax.swing.*
 import javax.swing.event.DocumentEvent
@@ -352,7 +355,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
                 val transformation = Matrix4f()
                         .translate(it)
                         .translate(0.5F, 0.5F, 0.5F)
-                renderer.mesh(meshComponent.mesh, transformation, meshComponent.color)
+                renderer.mesh(meshComponent.mesh, transformation)
             }
             if (isBlock) {
                 return@let

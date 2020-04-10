@@ -35,7 +35,7 @@ class RotationComponent(
 
 class MeshComponent(
         var mesh: Mesh,
-        val color: Vector4f = Vector4f(1.0F)
+        val offset: Vector3f = Vector3f(0.5F)
 ) : Component()
 
 enum class CameraType {
