@@ -20,8 +20,7 @@ import org.lwjgl.glfw.GLFW
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Insets
-import java.awt.event.ActionEvent
-import java.awt.event.WindowEvent
+import java.awt.event.*
 import java.io.File
 import javax.swing.*
 import javax.swing.event.DocumentEvent
@@ -60,7 +59,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
 
     private lateinit var frame: JFrame
 
-    private var reactToMouseInput = true
+    private var reactToMouseInput = false
     private var clampedPoint: Vector3f? = null
     private var normal: Vector3f? = null
     private var selectedTextureIndex = Vector2i(0)
@@ -145,10 +144,30 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
                 // ignore
             }
         })
+
         constraints.fill = GridBagConstraints.HORIZONTAL
         constraints.gridx = 1
         constraints.gridy = 0
         panel.add(textFieldY, constraints)
+
+        val scaledImage = ImageIcon("models/texture_atlas.png", "Texture Atlas")
+                .image
+                .getScaledInstance(384, 384,  java.awt.Image.SCALE_SMOOTH)
+        val textureImage = JLabel(ImageIcon(scaledImage))
+        textureImage.addMouseListener(CustomMouseListener { mouseEvent ->
+            try {
+                println("Test")
+                println("Mouse pos: ${mouseEvent!!.x} ${mouseEvent.y}")
+                selectedTextureIndex.y = textFieldY.text.toInt()
+            } catch (e: NumberFormatException) {
+                // ignore
+            }
+        })
+        constraints.fill = GridBagConstraints.HORIZONTAL
+        constraints.gridx = 0
+        constraints.gridwidth = 2
+        constraints.gridy = 1
+        panel.add(textureImage, constraints)
     }
 
     private fun addPitchAndYaw(panel: JPanel, constraints: GridBagConstraints) {
@@ -162,7 +181,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
         pitch.isEditable = true
         pitch.document.addDocumentListener(CustomDocumentListener {
             try {
-                rotation.x = pitch.text.toFloat()
+                rotation.x = Math.toRadians(pitch.text.toDouble()).toFloat()
             } catch (e: NumberFormatException) {
                 // ignore
             }
@@ -182,7 +201,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
         yaw.isEditable = true
         yaw.document.addDocumentListener(CustomDocumentListener {
             try {
-                rotation.y = yaw.text.toFloat()
+                rotation.y = Math.toRadians(yaw.text.toDouble()).toFloat()
             } catch (e: NumberFormatException) {
                 // ignore
             }
@@ -269,6 +288,10 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
     fun onKeyboardPress(event: KeyboardEvent) {
         if (event.key == GLFW.GLFW_KEY_LEFT_ALT && event.action == GLFW.GLFW_RELEASE) {
             toggleReactToMouseInput()
+        }
+
+        if (event.key == GLFW.GLFW_KEY_R && event.action == GLFW.GLFW_RELEASE) {
+            rotation.y += 0.5F * Math.PI.toFloat()
         }
     }
 
@@ -423,4 +446,23 @@ class CustomDocumentListener(val function: () -> Unit) : DocumentListener {
     override fun removeUpdate(p0: DocumentEvent?) {
         function()
     }
+}
+
+class CustomMouseListener(val function: (MouseEvent?) -> Unit): MouseListener {
+    override fun mouseReleased(mouseEvent: MouseEvent?) {
+    }
+
+    override fun mouseEntered(mouseEvent: MouseEvent?) {
+    }
+
+    override fun mouseClicked(mouseEvent: MouseEvent?) {
+        function(mouseEvent)
+    }
+
+    override fun mouseExited(mouseEvent: MouseEvent?) {
+    }
+
+    override fun mousePressed(mouseEvent: MouseEvent?) {
+    }
+
 }

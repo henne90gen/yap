@@ -28,6 +28,7 @@ class LevelGenerator() {
             1) create side walls
             2) create walls for rooms
             3) insert doors between rooms
+               -
             4) give each room a type (e.g. kitchen, bath, bedroom, living room)
             5) furnish rooms according to room type
         */
@@ -191,7 +192,7 @@ class LevelGenerator() {
     private fun horizontalFloodFill(startPosition: Vector3f, entities: MutableMap<Vector3f, Entity>): Set<Vector3f> {
         val positions = mutableSetOf<Vector3f>()
         var remaining = mutableListOf(startPosition)
-        while (remaining.size > 0) {
+        while (remaining.isNotEmpty()) {
             val newRemaining = mutableListOf<Vector3f>()
             for (pos in remaining) {
                 if (pos !in entities && pos !in positions) {
@@ -205,6 +206,27 @@ class LevelGenerator() {
             remaining = newRemaining
         }
         return positions.toSet()
+    }
+
+    private fun genDoors(baseYLevel: Float, entities: MutableMap<Vector3f, Entity>) {
+        /** On each wall at most one door is generated. A wall is defined by a straight segment of BlockEntities which
+         * is shared by two rooms */
+
+    }
+
+    private fun getWallParts(baseYLevel: Float, entities: MutableMap<Vector3f, Entity>): List<Set<Vector3f>> {
+        // ToDo find a first wall block, e.g. iterate over entities map until one BlockEntity on baseLevel is found
+        val initialBlock = Vector3f(0F, baseYLevel, 0F)
+        check(entities[initialBlock] is BlockEntity) {
+            "origin is not a wall block, can't generate doors without having a starting point."
+        }
+        val walls = mutableListOf<Set<Vector3f>>()
+        val heads = mutableListOf<Vector3f>()
+        while (heads.isNotEmpty()) {
+
+        }
+
+        return walls
     }
 
     private fun addFurniture(entities: MutableMap<Vector3f, Entity>) {
