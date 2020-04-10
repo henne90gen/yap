@@ -28,6 +28,7 @@ enum class StaticEntities(val meshPath: String) {
     OVEN("models/oven.obj"),
     KITCHEN_CABINET("models/kitchen_cabinet.obj"),
     KITCHEN_CABINET_HANGING("models/kitchen_cabinet_hanging.obj"),
+    MICROWAVE("models/microwave.obj"),
 
     // bathroom
     SINK("models/sink.obj"),
