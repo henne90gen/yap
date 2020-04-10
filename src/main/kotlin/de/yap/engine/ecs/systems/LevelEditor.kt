@@ -22,10 +22,13 @@ import java.awt.GridBagLayout
 import java.awt.Insets
 import java.awt.event.*
 import java.io.File
+import java.lang.NullPointerException
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.filechooser.FileFilter
+import kotlin.math.floor
+import kotlin.math.roundToInt
 
 
 class LevelFileFilter : FileFilter() {
@@ -150,16 +153,32 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
         constraints.gridy = 0
         panel.add(textFieldY, constraints)
 
+        val imageSize = 384
+        val textureAtlasSize = 1024
+        val tileSize = 32
         val scaledImage = ImageIcon("models/texture_atlas.png", "Texture Atlas")
                 .image
-                .getScaledInstance(384, 384, java.awt.Image.SCALE_SMOOTH)
+                .getScaledInstance(imageSize, imageSize,  java.awt.Image.SCALE_SMOOTH)
         val textureImage = JLabel(ImageIcon(scaledImage))
         textureImage.addMouseListener(CustomMouseListener { mouseEvent ->
             try {
-                println("Test")
-                println("Mouse pos: ${mouseEvent!!.x} ${mouseEvent.y}")
                 selectedTextureIndex.y = textFieldY.text.toInt()
-            } catch (e: NumberFormatException) {
+                val mouseX = mouseEvent!!.x.toFloat()
+                val mouseY = mouseEvent.y.toFloat()
+
+                val mousePosPercentageX = mouseX / imageSize.toFloat()
+                val mousePosPercentageY = mouseY / imageSize.toFloat()
+
+                val pixelXInAtlas = mousePosPercentageX * textureAtlasSize
+                val pixelYInAtlas = mousePosPercentageY * textureAtlasSize
+
+                val textureIndexX = floor(pixelXInAtlas / tileSize).toInt()
+                val textureIndexY = floor(pixelYInAtlas / tileSize).toInt()
+
+                selectedTextureIndex.x = textureIndexX
+                selectedTextureIndex.y = textureIndexY
+
+            } catch (e: NullPointerException) {
                 // ignore
             }
         })
