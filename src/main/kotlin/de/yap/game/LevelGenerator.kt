@@ -357,6 +357,8 @@ class LevelGenerator() {
 
         val pos = Vector3f(3F, 2F, 0F)
         walls[pos] = StaticEntity(StaticEntities.CLOCK, pos)
+        val pos2 = Vector3f(4F, 2F, 0F)
+        walls[pos2] = StaticEntity(StaticEntities.DIGITAL_CLOCK, pos2)
 
         for (x in -1..width + 1) {
             val wall1Layer1 = Vector3f(x.toFloat(), 0F, -1F)
