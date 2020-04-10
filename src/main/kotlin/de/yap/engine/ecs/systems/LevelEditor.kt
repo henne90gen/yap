@@ -22,6 +22,7 @@ import java.awt.GridBagLayout
 import java.awt.Insets
 import java.awt.event.*
 import java.io.File
+import javax.imageio.ImageIO
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
@@ -122,47 +123,29 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
     }
 
     private fun addTextureSelection(panel: JPanel, constraints: GridBagConstraints) {
-        val textFieldX = JTextField(selectedTextureIndex.x.toString())
-        textFieldX.columns = 7
-        textFieldX.isEditable = true
-        textFieldX.document.addDocumentListener(CustomDocumentListener {
-            try {
-                selectedTextureIndex.x = textFieldX.text.toInt()
-            } catch (e: NumberFormatException) {
-                // ignore
-            }
-        })
-        constraints.fill = GridBagConstraints.HORIZONTAL
-        constraints.gridx = 0
-        constraints.gridy = 0
-        panel.add(textFieldX, constraints)
-
-        val textFieldY = JTextField(selectedTextureIndex.y.toString())
-        textFieldY.columns = 7
-        textFieldY.isEditable = true
-        textFieldY.document.addDocumentListener(CustomDocumentListener {
-            try {
-                selectedTextureIndex.y = textFieldY.text.toInt()
-            } catch (e: NumberFormatException) {
-                // ignore
-            }
-        })
-
-        constraints.fill = GridBagConstraints.HORIZONTAL
-        constraints.gridx = 1
-        constraints.gridy = 0
-        panel.add(textFieldY, constraints)
-
-        val imageSize = 384
+        // pixel size of the texture atlas selection
+        val imageSize = 512
+        // actual atlas and tile size
         val textureAtlasSize = 1024
         val tileSize = 32
+
+        val width = (imageSize * (tileSize.toFloat() / textureAtlasSize.toFloat())).toInt()
+        val height = (imageSize * (tileSize.toFloat() / textureAtlasSize.toFloat())).toInt()
+        val img = ImageIO.read(File("models/texture_atlas.png"))
+        val subimage = img.getSubimage(0, 0, width, height).getScaledInstance(64, 64, java.awt.Image.SCALE_SMOOTH)
+        val imagePreviewLabel = JLabel(ImageIcon(subimage))
+        constraints.fill = GridBagConstraints.HORIZONTAL
+        constraints.gridx = 0
+        constraints.gridwidth = 2
+        constraints.gridy = 0
+        panel.add(imagePreviewLabel, constraints)
+
         val scaledImage = ImageIcon("models/texture_atlas.png", "Texture Atlas")
                 .image
                 .getScaledInstance(imageSize, imageSize,  java.awt.Image.SCALE_SMOOTH)
         val textureImage = JLabel(ImageIcon(scaledImage))
         textureImage.addMouseListener(CustomMouseListener { mouseEvent ->
             try {
-                selectedTextureIndex.y = textFieldY.text.toInt()
                 val mouseX = mouseEvent!!.x.toFloat()
                 val mouseY = mouseEvent.y.toFloat()
 
@@ -177,6 +160,11 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
 
                 selectedTextureIndex.x = textureIndexX
                 selectedTextureIndex.y = textureIndexY
+
+                val newSubimage = ImageIO.read(File("models/texture_atlas.png"))
+                        .getSubimage(textureIndexX * tileSize, textureIndexY * tileSize, tileSize, tileSize)
+                        .getScaledInstance(64, 64, java.awt.Image.SCALE_SMOOTH)
+                imagePreviewLabel.icon = ImageIcon(newSubimage)
 
             } catch (e: NullPointerException) {
                 // ignore
