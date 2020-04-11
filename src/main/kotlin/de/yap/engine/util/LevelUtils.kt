@@ -86,7 +86,7 @@ class LevelUtils {
             try {
                 val rest = line.substring(2)
                 val parts = rest.split(" ")
-                val type = StaticEntities.values()[parts[0].toInt()]
+                val type = getStaticEntityType(parts[0].toInt())
                 val position = Vector3f(parts[1].toFloat(), parts[2].toFloat(), parts[3].toFloat())
                 val pitch = if (parts.size >= 5) {
                     parts[4].toFloat()
@@ -103,6 +103,15 @@ class LevelUtils {
             } catch (e: NumberFormatException) {
                 log.warn("Could not parse static entity on line $lineNumber.")
             }
+        }
+
+        private fun getStaticEntityType(i: Int): StaticEntityType {
+            for (type in StaticEntityType.values()) {
+                if (type.id == i) {
+                    return type
+                }
+            }
+            throw RuntimeException("ID $i does not correspond to a StaticEntity")
         }
 
         private fun readBlock(line: String, lineNumber: Int, result: MutableList<Entity>) {

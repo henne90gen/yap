@@ -3,8 +3,8 @@ package de.yap.engine.ecs.systems
 import de.yap.engine.ecs.*
 import de.yap.engine.ecs.entities.BlockEntity
 import de.yap.engine.ecs.entities.Entity
-import de.yap.engine.ecs.entities.StaticEntities
 import de.yap.engine.ecs.entities.StaticEntity
+import de.yap.engine.ecs.entities.StaticEntityType
 import de.yap.engine.util.LevelUtils
 import de.yap.game.IntersectionResult
 import de.yap.game.TransformedBoundingBox
@@ -48,7 +48,7 @@ class ComboItem(val id: Int) {
         return if (id == -1) {
             "Simple Block"
         } else {
-            StaticEntities.values()[id].toString()
+            StaticEntityType.values()[id].toString()
         }
     }
 }
@@ -96,7 +96,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
         specificConstraints.insets = Insets(5, 5, 5, 5)
 
         val items = mutableListOf(-1)
-        items.addAll(StaticEntities.values().map { it.ordinal })
+        items.addAll(StaticEntityType.values().map { it.ordinal })
         val finalItems = items.map { ComboItem(it) }.toTypedArray()
         entityTypeCombo = JComboBox(finalItems)
         entityTypeCombo?.addActionListener {
@@ -380,7 +380,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
             val id = (entityTypeCombo?.selectedItem as ComboItem).id
             val pitch = Math.toRadians(rotationInDegrees.x.toDouble()).toFloat()
             val yaw = Math.toRadians(rotationInDegrees.y.toDouble()).toFloat()
-            StaticEntity(StaticEntities.values()[id], clampedPoint, pitch, yaw)
+            StaticEntity(StaticEntityType.values()[id], clampedPoint, pitch, yaw)
         }
     }
 
