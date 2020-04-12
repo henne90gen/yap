@@ -5,7 +5,13 @@ import de.yap.engine.mesh.Mesh
 import de.yap.game.YapGame
 import org.joml.Vector3f
 
-open class StaticEntity(id: StaticEntityType, position: Vector3f, pitch: Float = 0.0F, yaw: Float = 0.0F, boundingBox: BoundingBoxComponent = BoundingBoxComponent.unitCube()) : Entity() {
+class StaticEntity(
+        id: StaticEntityType,
+        position: Vector3f,
+        pitch: Float = 0.0F,
+        yaw: Float = 0.0F,
+        boundingBox: BoundingBoxComponent = BoundingBoxComponent.unitCube()
+) : Entity() {
     init {
         addComponent(PositionComponent(position))
         addComponent(RotationComponent(pitch, yaw))

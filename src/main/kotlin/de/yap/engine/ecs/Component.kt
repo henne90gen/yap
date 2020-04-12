@@ -1,5 +1,6 @@
 package de.yap.engine.ecs
 
+import de.yap.engine.ecs.entities.DynamicEntityType
 import de.yap.engine.ecs.entities.StaticEntityType
 import de.yap.engine.graphics.TextureCoords
 import de.yap.engine.mesh.Mesh
@@ -82,3 +83,12 @@ class BoundingBoxComponent(
 class TextureAtlasIndexComponent(val textureCoords: TextureCoords) : Component()
 
 class StaticEntityComponent(val id: StaticEntityType) : Component()
+
+class DynamicEntityComponent(val id: DynamicEntityType) : Component()
+
+class PathComponent(
+        // the goal for this path
+        var goal: Vector3f? = null,
+        // the current path that is going to be taken
+        val path: MutableList<Vector3f> = mutableListOf()
+) : Component()
