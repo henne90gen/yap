@@ -99,8 +99,8 @@ class YapGame private constructor() : IGameLogic {
         entityManager.addEntity(PlayerEntity(Vector3f(5.0F, 5.0F, 5.0F), Vector4f(1.0F, 0.0F, 0.0F, 1.0F), hasInput = true))
         entityManager.addEntity(PlayerEntity(Vector3f(2.0F, 2.0F, 2.0F), Vector4f(0.0F, 1.0F, 0.0F, 1.0F), hasInput = false))
 
-        val position = Vector3f(0.0F, 0.0F, 0.0F)
-        val goal = Vector3f(5.0F, 0.0F, 5.0F)
+        val position = Vector3f(5.0F, 0.0F, 5.0F)
+        val goal = Vector3f(0.0F, 0.0F, 0.0F)
         entityManager.addEntity(DynamicEntity(DynamicEntityType.SIMPLE_AI, position, goal))
 
         val levelGenerator = LevelGenerator()

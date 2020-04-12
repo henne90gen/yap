@@ -7,6 +7,7 @@ import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.joml.Vector4f
 import org.lwjgl.glfw.GLFW
+import kotlin.math.abs
 
 class PathFindingSystem : ISystem(DynamicEntityComponent::class.java, PathComponent::class.java) {
     companion object {
@@ -70,18 +71,33 @@ class PathFindingSystem : ISystem(DynamicEntityComponent::class.java, PathCompon
 
         pathComponent.goal?.let { goal ->
             val path = pathComponent.path
-            // go in x direction first
             val position = entity.getComponent<PositionComponent>().position
             val currentPosition = Vector3f(position)
-            while (currentPosition.x < goal.x) {
-                currentPosition.x += 1.0F
-                path.add(Vector3f(currentPosition))
+
+            // go in x direction first
+            if (currentPosition.x < goal.x) {
+                while (currentPosition.x < goal.x) {
+                    currentPosition.x += 1.0F
+                    path.add(Vector3f(currentPosition))
+                }
+            } else {
+                while (currentPosition.x > goal.x) {
+                    currentPosition.x -= 1.0F
+                    path.add(Vector3f(currentPosition))
+                }
             }
 
             // then go in z direction
-            while (currentPosition.z < goal.z) {
-                currentPosition.z += 1.0F
-                path.add(Vector3f(currentPosition))
+            if (currentPosition.z < goal.z) {
+                while (currentPosition.z < goal.z) {
+                    currentPosition.z += 1.0F
+                    path.add(Vector3f(currentPosition))
+                }
+            } else {
+                while (currentPosition.z > goal.z) {
+                    currentPosition.z -= 1.0F
+                    path.add(Vector3f(currentPosition))
+                }
             }
         }
     }
