@@ -2,16 +2,18 @@ package de.yap.engine.ecs.systems
 
 import de.yap.engine.ecs.*
 import de.yap.engine.ecs.entities.Entity
+import de.yap.engine.util.CollisionUtils
+import de.yap.engine.util.TransformedBoundingBox
 import de.yap.game.YapGame
 import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.joml.Vector4f
 import org.lwjgl.glfw.GLFW
-import kotlin.math.abs
 
 class PathFindingSystem : ISystem(DynamicEntityComponent::class.java, PathComponent::class.java) {
     companion object {
-        private const val MIN_DISTANCE_SQ = 0.01F
+        // 0.01F * 0.01F
+        private const val MIN_DISTANCE_SQ = 0.0001F
     }
 
     override fun render(entities: List<Entity>) {
@@ -118,22 +120,54 @@ class PathFindingSystem : ISystem(DynamicEntityComponent::class.java, PathCompon
                 .sub(positionComponent.position)
 
         if (direction.lengthSquared() < MIN_DISTANCE_SQ) {
-            // we are close enough to the waypoint, we'll go to the next waypoint from here
+            // we are close enough to the waypoint, remove it and go to the next one
             pathComponent.path.removeAt(0)
-            if (pathComponent.path.isEmpty()) {
-                pathComponent.goal = null
-            }
         }
 
-        direction.normalize()
-                .mul(interval)
-        positionComponent.position.add(direction)
+        if (pathComponent.path.isEmpty()) {
+            pathComponent.goal?.let {
+                positionComponent.position = it
+            }
+            pathComponent.goal = null
+        } else {
+            direction.normalize()
+                    .mul(interval)
+            positionComponent.position.add(direction)
+        }
     }
 
     @Subscribe
     fun keyPressed(event: KeyboardEvent) {
         if (event.key == GLFW.GLFW_KEY_P && event.action == GLFW.GLFW_RELEASE) {
-            // TODO do a raycast into the scene and see which block we were pointing at
+            updateGoal()
         }
+    }
+
+    private fun updateGoal() {
+        val boundingBoxes = YapGame.getInstance().entityManager.getEntities(Capability.ALL_CAPABILITIES)
+                .filter { it.hasComponent<BoundingBoxComponent>() }
+                .map {
+                    val position = it.getComponent<PositionComponent>().position
+                    TransformedBoundingBox(
+                            it.getComponent(),
+                            Matrix4f().translate(position)
+                    )
+                }
+
+        val intersectionResult = CollisionUtils.rayCastFromCamera(boundingBoxes)
+        if (!intersectionResult.hasValue()) {
+            return
+        }
+
+        val pathFindingEntities = YapGame.getInstance().entityManager.getEntities(capability)
+        if (pathFindingEntities.isEmpty()) {
+            return
+        }
+
+        val entity = pathFindingEntities[0]
+        val pathComponent = entity.getComponent<PathComponent>()
+        pathComponent.goal = Vector3f(intersectionResult.point)
+                .add(intersectionResult.normal)
+        pathComponent.path.clear()
     }
 }

@@ -5,11 +5,10 @@ import de.yap.engine.ecs.entities.BlockEntity
 import de.yap.engine.ecs.entities.Entity
 import de.yap.engine.ecs.entities.StaticEntity
 import de.yap.engine.ecs.entities.StaticEntityType
+import de.yap.engine.util.CollisionUtils
 import de.yap.engine.util.LevelUtils
-import de.yap.game.IntersectionResult
-import de.yap.game.TransformedBoundingBox
+import de.yap.engine.util.TransformedBoundingBox
 import de.yap.game.YapGame
-import de.yap.game.intersects
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
@@ -63,6 +62,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
 
     private var reactToMouseInput = false
 
+    // the block that the player points at with his crosshair
     private var clampedPoint: Vector3f? = null
     private var normal: Vector3f? = null
 
@@ -142,7 +142,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
 
         val scaledImage = ImageIcon("models/texture_atlas.png", "Texture Atlas")
                 .image
-                .getScaledInstance(imageSize, imageSize,  java.awt.Image.SCALE_SMOOTH)
+                .getScaledInstance(imageSize, imageSize, java.awt.Image.SCALE_SMOOTH)
         val textureImage = JLabel(ImageIcon(scaledImage))
         textureImage.addMouseListener(CustomMouseListener { mouseEvent ->
             try {
@@ -350,26 +350,26 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
 
     private fun removeBlock() {
         clampedPoint?.let { p ->
-            normal?.let { n ->
-                val game = YapGame.getInstance()
-                val removalPoint = Vector3f(p).sub(n)
-                // TODO use a spatial query
-                val entities = game.entityManager.getEntities(capability)
-                for (entity in entities) {
-                    val position = entity.getComponent<PositionComponent>().position
-                    if (removalPoint == position) {
-                        game.entityManager.removeEntity(entity)
-                        break
-                    }
+            val game = YapGame.getInstance()
+            // TODO use a spatial query
+            val entities = game.entityManager.getEntities(capability)
+            for (entity in entities) {
+                val position = entity.getComponent<PositionComponent>().position
+                if (p == position) {
+                    game.entityManager.removeEntity(entity)
+                    break
                 }
             }
         }
     }
 
     private fun placeBlock() {
-        clampedPoint?.let {
-            val entity = createSelectedEntity(it)
-            YapGame.getInstance().entityManager.addEntity(entity)
+        clampedPoint?.let { p ->
+            normal?.let { n ->
+                val entity = createSelectedEntity(Vector3f(p)
+                        .add(n))
+                YapGame.getInstance().entityManager.addEntity(entity)
+            }
         }
     }
 
@@ -390,31 +390,35 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
     }
 
     private fun renderSelectedBlock() {
-        clampedPoint?.let {
-            val entity = createSelectedEntity(it)
-            val meshComponent = entity.getComponent<MeshComponent>()
-            val rotationComponent = entity.getComponent<RotationComponent>()
-            val renderer = YapGame.getInstance().renderer
+        clampedPoint?.let { p ->
+            normal?.let { n ->
+                val entity = createSelectedEntity(Vector3f(p).add(n))
+                val meshComponent = entity.getComponent<MeshComponent>()
+                val rotationComponent = entity.getComponent<RotationComponent>()
+                val renderer = YapGame.getInstance().renderer
 
-            val isBlock = entity is BlockEntity
-            renderer.wireframe(isBlock) {
-                val transformation = Matrix4f()
-                        .translate(it)
-                        .translate(meshComponent.offset)
-                        .rotate(rotationComponent.yaw, Vector3f(0F, 1F, 0F))
-                        .rotate(rotationComponent.pitch, Vector3f(0F, 0F, 1F))
-                renderer.mesh(meshComponent.mesh, transformation)
-            }
+                val isBlock = entity is BlockEntity
+                renderer.wireframe(isBlock) {
+                    val transformation = Matrix4f()
+                            .translate(p)
+                            .translate(n)
+                            .translate(meshComponent.offset)
+                            .rotate(rotationComponent.yaw, Vector3f(0F, 1F, 0F))
+                            .rotate(rotationComponent.pitch, Vector3f(0F, 0F, 1F))
+                    renderer.mesh(meshComponent.mesh, transformation)
+                }
 
-            if (isBlock) {
-                return@let
-            }
-            renderer.wireframe {
-                val transformation = Matrix4f()
-                        .translate(it)
-                        .translate(0.5F, 0.5F, 0.5F)
-                val color = Vector4f(1.0F, 1.0F, 1.0F, 1.0F)
-                renderer.cube(transformation, color)
+                if (isBlock) {
+                    return
+                }
+                renderer.wireframe {
+                    val transformation = Matrix4f()
+                            .translate(p)
+                            .translate(n)
+                            .translate(0.5F, 0.5F, 0.5F)
+                    val color = Vector4f(1.0F, 1.0F, 1.0F, 1.0F)
+                    renderer.cube(transformation, color)
+                }
             }
         }
     }
@@ -435,12 +439,6 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
     }
 
     override fun update(interval: Float, entities: List<Entity>) {
-        val cameraEntity = YapGame.getInstance().cameraSystem.getCurrentCamera()
-                ?: return
-        if (cameraEntity.getComponent<CameraComponent>().type != CameraType.FIRST_PERSON) {
-            return
-        }
-
         // TODO use a spatial query
         val boundingBoxes = entities.map {
             val position = it.getComponent<PositionComponent>().position
@@ -450,63 +448,13 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
             )
         }
 
-        val rayStart = cameraEntity.getComponent<PositionComponent>().position
-        val cameraOffset = cameraEntity.getComponent<CameraComponent>().offset
-        rayStart.add(cameraOffset)
-
-        val direction = cameraEntity.getComponent<RotationComponent>().direction()
-
-        val intersectionResult = intersects(rayStart, direction, boundingBoxes)
+        val intersectionResult = CollisionUtils.rayCastFromCamera(boundingBoxes)
         if (intersectionResult.hasValue()) {
-            clampedPoint = clampPoint(intersectionResult)
+            clampedPoint = intersectionResult.point
             normal = intersectionResult.normal
         } else {
             clampedPoint = null
             normal = null
-        }
-    }
-
-    private fun clampPoint(intersectionResult: IntersectionResult): Vector3f? {
-        if (!intersectionResult.hasValue()) {
-            return null
-        }
-
-        val normal = intersectionResult.normal
-        val point = Vector3f(intersectionResult.point)
-                .add(Vector3f(normal).mul(-0.1F))
-
-        var x = point.x
-        x = clamp(x)
-        x += if (normal.x == 0.0F) {
-            0.0F
-        } else {
-            normal.x
-        }
-
-        var y = point.y
-        y = clamp(y)
-        y += if (normal.y == 0.0F) {
-            0.0F
-        } else {
-            normal.y
-        }
-
-        var z = point.z
-        z = clamp(z)
-        z += if (normal.z == 0.0F) {
-            0.0F
-        } else {
-            normal.z
-        }
-
-        return Vector3f(x, y, z)
-    }
-
-    private fun clamp(num: Float): Float {
-        return if (num < 0.0F) {
-            (num - 1.0F).toInt().toFloat()
-        } else {
-            num.toInt().toFloat()
         }
     }
 }
