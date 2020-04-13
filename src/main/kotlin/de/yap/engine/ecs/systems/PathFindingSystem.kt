@@ -44,13 +44,26 @@ class PathFindingSystem : ISystem(DynamicEntityComponent::class.java, PathCompon
             }
         }
 
-        // render goal
-        pathComponent.goal?.let {
+        // render current goal
+        try {
+            val last = pathComponent.path.last()
             val transform = Matrix4f()
-                    .translate(it)
+                    .translate(last)
                     .translate(0.5F, 0.5F, 0.5F)
                     .scale(0.5F)
             val goalColor = Vector4f(1.0F, 0.5F, 0.5F, 1.0F)
+            renderer.cube(transform, goalColor)
+        } catch (e: NoSuchElementException) {
+            // ignore
+        }
+
+        // render queued goals
+        for (goal in pathComponent.goalQueue) {
+            val transform = Matrix4f()
+                    .translate(goal)
+                    .translate(0.5F, 0.5F, 0.5F)
+                    .scale(0.5F)
+            val goalColor = Vector4f(1.0F, 0.25F, 0.25F, 1.0F)
             renderer.cube(transform, goalColor)
         }
     }
@@ -64,51 +77,48 @@ class PathFindingSystem : ISystem(DynamicEntityComponent::class.java, PathCompon
 
     private fun calculatePath(entity: Entity) {
         val pathComponent = entity.getComponent<PathComponent>()
-        if (pathComponent.goal == null) {
+        if (pathComponent.goalQueue.isEmpty()) {
             return
         }
         if (pathComponent.path.isNotEmpty()) {
             return
         }
 
-        pathComponent.goal?.let { goal ->
-            val path = pathComponent.path
-            val position = entity.getComponent<PositionComponent>().position
-            val currentPosition = Vector3f(position)
+        val goal = pathComponent.goalQueue.pop()
 
-            // go in x direction first
-            if (currentPosition.x < goal.x) {
-                while (currentPosition.x < goal.x) {
-                    currentPosition.x += 1.0F
-                    path.add(Vector3f(currentPosition))
-                }
-            } else {
-                while (currentPosition.x > goal.x) {
-                    currentPosition.x -= 1.0F
-                    path.add(Vector3f(currentPosition))
-                }
+        val path = pathComponent.path
+        val position = entity.getComponent<PositionComponent>().position
+        val currentPosition = Vector3f(position)
+
+        // go in x direction first
+        if (currentPosition.x < goal.x) {
+            while (currentPosition.x < goal.x) {
+                currentPosition.x += 1.0F
+                path.add(Vector3f(currentPosition))
             }
+        } else {
+            while (currentPosition.x > goal.x) {
+                currentPosition.x -= 1.0F
+                path.add(Vector3f(currentPosition))
+            }
+        }
 
-            // then go in z direction
-            if (currentPosition.z < goal.z) {
-                while (currentPosition.z < goal.z) {
-                    currentPosition.z += 1.0F
-                    path.add(Vector3f(currentPosition))
-                }
-            } else {
-                while (currentPosition.z > goal.z) {
-                    currentPosition.z -= 1.0F
-                    path.add(Vector3f(currentPosition))
-                }
+        // then go in z direction
+        if (currentPosition.z < goal.z) {
+            while (currentPosition.z < goal.z) {
+                currentPosition.z += 1.0F
+                path.add(Vector3f(currentPosition))
+            }
+        } else {
+            while (currentPosition.z > goal.z) {
+                currentPosition.z -= 1.0F
+                path.add(Vector3f(currentPosition))
             }
         }
     }
 
     private fun followPath(interval: Float, entity: Entity) {
         val pathComponent = entity.getComponent<PathComponent>()
-        if (pathComponent.goal == null) {
-            return
-        }
         if (pathComponent.path.isEmpty()) {
             return
         }
@@ -125,10 +135,7 @@ class PathFindingSystem : ISystem(DynamicEntityComponent::class.java, PathCompon
         }
 
         if (pathComponent.path.isEmpty()) {
-            pathComponent.goal?.let {
-                positionComponent.position = it
-            }
-            pathComponent.goal = null
+            positionComponent.position = nextWayPoint
         } else {
             direction.normalize()
                     .mul(interval)
@@ -166,8 +173,8 @@ class PathFindingSystem : ISystem(DynamicEntityComponent::class.java, PathCompon
 
         val entity = pathFindingEntities[0]
         val pathComponent = entity.getComponent<PathComponent>()
-        pathComponent.goal = Vector3f(intersectionResult.point)
+        val nextGoal = Vector3f(intersectionResult.point)
                 .add(intersectionResult.normal)
-        pathComponent.path.clear()
+        pathComponent.goalQueue.add(nextGoal)
     }
 }

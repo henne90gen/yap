@@ -10,6 +10,7 @@ import org.joml.Matrix4f
 import org.joml.Vector2f
 import org.joml.Vector3f
 import org.joml.Vector4f
+import java.util.*
 
 abstract class Component
 
@@ -88,7 +89,7 @@ class DynamicEntityComponent(val id: DynamicEntityType) : Component()
 
 class PathComponent(
         // the goal for this path
-        var goal: Vector3f? = null,
+        var goalQueue: LinkedList<Vector3f> = LinkedList(),
         // the current path that is going to be taken
         val path: MutableList<Vector3f> = mutableListOf()
 ) : Component()

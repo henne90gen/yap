@@ -14,10 +14,16 @@ class DynamicEntity(
     init {
         addComponent(PositionComponent(position))
         addComponent(RotationComponent())
+
         val material = YapGame.getInstance().renderer.textureMapMaterial
         addComponent(MeshComponent(MeshUtils.unitCube(material)))
+
         addComponent(boundingBox)
-        addComponent(PathComponent(goal))
+
+        val pathComponent = PathComponent()
+        pathComponent.goalQueue.add(goal)
+        addComponent(pathComponent)
+
         addComponent(DynamicEntityComponent(id))
     }
 }
