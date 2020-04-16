@@ -18,7 +18,7 @@ data class Vector4fUniform(val value: Vector4f) : Uniform()
 data class IntUniform(val value: Int) : Uniform()
 
 
-class Shader(private val vertexShaderPath: String, private val fragmentShaderPath: String) {
+class Shader(private val shaderName: String, private val vertexShaderPath: String, private val fragmentShaderPath: String) {
 
     companion object {
         private val log: Logger = LogManager.getLogger()
@@ -47,52 +47,32 @@ class Shader(private val vertexShaderPath: String, private val fragmentShaderPat
     fun setUniform(name: String, value: Int) {
         bind()
 
-        val loc = glGetUniformLocation(programId, name)
-        if (loc < 0) {
-            log.warn("Could not find uniform '{}'", name)
-            return
-        }
-
+        val loc = getUniformLocation(name) ?: return
         currentUniforms[name] = IntUniform(value)
-
         glUniform1i(loc, value)
-    }
-
-    fun setUniform(name: String, value: Vector4f) {
-        bind()
-
-        val loc = glGetUniformLocation(programId, name)
-        if (loc < 0) {
-            log.warn("Could not find uniform '{}'", name)
-            return
-        }
-
-        currentUniforms[name] = Vector4fUniform(value)
-
-        glUniform4f(loc, value.x, value.y, value.z, value.w)
     }
 
     fun setUniform(name: String, value: Vector3f) {
         bind()
 
-        val loc = glGetUniformLocation(programId, name)
-        if (loc < 0) {
-            log.warn("Could not find uniform '{}", name)
-            return
-        }
-
+        val loc = getUniformLocation(name) ?: return
         currentUniforms[name] = Vector3fUniform(value)
-
         glUniform3f(loc, value.x, value.y, value.z)
+    }
+
+    fun setUniform(name: String, value: Vector4f) {
+        bind()
+
+        val loc = getUniformLocation(name) ?: return
+        currentUniforms[name] = Vector4fUniform(value)
+        glUniform4f(loc, value.x, value.y, value.z, value.w)
     }
 
     fun setUniform(name: String, value: Matrix4f) {
         bind()
 
         val loc = getUniformLocation(name) ?: return
-
         currentUniforms[name] = Matrix4fUniform(value)
-
         MemoryStack.stackPush().use { stack ->
             val fb = value.get(stack.mallocFloat(16))
             glUniformMatrix4fv(loc, false, fb)
@@ -108,7 +88,7 @@ class Shader(private val vertexShaderPath: String, private val fragmentShaderPat
         val location = glGetUniformLocation(programId, name)
         uniformLocations[name] = location
         if (location < 0) {
-            log.warn("Could not find uniform '{}'", name)
+            log.warn("[$shaderName] Could not find uniform '$name'")
             return null
         }
         return location
@@ -124,7 +104,7 @@ class Shader(private val vertexShaderPath: String, private val fragmentShaderPat
 
         if (glGetShaderi(shaderId, GL_COMPILE_STATUS) == 0) {
             val shaderType = if (type == GL_VERTEX_SHADER) "vertex" else "fragment"
-            log.error("Error compiling {} shader code: {}", shaderType, glGetShaderInfoLog(shaderId, 1024))
+            log.error("[$shaderName] Error compiling {} shader code: {}", shaderType, glGetShaderInfoLog(shaderId, 1024))
             return 0
         }
 

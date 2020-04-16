@@ -21,17 +21,30 @@ import javax.swing.*
 class DebugInterface : ISystem() {
 
     private lateinit var frame: JFrame
+
     private lateinit var entitiesCount: JLabel
     private lateinit var blockEntitiesCount: JLabel
     private lateinit var staticEntitiesCount: JLabel
     private lateinit var playerEntitiesCount: JLabel
 
-    private var enabled = false
+    private lateinit var fontHeight: JLabel
+    private lateinit var bitmapWidth: JLabel
+    private lateinit var bitmapHeight: JLabel
+    private lateinit var scaleForPixelHeight: JLabel
+    private lateinit var ascent: JLabel
+    private lateinit var descent: JLabel
+    private lateinit var lineGap: JLabel
+    private lateinit var firstChar: JLabel
+
+    private var showCoordinateSystem = false
 
     override fun init() {
         frame = JFrame("Debug Settings")
         val debugToggles = createDebugToggles()
         frame.add(debugToggles)
+
+        val fontInfo = createFontInformation()
+        frame.add(fontInfo)
 
         val entitiesInfo = createEntitiesInformation()
         frame.add(entitiesInfo)
@@ -41,6 +54,37 @@ class DebugInterface : ISystem() {
         frame.layout = BoxLayout(frame.contentPane, BoxLayout.Y_AXIS)
         frame.isVisible = true
         frame.setLocation(1600, 100)
+    }
+
+    private fun createFontInformation(): JPanel {
+        val infoPanel = JPanel()
+        infoPanel.layout = BoxLayout(infoPanel, BoxLayout.Y_AXIS)
+
+        fontHeight = JLabel()
+        infoPanel.add(fontHeight)
+
+        bitmapWidth = JLabel()
+        infoPanel.add(bitmapWidth)
+
+        bitmapHeight = JLabel()
+        infoPanel.add(bitmapHeight)
+
+        scaleForPixelHeight = JLabel()
+        infoPanel.add(scaleForPixelHeight)
+
+        ascent = JLabel()
+        infoPanel.add(ascent)
+
+        descent = JLabel()
+        infoPanel.add(descent)
+
+        lineGap = JLabel()
+        infoPanel.add(lineGap)
+
+        firstChar = JLabel()
+        infoPanel.add(firstChar)
+
+        return infoPanel
     }
 
     private fun createEntitiesInformation(): JPanel {
@@ -66,28 +110,28 @@ class DebugInterface : ISystem() {
         val debugToggles = JPanel()
         debugToggles.layout = BoxLayout(debugToggles, BoxLayout.Y_AXIS)
 
-        val cpu = JCheckBox("CPU Info")
+        val cpu = JCheckBox("CPU Info", YapGame.getInstance().debugCPU.enabled)
         cpu.addItemListener { YapGame.getInstance().debugCPU.enabled = it.stateChange == ItemEvent.SELECTED }
         debugToggles.add(cpu)
 
-        val memory = JCheckBox("Memory Info")
+        val memory = JCheckBox("Memory Info", YapGame.getInstance().debugMemory.enabled)
         memory.addItemListener { YapGame.getInstance().debugMemory.enabled = it.stateChange == ItemEvent.SELECTED }
         debugToggles.add(memory)
 
-        val frameTiming = JCheckBox("Frame Timings")
+        val frameTiming = JCheckBox("Frame Timings", YapGame.getInstance().debugFrameTiming.enabled)
         frameTiming.addItemListener { YapGame.getInstance().debugFrameTiming.enabled = it.stateChange == ItemEvent.SELECTED }
         debugToggles.add(frameTiming)
 
-        val boundingBox = JCheckBox("Bounding Boxes")
+        val boundingBox = JCheckBox("Bounding Boxes", YapGame.getInstance().debugBoundingBox.enabled)
         boundingBox.addItemListener { YapGame.getInstance().debugBoundingBox.enabled = it.stateChange == ItemEvent.SELECTED }
         debugToggles.add(boundingBox)
 
-        val fontTexture = JCheckBox("Font Texture")
-        fontTexture.addItemListener { YapGame.getInstance().debugFontTexture.enabled = it.stateChange == ItemEvent.SELECTED }
+        val fontTexture = JCheckBox("Font Debug", YapGame.getInstance().debugFont.enabled)
+        fontTexture.addItemListener { YapGame.getInstance().debugFont.enabled = it.stateChange == ItemEvent.SELECTED }
         debugToggles.add(fontTexture)
 
-        val coordinateSystem = JCheckBox("Show Coordinate System")
-        coordinateSystem.addItemListener { enabled = it.stateChange == ItemEvent.SELECTED }
+        val coordinateSystem = JCheckBox("Show Coordinate System", showCoordinateSystem)
+        coordinateSystem.addItemListener { showCoordinateSystem = it.stateChange == ItemEvent.SELECTED }
         debugToggles.add(coordinateSystem)
 
         return debugToggles
@@ -115,7 +159,17 @@ class DebugInterface : ISystem() {
         staticEntitiesCount.text = "$staticEntities Static Entities"
         playerEntitiesCount.text = "$playerEntities Player Entities"
 
-        if (!enabled) {
+        val font = YapGame.getInstance().fontRenderer.font
+        fontHeight.text = "Font Height: ${font.fontHeight}"
+        bitmapWidth.text = "Bitmap Width: ${font.bitmapWidth}"
+        bitmapHeight.text = "Bitmap Height: ${font.bitmapHeight}"
+        scaleForPixelHeight.text = "Scale for Pixel Height: ${font.scaleForPixelHeight}"
+        ascent.text = "Ascent: ${font.ascent}"
+        descent.text = "Descent: ${font.descent}"
+        lineGap.text = "Line Gap: ${font.lineGap}"
+        firstChar.text = "First Char: ${font.firstChar}"
+
+        if (!showCoordinateSystem) {
             return
         }
         renderCoordinateSystem()

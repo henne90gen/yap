@@ -1,6 +1,6 @@
 #version 330
 
-in  vec2 outTexCoord;
+in vec2 outTexCoord;
 in vec3 fragPos;
 in vec3 outNormal;
 

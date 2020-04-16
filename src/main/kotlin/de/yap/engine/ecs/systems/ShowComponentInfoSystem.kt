@@ -92,7 +92,7 @@ class ShowComponentInfoSystem : ISystem(PositionComponent::class.java) {
                 .scale(0.5F)
         val componentsText = getComponentsText(entity)
         val text = Text(componentsText, fontRenderer.font, transform)
-        fontRenderer.stringInScene(text, yapGame.view, yapGame.projection)
+//        fontRenderer.stringInScene(text, yapGame.view, yapGame.projection)
     }
 
     private fun getComponentsText(entity: Entity): String {

@@ -8,7 +8,7 @@ import org.joml.Matrix4f
 import org.joml.Vector4f
 import org.lwjgl.opengl.GL11.*
 
-class DebugFontTexture : ISystem() {
+class DebugFont : ISystem() {
 
     var enabled = false
 
@@ -19,12 +19,18 @@ class DebugFontTexture : ISystem() {
 
         val yapGame = YapGame.getInstance()
         val fontRenderer = yapGame.fontRenderer
+
+        val transform = Matrix4f()
+                .translate(-0.5F, 0.0F, 0.0F)
+        fontRenderer.stringSimple("Hello World", transform)
+
         val mesh = MeshUtils.quad2D(material = fontRenderer.font.material)
-        val fontShader = fontRenderer.fontShader
+        val fontShader = fontRenderer.hudShader
         fontShader.bind()
-        fontShader.setUniform("view", Matrix4f().scale(1.0F / fontRenderer.aspectRatio, 1.0F, 1.0F))
-        fontShader.setUniform("projection", Matrix4f())
-        fontShader.setUniform("model", Matrix4f())
+        val view = Matrix4f()
+                .scale(1.0F / fontRenderer.aspectRatio, 1.0F, 1.0F)
+        fontShader.setUniform("view", view)
+        fontShader.setUniform("model", Matrix4f().translate(-1.0F, 0.5F, 0.0F))
         fontShader.setUniform("color", Vector4f(1.0F))
         fontShader.setUniform("textureSampler", 1)
 

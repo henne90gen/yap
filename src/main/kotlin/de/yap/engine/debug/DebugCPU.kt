@@ -15,23 +15,9 @@ class DebugCPU : ISystem() {
 
     private val df = DecimalFormat("#.00")
 
-    private var processText: Text? = null
-    private var processLoadText: Text? = null
+    private var processLoad = 0.0
 
     private var updateCounter = 0
-
-    override fun init() {
-        val fontRenderer = YapGame.getInstance().fontRenderer
-        val processTextTransform = Matrix4f()
-                .translate(0.25F, 0.90F, 0.0F)
-                .scale(0.3F)
-        processText = Text("Process:", fontRenderer.font, processTextTransform)
-
-        val processLoadTransform = Matrix4f()
-                .translate(0.5F, 0.90F, 0.0F)
-                .scale(0.3F)
-        processLoadText = Text("", fontRenderer.font, processLoadTransform)
-    }
 
     override fun update(interval: Float, entities: List<Entity>) {
         if (!enabled) {
@@ -44,8 +30,7 @@ class DebugCPU : ISystem() {
 
         val systemMXBean = ManagementFactory.getOperatingSystemMXBean() as com.sun.management.OperatingSystemMXBean
 
-        val processLoad = systemMXBean.processCpuLoad * 100.0
-        processLoadText?.updateString("${df.format(processLoad)}%")
+        processLoad = systemMXBean.processCpuLoad * 100.0
     }
 
     override fun render(entities: List<Entity>) {
@@ -54,7 +39,9 @@ class DebugCPU : ISystem() {
         }
 
         val fontRenderer = YapGame.getInstance().fontRenderer
-        processText?.let { fontRenderer.string(it) }
-        processLoadText?.let { fontRenderer.string(it) }
+        val transform = Matrix4f()
+                .translate(0.25F, 0.90F, 0.0F)
+                .scale(0.3F)
+        fontRenderer.stringSimple("Process: ${df.format(processLoad)}%", transform)
     }
 }

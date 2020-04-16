@@ -25,11 +25,11 @@ class Renderer {
         private val log: Logger = LogManager.getLogger()
     }
 
-    private lateinit var quadMesh: Mesh
+    lateinit var quadMesh: Mesh
     private lateinit var cubeMesh: Mesh
     var textureMapMaterial: Material = Material("EmptyMaterial")
 
-    val shader3D = Shader("shaders/vertex.glsl", "shaders/fragment.glsl")
+    val shader3D = Shader("3D", "shaders/vertex.glsl", "shaders/fragment.glsl")
 
     fun init() {
         glEnable(GL_DEPTH_TEST)

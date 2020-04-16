@@ -47,7 +47,8 @@ class YapGame private constructor() : IGameLogic {
 
     val renderer = Renderer()
     val fontRenderer = FontRenderer()
-    lateinit var cameraSystem: CameraSystem
+    val cameraSystem = CameraSystem()
+
     val meshAtlas = MeshAtlas()
 
     var view: Matrix4f = Matrix4f()
@@ -56,7 +57,7 @@ class YapGame private constructor() : IGameLogic {
     val debugMemory = DebugMemory()
     val debugCPU = DebugCPU()
     val debugFrameTiming = DebugFrameTiming()
-    val debugFontTexture = DebugFontTexture()
+    val debugFont = DebugFont()
     val debugBoundingBox = DebugBoundingBox()
     private val debugInterface = DebugInterface()
 
@@ -78,7 +79,6 @@ class YapGame private constructor() : IGameLogic {
     private fun initSystems() {
         entityManager.registerEventListener(this)
         entityManager.registerSystem(LevelEditor())
-        cameraSystem = CameraSystem()
         entityManager.registerSystem(cameraSystem)
         entityManager.registerSystem(MeshSystem())
         entityManager.registerSystem(PathFindingSystem())
@@ -90,7 +90,7 @@ class YapGame private constructor() : IGameLogic {
         entityManager.registerSystem(debugMemory)
         entityManager.registerSystem(debugCPU)
         entityManager.registerSystem(debugFrameTiming)
-        entityManager.registerSystem(debugFontTexture)
+        entityManager.registerSystem(debugFont)
         entityManager.registerSystem(debugBoundingBox)
         entityManager.registerSystem(debugInterface)
     }

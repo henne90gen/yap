@@ -148,8 +148,8 @@ data class Mesh(
             }
             buffer.flip()
 
-            val nbo = GL20.glGenBuffers()
-            GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, nbo)
+            val vbo = GL20.glGenBuffers()
+            GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vbo)
             GL20.glBufferData(GL20.GL_ARRAY_BUFFER, buffer!!, GL20.GL_STATIC_DRAW)
         } finally {
             MemoryUtil.memFree(buffer)

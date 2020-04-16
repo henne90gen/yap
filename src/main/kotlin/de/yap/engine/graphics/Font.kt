@@ -5,10 +5,7 @@ import de.yap.engine.util.IOUtils
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.lwjgl.opengl.GL11
-import org.lwjgl.stb.STBTTAlignedQuad
-import org.lwjgl.stb.STBTTBakedChar
-import org.lwjgl.stb.STBTTFontinfo
-import org.lwjgl.stb.STBTruetype
+import org.lwjgl.stb.*
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
 import java.nio.ByteBuffer
@@ -18,9 +15,9 @@ class Font(
         val material: Material,
         val fontHeight: Float,
         val bitmapWidth: Int, val bitmapHeight: Int,
-        private val scaleForPixelHeight: Float,
-        private val ascent: Int, private val descent: Int, private val lineGap: Int,
-        private val firstChar: Int, private val cdata: STBTTBakedChar.Buffer
+        val scaleForPixelHeight: Float,
+        val ascent: Int, val descent: Int, val lineGap: Int,
+        val firstChar: Int, private val cdata: STBTTBakedChar.Buffer
 ) {
 
     companion object {
@@ -28,8 +25,17 @@ class Font(
 
         fun fromInternalFile(file: String): Font {
             val ttf = IOUtils.loadInternalResource(file)
-            checkNotNull(ttf) { "Could not load font!" }
+            checkNotNull(ttf) { "Could not load font $file!" }
+            return fromByteBuffer(ttf, file)
+        }
 
+        fun fromExternalFile(file: String): Font {
+            val ttf = IOUtils.loadExternalResource(file)
+            checkNotNull(ttf) { "Could not load font $file!" }
+            return fromByteBuffer(ttf, file)
+        }
+
+        private fun fromByteBuffer(ttf: ByteBuffer, name: String): Font {
             val info: STBTTFontinfo = STBTTFontinfo.create()
             check(STBTruetype.stbtt_InitFont(info, ttf)) { "Failed to initialize font information." }
 
@@ -49,18 +55,18 @@ class Font(
                 lineGap = pLineGap.get(0)
             }
 
-            val cdata = STBTTBakedChar.malloc(96)
+            val bakedCharArray = STBTTBakedChar.malloc(96)
 
-            val fontHeight = 100.0F
+            val fontHeight = 10.0F
             val bitmapWidth = 512
             val bitmapHeight = 512
             var bitmap: ByteBuffer? = null
             try {
                 bitmap = MemoryUtil.memAlloc(bitmapWidth * bitmapHeight)
-                checkNotNull(bitmap) { "Failed to initialize bitmap for font $file." }
+                checkNotNull(bitmap) { "Failed to initialize bitmap for font $name." }
 
                 val firstChar = 32
-                STBTruetype.stbtt_BakeFontBitmap(ttf, fontHeight, bitmap, bitmapWidth, bitmapHeight, firstChar, cdata)
+                val result = STBTruetype.stbtt_BakeFontBitmap(ttf, fontHeight, bitmap, bitmapWidth, bitmapHeight, firstChar, bakedCharArray)
 
                 val scaleForPixelHeight = STBTruetype.stbtt_ScaleForPixelHeight(info, fontHeight)
 
@@ -74,7 +80,7 @@ class Font(
                         bitmapWidth, bitmapHeight,
                         scaleForPixelHeight,
                         ascent, descent, lineGap,
-                        firstChar, cdata
+                        firstChar, bakedCharArray
                 )
             } finally {
                 MemoryUtil.memFree(bitmap)
