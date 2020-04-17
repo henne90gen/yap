@@ -5,13 +5,11 @@ import org.apache.logging.log4j.Logger
 import org.joml.Vector2f
 import org.joml.Vector3f
 import org.joml.Vector3i
-import org.lwjgl.opengl.GL15
 import org.lwjgl.opengl.GL20
 import org.lwjgl.opengl.GL30
 import org.lwjgl.system.MemoryUtil
 import java.io.File
 import java.nio.FloatBuffer
-import java.nio.IntBuffer
 
 data class Mesh(
         val vertices: MutableList<Vector3f> = mutableListOf(),
@@ -86,26 +84,7 @@ data class Mesh(
         bindBuffer2f(texCoords, 1)
         bindBuffer3f(normals, 2)
 
-        bindIndexBuffer(indices)
-    }
-
-    private fun bindIndexBuffer(indices: List<Vector3i>) {
-        var buffer: IntBuffer? = null
-        try {
-            buffer = MemoryUtil.memAllocInt(indices.size * 3)
-            for (d in indices) {
-                buffer.put(d.x)
-                buffer.put(d.y)
-                buffer.put(d.z)
-            }
-            buffer.flip()
-
-            val ibo = GL15.glGenBuffers()
-            GL20.glBindBuffer(GL20.GL_ELEMENT_ARRAY_BUFFER, ibo)
-            GL20.glBufferData(GL20.GL_ELEMENT_ARRAY_BUFFER, buffer!!, GL20.GL_STATIC_DRAW)
-        } finally {
-            MemoryUtil.memFree(buffer)
-        }
+        MeshUtils.bindIndexBuffer(indices)
     }
 
     private fun bindBuffer2f(data: List<Vector2f>, attribIndex: Int) {

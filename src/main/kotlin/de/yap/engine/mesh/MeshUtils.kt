@@ -8,8 +8,11 @@ import org.apache.logging.log4j.Logger
 import org.joml.Vector2f
 import org.joml.Vector3f
 import org.joml.Vector3i
+import org.lwjgl.opengl.GL15
+import org.lwjgl.opengl.GL20
 import org.lwjgl.stb.STBTTAlignedQuad
 import org.lwjgl.system.MemoryStack
+import org.lwjgl.system.MemoryUtil
 import java.io.File
 import java.nio.IntBuffer
 
@@ -132,7 +135,7 @@ class ObjLoader : MeshLoader {
             log.warn("Malformed texture coordinate on line {}", lineNumber)
             return
         }
-        textCoords.add(Vector2f(floats[0], 1-floats[1]))
+        textCoords.add(Vector2f(floats[0], 1 - floats[1]))
     }
 
     private fun addFace(faceIndices: MutableList<FaceIndices>, line: String, lineNumber: Int) {
@@ -475,6 +478,25 @@ class MeshUtils {
             }
             cpOut.put(0, c1.toInt())
             return 1
+        }
+
+        fun bindIndexBuffer(indices: List<Vector3i>) {
+            var buffer: IntBuffer? = null
+            try {
+                buffer = MemoryUtil.memAllocInt(indices.size * 3)
+                for (d in indices) {
+                    buffer.put(d.x)
+                    buffer.put(d.y)
+                    buffer.put(d.z)
+                }
+                buffer.flip()
+
+                val ibo = GL15.glGenBuffers()
+                GL20.glBindBuffer(GL20.GL_ELEMENT_ARRAY_BUFFER, ibo)
+                GL20.glBufferData(GL20.GL_ELEMENT_ARRAY_BUFFER, buffer!!, GL20.GL_STATIC_DRAW)
+            } finally {
+                MemoryUtil.memFree(buffer)
+            }
         }
     }
 }

@@ -5,7 +5,10 @@ import de.yap.engine.util.IOUtils
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.lwjgl.opengl.GL11
-import org.lwjgl.stb.*
+import org.lwjgl.stb.STBTTAlignedQuad
+import org.lwjgl.stb.STBTTBakedChar
+import org.lwjgl.stb.STBTTFontinfo
+import org.lwjgl.stb.STBTruetype
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
 import java.nio.ByteBuffer
@@ -57,7 +60,7 @@ class Font(
 
             val bakedCharArray = STBTTBakedChar.malloc(96)
 
-            val fontHeight = 10.0F
+            val fontHeight = 100.0F
             val bitmapWidth = 512
             val bitmapHeight = 512
             var bitmap: ByteBuffer? = null
@@ -67,6 +70,7 @@ class Font(
 
                 val firstChar = 32
                 val result = STBTruetype.stbtt_BakeFontBitmap(ttf, fontHeight, bitmap, bitmapWidth, bitmapHeight, firstChar, bakedCharArray)
+                // TODO do something with the result
 
                 val scaleForPixelHeight = STBTruetype.stbtt_ScaleForPixelHeight(info, fontHeight)
 
