@@ -10,6 +10,9 @@ import org.joml.Vector3f
 import org.joml.Vector4f
 import org.lwjgl.glfw.GLFW
 
+/**
+ * To place a new goal for the dynamic entity to walk to, use the 'P'-key
+ */
 class PathFindingSystem : ISystem(DynamicEntityComponent::class.java, PathComponent::class.java) {
     companion object {
         // 0.01F * 0.01F
@@ -146,11 +149,11 @@ class PathFindingSystem : ISystem(DynamicEntityComponent::class.java, PathCompon
     @Subscribe
     fun keyPressed(event: KeyboardEvent) {
         if (event.key == GLFW.GLFW_KEY_P && event.action == GLFW.GLFW_RELEASE) {
-            updateGoal()
+            addNewGoal()
         }
     }
 
-    private fun updateGoal() {
+    private fun addNewGoal() {
         val boundingBoxes = YapGame.getInstance().entityManager.getEntities(Capability.ALL_CAPABILITIES)
                 .filter { it.hasComponent<BoundingBoxComponent>() }
                 .map {
