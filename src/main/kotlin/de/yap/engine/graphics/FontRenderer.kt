@@ -52,7 +52,15 @@ class FontRenderer {
 
         val vao = GL30.glGenVertexArrays()
         GL30.glBindVertexArray(vao)
+        val indices = uploadVertexDataAndCreateIndices(string)
+        MeshUtils.bindIndexBuffer(indices)
 
+        GL13.glDrawElements(GL13.GL_TRIANGLES, indices.size * 3, GL13.GL_UNSIGNED_INT, 0)
+
+        hudShader.unbind()
+    }
+
+    private fun uploadVertexDataAndCreateIndices(string: String): List<Vector3i> {
         // The documentation of stb_easy_font_print says 270 bytes/char, but the word 'Red' for example needs more
         val averageBytesPerCharacter = 350
         val indices = mutableListOf<Vector3i>()
@@ -80,11 +88,7 @@ class FontRenderer {
         val stride = 3 * 4 + 4
         GL20.glVertexAttribPointer(0, 3, GL20.GL_FLOAT, false, stride, 0)
 
-        MeshUtils.bindIndexBuffer(indices)
-
-        GL13.glDrawElements(GL13.GL_TRIANGLES, indices.size * 3, GL13.GL_UNSIGNED_INT, 0)
-
-        hudShader.unbind()
+        return indices
     }
 
     fun quad(transformation: Matrix4f = Matrix4f(), color: Vector4f = Vector4f(1.0F)) {
@@ -93,6 +97,7 @@ class FontRenderer {
 
     fun mesh(mesh: Mesh, transformation: Matrix4f = Matrix4f(), color: Vector4f = Vector4f(1.0F)) {
         hudShader.bind()
+        hudShader.setUniform("view", Matrix4f().scale(1.0F / aspectRatio, 1.0F, 1.0F))
         hudShader.setUniform("model", transformation)
         hudShader.setUniform("color", color)
 
