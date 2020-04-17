@@ -6,11 +6,11 @@ import de.yap.game.YapGame
 import org.joml.Matrix4f
 import org.joml.Vector3i
 import org.joml.Vector4f
-import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL13
 import org.lwjgl.opengl.GL20
 import org.lwjgl.opengl.GL30
 import org.lwjgl.stb.STBEasyFont
+import org.lwjgl.system.MemoryUtil
 import java.nio.ByteBuffer
 
 class Text(var value: String, val font: Font, val transform: Matrix4f, val color: Vector4f = Vector4f(1.0F)) {
@@ -53,11 +53,13 @@ class FontRenderer {
         val vao = GL30.glGenVertexArrays()
         GL30.glBindVertexArray(vao)
 
+        // The documentation of stb_easy_font_print says 270 bytes/char, but the word 'Red' for example needs more
         val averageBytesPerCharacter = 350
         val indices = mutableListOf<Vector3i>()
         var vertexBuffer: ByteBuffer? = null
         try {
-            vertexBuffer = BufferUtils.createByteBuffer(string.length * averageBytesPerCharacter)
+            val bufferSize = string.length * averageBytesPerCharacter
+            vertexBuffer = MemoryUtil.memAlloc(bufferSize)
             val quadCount = STBEasyFont.stb_easy_font_print(0.0F, 0.0F, string, null, vertexBuffer!!)
 
             for (quadIndex in 0..quadCount) {
@@ -70,12 +72,11 @@ class FontRenderer {
             GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, vbo)
             GL20.glBufferData(GL20.GL_ARRAY_BUFFER, vertexBuffer, GL20.GL_STATIC_DRAW)
         } finally {
-            // FIXME this free causes a double free somehow...
-            // FIXME we run out of memory at some point...
-            // MemoryUtil.memFree(vertexBuffer)
+            MemoryUtil.memFree(vertexBuffer)
         }
 
         GL20.glEnableVertexAttribArray(0)
+        // float x, float y, float z, unint8[4] color
         val stride = 3 * 4 + 4
         GL20.glVertexAttribPointer(0, 3, GL20.GL_FLOAT, false, stride, 0)
 
