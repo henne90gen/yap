@@ -27,10 +27,16 @@ enum class SelectedEntityType {
     DYNAMIC
 }
 
+enum class EditorMode {
+    CREATE,
+    EDIT
+}
+
 class LevelEditorSettings {
 
     private lateinit var frame: JFrame
 
+    var editorMode = EditorMode.CREATE
     var selectedTextureIndex = Vector2i(0)
     var rotationInDegrees = Vector3f(0.0F)
     var selectedEntityType = SelectedEntityType.BLOCK
@@ -44,6 +50,9 @@ class LevelEditorSettings {
         val saveLoadButtons = createSaveLoadButtons()
         frame.add(saveLoadButtons)
 
+        val editorMode = createEditorMode()
+        frame.add(editorMode)
+
         val entitySettings = createEntitySettings()
         frame.add(entitySettings)
 
@@ -51,6 +60,24 @@ class LevelEditorSettings {
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         frame.pack()
         frame.isVisible = true
+    }
+
+    private fun createEditorMode(): JPanel {
+        val panel = JPanel()
+
+        val buttonGroup = ButtonGroup()
+
+        for (mode in EditorMode.values()) {
+            val active = mode == editorMode
+            val button = JRadioButton(mode.name, active)
+            button.addActionListener {
+                editorMode = mode
+            }
+            panel.add(button)
+            buttonGroup.add(button)
+        }
+
+        return panel
     }
 
     private fun createEntitySettings(): JComponent {
