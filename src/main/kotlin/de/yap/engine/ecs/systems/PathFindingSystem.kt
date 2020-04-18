@@ -9,6 +9,8 @@ import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.joml.Vector4f
 import org.lwjgl.glfw.GLFW
+import java.util.*
+import kotlin.collections.LinkedHashSet
 
 /**
  * To place a new goal for the dynamic entity to walk to, use the 'P'-key
@@ -17,6 +19,88 @@ class PathFindingSystem : ISystem(DynamicEntityComponent::class.java, PathCompon
     companion object {
         // 0.01F * 0.01F
         private const val MIN_DISTANCE_SQ = 0.0001F
+        private const val A_STAR_MAX_ITERATIONS = 10_000
+
+        private val COLLISION_CAPABILITY = Capability(BoundingBoxComponent::class.java, PositionComponent::class.java)
+
+        fun useAStar(currentPosition: Vector3f, goal: Vector3f, path: MutableList<Vector3f>, collisionEntities: List<Entity>) {
+            class Node(val position: Vector3f, val distance: Double, val estimatedDistance: Double) : Comparable<Node> {
+                override fun compareTo(other: Node): Int {
+                    return when {
+                        estimatedDistance < other.estimatedDistance -> -1
+                        estimatedDistance > other.estimatedDistance -> 1
+                        else -> 0
+                    }
+                }
+            }
+
+            val entitySet = LinkedHashSet<Vector3f>()
+            for (entity in collisionEntities) {
+                entitySet.add(entity.getComponent<PositionComponent>().position)
+            }
+
+            fun h(position: Vector3f): Double {
+                return Vector3f(position).sub(goal).length().toDouble()
+            }
+
+            fun findNeighbors(node: Node): List<Node> {
+                val positions = listOf(
+                        Vector3f(node.position).add(1.0F, 0.0F, 0.0F),
+                        Vector3f(node.position).add(-1.0F, 0.0F, 0.0F),
+                        Vector3f(node.position).add(0.0F, 0.0F, 1.0F),
+                        Vector3f(node.position).add(0.0F, 0.0F, -1.0F)
+                )
+                val result = mutableListOf<Node>()
+                for (position in positions) {
+                    if (!entitySet.contains(position)) {
+                        val distance = node.distance + Vector3f(position).sub(node.position).length()
+                        val estimatedDistance = distance + h(position)
+                        val neighbor = Node(position, distance, estimatedDistance)
+                        result.add(neighbor)
+                    }
+                }
+                return result
+            }
+
+            val startNode = Node(currentPosition, 0.0, h(currentPosition))
+
+            val openSet = PriorityQueue<Node>()
+            openSet.add(startNode)
+            val cameFrom = LinkedHashMap<Node, Node>()
+            val gScore = LinkedHashMap<Node, Double>()
+            gScore[startNode] = 0.0
+
+            var iterations = 0
+            while (openSet.isNotEmpty()) {
+                iterations++
+                var currentNode = openSet.first()
+                if (currentNode.position == goal) {
+                    path.add(0, currentNode.position)
+                    while (cameFrom.containsKey(currentNode)) {
+                        currentNode = cameFrom[currentNode]
+                        if (currentNode.position != currentPosition) {
+                            path.add(0, currentNode.position)
+                        }
+                    }
+                    return
+                }
+
+                openSet.remove(currentNode)
+                for (neighbor in findNeighbors(currentNode)) {
+                    if (!gScore.containsKey(neighbor) || neighbor.estimatedDistance < gScore[neighbor]!!) {
+                        cameFrom[neighbor] = currentNode
+                        gScore[neighbor] = neighbor.distance
+                        if (!openSet.contains(neighbor)) {
+                            openSet.add(neighbor)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    init {
+        YapGame.getInstance().entityManager.registerCapability(COLLISION_CAPABILITY)
     }
 
     override fun render(entities: List<Entity>) {
@@ -61,7 +145,7 @@ class PathFindingSystem : ISystem(DynamicEntityComponent::class.java, PathCompon
         }
 
         // render queued goals
-        for (goal in pathComponent.goalQueue) {
+        for (goal in pathComponent.waypoints) {
             val transform = Matrix4f()
                     .translate(goal)
                     .translate(0.5F, 0.5F, 0.5F)
@@ -72,27 +156,35 @@ class PathFindingSystem : ISystem(DynamicEntityComponent::class.java, PathCompon
     }
 
     override fun update(interval: Float, entities: List<Entity>) {
+        val collisionEntities = YapGame.getInstance().entityManager.getEntities(COLLISION_CAPABILITY)
         for (entity in entities) {
-            calculatePath(entity)
+            calculatePath(entity, collisionEntities)
             followPath(interval, entity)
         }
     }
 
-    private fun calculatePath(entity: Entity) {
+    private fun calculatePath(entity: Entity, collisionEntities: List<Entity>) {
         val pathComponent = entity.getComponent<PathComponent>()
-        if (pathComponent.goalQueue.isEmpty()) {
+        if (pathComponent.waypoints.isEmpty()) {
             return
         }
         if (pathComponent.path.isNotEmpty()) {
             return
         }
 
-        val goal = pathComponent.goalQueue.pop()
+        val goal = pathComponent.waypoints[pathComponent.nextWaypoint]
+        pathComponent.nextWaypoint++
+        pathComponent.nextWaypoint %= pathComponent.waypoints.size
 
         val path = pathComponent.path
         val position = entity.getComponent<PositionComponent>().position
         val currentPosition = Vector3f(position)
 
+//        useAStar(currentPosition, goal, path, collisionEntities)
+        usePrimitiveAlgorithm(currentPosition, goal, path)
+    }
+
+    private fun usePrimitiveAlgorithm(currentPosition: Vector3f, goal: Vector3f, path: MutableList<Vector3f>) {
         // go in x direction first
         if (currentPosition.x < goal.x) {
             while (currentPosition.x < goal.x) {
@@ -178,6 +270,6 @@ class PathFindingSystem : ISystem(DynamicEntityComponent::class.java, PathCompon
         val pathComponent = entity.getComponent<PathComponent>()
         val nextGoal = Vector3f(intersectionResult.point)
                 .add(intersectionResult.normal)
-        pathComponent.goalQueue.add(nextGoal)
+        pathComponent.waypoints.add(nextGoal)
     }
 }

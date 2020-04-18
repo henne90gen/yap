@@ -88,14 +88,7 @@ class EntityManager {
         registerEventListener(system)
         systems.add(system)
 
-        val entitiesWithCapability = ArrayList<Entity>()
-        for (entity in capabilityMap[Capability.ALL_CAPABILITIES]!!) {
-            if (entity.hasCapability(system.capability)) {
-                entitiesWithCapability.add(entity)
-            }
-        }
-
-        capabilityMap[system.capability] = entitiesWithCapability
+        registerCapability(system.capability)
 
         log.debug("Registered $system")
     }
@@ -211,5 +204,16 @@ class EntityManager {
         for (entity in entities) {
             addEntity(entity)
         }
+    }
+
+    fun registerCapability(capability: Capability) {
+        val entitiesWithCapability = ArrayList<Entity>()
+        for (entity in capabilityMap[Capability.ALL_CAPABILITIES]!!) {
+            if (entity.hasCapability(capability)) {
+                entitiesWithCapability.add(entity)
+            }
+        }
+
+        capabilityMap[capability] = entitiesWithCapability
     }
 }

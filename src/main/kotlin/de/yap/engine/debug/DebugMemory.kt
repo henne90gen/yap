@@ -4,16 +4,12 @@ import de.yap.engine.ecs.entities.Entity
 import de.yap.engine.ecs.systems.ISystem
 import de.yap.engine.graphics.FontRenderer
 import de.yap.game.YapGame
-import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.Logger
 import org.joml.Matrix4f
 import org.joml.Vector4f
 import java.lang.management.ManagementFactory
 
 class DebugMemory : ISystem() {
     companion object {
-        private val log: Logger = LogManager.getLogger()
-
         private const val MEMORY_BAR_HEIGHT = 0.05F
 
         private const val yOffsetPhysical = 1.0F - MEMORY_BAR_HEIGHT / 2F

@@ -19,7 +19,7 @@ class LevelGenerator() {
     private val width = Random.nextInt(20, 50)
     private val depth = Random.nextInt(20, 50)
 
-    enum class RoomTypes() {
+    enum class RoomTypes {
         KITCHEN,
         BATHROOM,
         BEDROOM,
@@ -40,7 +40,7 @@ class LevelGenerator() {
 
         entities.putAll(genFloor())
         entities.putAll(genOutsideWalls())
-        entities.putAll(genInsideWallsSimple())
+//        entities.putAll(genInsideWallsSimple())
 
         //addFurniture(entities)
 

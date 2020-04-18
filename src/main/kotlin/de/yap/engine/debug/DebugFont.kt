@@ -32,9 +32,11 @@ class DebugFont : ISystem() {
                 .translate(0.2F, 0.3F, 0.0F)
         fontRenderer.stringSimple("Green", greenTransform, Vector4f(1.0F, 0.0F, 1.0F, 1.0F))
 
-        val blueTransform = Matrix4f()
-                .translate(0.2F, 0.2F, 0.0F)
-        fontRenderer.stringSimple("Blue", blueTransform, Vector4f(1.0F, 1.0F, 0.0F, 1.0F))
+        YapGame.getInstance().renderer.wireframe {
+            val blueTransform = Matrix4f()
+                    .translate(0.2F, 0.2F, 0.0F)
+            fontRenderer.stringSimple("Blue", blueTransform, Vector4f(1.0F, 1.0F, 0.0F, 1.0F))
+        }
 
         val mesh = MeshUtils.quad2D(material = fontRenderer.font.material)
         val hudShader = fontRenderer.hudShader

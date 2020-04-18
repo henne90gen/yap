@@ -21,7 +21,7 @@ class DynamicEntity(
         addComponent(boundingBox)
 
         val pathComponent = PathComponent()
-        pathComponent.goalQueue.add(goal)
+        pathComponent.waypoints.add(goal)
         addComponent(pathComponent)
 
         addComponent(DynamicEntityComponent(id))
