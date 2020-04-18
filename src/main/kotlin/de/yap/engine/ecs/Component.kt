@@ -1,6 +1,7 @@
 package de.yap.engine.ecs
 
 import de.yap.engine.ecs.entities.DynamicEntityType
+import de.yap.engine.ecs.entities.Entity
 import de.yap.engine.ecs.entities.StaticEntityType
 import de.yap.engine.graphics.TextureCoords
 import de.yap.engine.mesh.Mesh
@@ -93,3 +94,11 @@ class PathComponent(
         // the current path that is going to be taken
         val path: MutableList<Vector3f> = mutableListOf()
 ) : Component()
+
+class EntityTypeComponent(val entityType: Class<out Entity>) : Component()
+
+class TriggerTypeComponent(val type: TriggerType) : Component()
+
+enum class TriggerType() {
+    GAME_FINISHED
+}

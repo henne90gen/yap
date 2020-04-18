@@ -18,3 +18,5 @@ data class MouseMoveEvent(val x: Float = 0.0F, val y: Float = 0.0F) : Event()
 data class WindowResizeEvent(val width: Int = 0, val height: Int = 0) : Event()
 
 class WindowCloseEvent : Event()
+
+class GameFinishedEvent : Event()
