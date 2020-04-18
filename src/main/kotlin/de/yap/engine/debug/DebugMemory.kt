@@ -3,8 +3,6 @@ package de.yap.engine.debug
 import de.yap.engine.ecs.entities.Entity
 import de.yap.engine.ecs.systems.ISystem
 import de.yap.engine.graphics.FontRenderer
-import de.yap.engine.graphics.Renderer
-import de.yap.engine.graphics.Text
 import de.yap.game.YapGame
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -39,16 +37,6 @@ class DebugMemory : ISystem() {
 
     var enabled = false
 
-    val physicalTextTransformation = Matrix4f()
-            .translate(-1.45F, 1.0F - MEMORY_BAR_HEIGHT, 0.0F)
-            .scale(0.3F)
-    val virtualTextTransformation = Matrix4f()
-            .translate(-1.42F, 1.0F - MEMORY_BAR_HEIGHT * 2.0F, 0.0F)
-            .scale(0.3F)
-    val jvmTextTransformation = Matrix4f()
-            .translate(-1.315F, 1.0F - MEMORY_BAR_HEIGHT * 3.0F, 0.0F)
-            .scale(0.3F)
-
     private var totalPhysicalMemoryInBytes: Long = 0
     private var freePhysicalMemoryInBytes: Long = 0
     private var usedPhysicalMemoryAtStartInBytes: Long = 0
@@ -58,7 +46,6 @@ class DebugMemory : ISystem() {
     private var freeJvmMemoryInBytes: Long = 0
 
     override fun init() {
-        val fontRenderer = YapGame.getInstance().fontRenderer
         update(0.0F, emptyList())
         usedPhysicalMemoryAtStartInBytes = totalPhysicalMemoryInBytes - freePhysicalMemoryInBytes
     }
@@ -83,22 +70,38 @@ class DebugMemory : ISystem() {
         }
 
         val fontRenderer = YapGame.getInstance().fontRenderer
+        val renderer = YapGame.getInstance().renderer
+
+        val top = 1.035F
+        val physicalTextTransformation = Matrix4f()
+                .translate(-1.45F, top - MEMORY_BAR_HEIGHT, 0.0F)
+                .scale(0.5F)
         fontRenderer.stringSimple("Physical Memory:", physicalTextTransformation)
+
+        val virtualTextTransformation = Matrix4f()
+                .translate(-1.42F, top - MEMORY_BAR_HEIGHT * 2.0F, 0.0F)
+                .scale(0.5F)
         fontRenderer.stringSimple("Virtual Memory:", virtualTextTransformation)
+
+        val jvmTextTransformation = Matrix4f()
+                .translate(-1.345F, top - MEMORY_BAR_HEIGHT * 3.0F, 0.0F)
+                .scale(0.5F)
         fontRenderer.stringSimple("JVM Memory:", jvmTextTransformation)
 
         val usedJvmMemoryInBytes = totalJvmMemoryInBytes - freeJvmMemoryInBytes
         val usedPhysicalMemoryInBytes = totalPhysicalMemoryInBytes - freePhysicalMemoryInBytes
 
-        renderTotalMemory(fontRenderer, totalPhysicalMemoryBarTransformation)
-        renderUsedMemory(fontRenderer, yOffsetPhysical, usedPhysicalMemoryInBytes, totalPhysicalMemoryInBytes)
-        renderUsedMemory(fontRenderer, yOffsetPhysical, usedPhysicalMemoryAtStartInBytes, totalPhysicalMemoryInBytes, true)
+        renderer.disableDepthTest {
+            renderTotalMemory(fontRenderer, totalPhysicalMemoryBarTransformation)
+            renderUsedMemory(fontRenderer, yOffsetPhysical, usedPhysicalMemoryInBytes, totalPhysicalMemoryInBytes)
+            renderUsedMemory(fontRenderer, yOffsetPhysical, usedPhysicalMemoryAtStartInBytes, totalPhysicalMemoryInBytes, true)
 
-        renderTotalMemory(fontRenderer, totalVirtualMemoryBarTransformation)
-        renderUsedMemory(fontRenderer, yOffsetVirtual, committedVirtualMemoryInBytes, totalPhysicalMemoryInBytes)
+            renderTotalMemory(fontRenderer, totalVirtualMemoryBarTransformation)
+            renderUsedMemory(fontRenderer, yOffsetVirtual, committedVirtualMemoryInBytes, totalPhysicalMemoryInBytes)
 
-        renderTotalMemory(fontRenderer, totalJvmMemoryBarTransformation)
-        renderUsedMemory(fontRenderer, yOffsetJvm, usedJvmMemoryInBytes, totalJvmMemoryInBytes)
+            renderTotalMemory(fontRenderer, totalJvmMemoryBarTransformation)
+            renderUsedMemory(fontRenderer, yOffsetJvm, usedJvmMemoryInBytes, totalJvmMemoryInBytes)
+        }
     }
 
     private fun renderTotalMemory(renderer: FontRenderer, transformation: Matrix4f) {
