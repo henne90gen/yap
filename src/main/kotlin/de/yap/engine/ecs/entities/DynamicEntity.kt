@@ -5,6 +5,10 @@ import de.yap.engine.mesh.MeshUtils
 import de.yap.game.YapGame
 import org.joml.Vector3f
 
+enum class DynamicEntityType {
+    SIMPLE_AI
+}
+
 class DynamicEntity(
         id: DynamicEntityType,
         position: Vector3f,
@@ -26,8 +30,4 @@ class DynamicEntity(
 
         addComponent(DynamicEntityComponent(id))
     }
-}
-
-enum class DynamicEntityType {
-    SIMPLE_AI
 }
