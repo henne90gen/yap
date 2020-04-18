@@ -4,6 +4,9 @@ import de.yap.engine.ecs.BoundingBoxComponent
 import de.yap.engine.ecs.PositionComponent
 import de.yap.engine.ecs.entities.Entity
 import org.joml.Vector3f
+import java.lang.Float.max
+import java.lang.Float.min
+import java.util.*
 
 abstract class Node(val boundingBox: BoundingBoxComponent)
 
@@ -18,12 +21,79 @@ class InnerNode(
         boundingBox: BoundingBoxComponent
 ) : Node(boundingBox)
 
+class NodeQueueElement(val node: Node, val distanceSqr: Float) : Comparable<NodeQueueElement> {
+    private val comparator = Comparator.comparing { elem: NodeQueueElement -> elem.distanceSqr }
+    override fun compareTo(other: NodeQueueElement): Int {
+        return comparator.compare(this, other)
+    }
+}
+
+class EntityQueueElement(val entity: Entity, val distanceSqr: Float) : Comparable<EntityQueueElement> {
+    private val comparator = Comparator.comparing { elem: EntityQueueElement -> elem.distanceSqr }
+    override fun compareTo(other: EntityQueueElement): Int {
+        return comparator.compare(this, other)
+    }
+}
+
 class AABBTree(entities: List<Entity>, private val splitSize: Int = 10) {
     val root: Node
 
     init {
         val boundingBox = computeBoundingBox(entities)
         root = buildTree(entities, boundingBox)
+    }
+
+    // TODO refactor this (better names, better objects)
+    fun get(query: Vector3f, k: Int): List<Entity> {
+        val knnList = PriorityQueue<EntityQueueElement>()
+        val minQ = PriorityQueue<NodeQueueElement>()
+        considerPath(root, query, k, minQ, knnList)
+        while (minQ.isNotEmpty()) {
+            val current = minQ.poll()
+            if (knnList.isNotEmpty() && current.distanceSqr > knnList.peek().distanceSqr) {
+                break
+            }
+            considerPath(current.node, query, k, minQ, knnList)
+        }
+
+        return knnList.map { it.entity }
+    }
+
+    private fun distanceSqr(boundingBox: BoundingBoxComponent, point: Vector3f): Float {
+        val closestPoint = Vector3f(
+                min(max(point.x, boundingBox.min.x), boundingBox.max.x),
+                min(max(point.y, boundingBox.min.y), boundingBox.max.y),
+                min(max(point.z, boundingBox.min.z), boundingBox.max.z)
+        )
+        return closestPoint.distanceSquared(point)
+    }
+
+    private fun considerPath(node: Node, query: Vector3f, k: Int, minQ: PriorityQueue<NodeQueueElement>, knnList: PriorityQueue<EntityQueueElement>) {
+        var currentNode = node
+        while (currentNode !is LeafNode) {
+            val innerNode = currentNode as InnerNode
+            val leftDist = distanceSqr(innerNode.left.boundingBox, query)
+            val rightDist = distanceSqr(innerNode.right.boundingBox, query)
+
+            currentNode = if (leftDist < rightDist) {
+                minQ.add(NodeQueueElement(innerNode.right, rightDist))
+                innerNode.left
+            } else {
+                minQ.add(NodeQueueElement(innerNode.left, leftDist));
+                innerNode.right
+            }
+        }
+
+        for (entity in currentNode.entities) {
+            val distanceSqr = query.distanceSquared(entity.getComponent<PositionComponent>().position)
+            if (knnList.size == k) {
+                if (distanceSqr >= knnList.peek().distanceSqr) {
+                    continue
+                }
+                knnList.remove()
+            }
+            knnList.add(EntityQueueElement(entity, distanceSqr))
+        }
     }
 
     private fun buildTree(entities: List<Entity>, boundingBox: BoundingBoxComponent): Node {
@@ -62,10 +132,6 @@ class AABBTree(entities: List<Entity>, private val splitSize: Int = 10) {
         val right = buildTree(rightEntities, rightBoundingBox)
 
         return InnerNode(left, right, boundingBox)
-    }
-
-    fun get(position: Vector3f) {
-
     }
 
     private fun computeBoundingBox(entities: List<Entity>): BoundingBoxComponent {

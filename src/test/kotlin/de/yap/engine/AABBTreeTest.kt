@@ -34,4 +34,20 @@ class AABBTreeTest {
         assertTrue(right is LeafNode)
         assertEquals(2, right.entities.size)
     }
+
+    @Test
+    fun testAABBTreeCanRetrieve() {
+        val entities = listOf(
+                createEntity(0.0F, 0.0F, 0.0F),
+                createEntity(1.0F, 0.0F, 0.0F),
+                createEntity(0.0F, 0.0F, 1.0F),
+                createEntity(0.0F, 0.0F, 2.0F)
+        )
+        val tree = AABBTree(entities, 2)
+        val result = tree.get(Vector3f(0.0F, 0.0F, 0.0F), 1)
+        assertEquals(1, result.size)
+
+        val entity = result[0]
+        assertEquals(Vector3f(0.0F, 0.0F, 0.0F), entity.getComponent<PositionComponent>().position)
+    }
 }
