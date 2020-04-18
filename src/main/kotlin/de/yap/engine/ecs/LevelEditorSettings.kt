@@ -5,6 +5,8 @@ import de.yap.engine.ecs.systems.CustomKeyListener
 import de.yap.engine.ecs.systems.CustomMouseListener
 import de.yap.engine.ecs.systems.CustomMouseMotionListener
 import de.yap.engine.ecs.systems.LevelFileFilter
+import de.yap.engine.graphics.TRIGGER_TEXTURE_COORDS
+import de.yap.engine.graphics.WHITE
 import de.yap.engine.util.LevelUtils
 import de.yap.game.YapGame
 import org.joml.Vector2i
@@ -24,7 +26,8 @@ import kotlin.math.floor
 enum class SelectedEntityType {
     BLOCK,
     STATIC,
-    DYNAMIC
+    DYNAMIC,
+    TRIGGER,
 }
 
 enum class EditorMode {
@@ -42,6 +45,7 @@ class LevelEditorSettings {
     var selectedEntityType = SelectedEntityType.BLOCK
     var staticEntityTypeCombo: JComboBox<StaticEntityType>? = null
     var dynamicEntityTypeCombo: JComboBox<DynamicEntityType>? = null
+    var triggerTypeCombo: JComboBox<TriggerType>? = null
 
     fun init() {
         frame = JFrame("Settings")
@@ -87,6 +91,7 @@ class LevelEditorSettings {
                 0 -> SelectedEntityType.BLOCK
                 1 -> SelectedEntityType.STATIC
                 2 -> SelectedEntityType.DYNAMIC
+                3 -> SelectedEntityType.TRIGGER
                 else -> SelectedEntityType.BLOCK
             }
         }
@@ -102,6 +107,10 @@ class LevelEditorSettings {
         val dynamicEntityPanel = createDynamicEntityPanel()
         tabbedPane.addTab("Dynamic Entities", null, dynamicEntityPanel, "Dynamic Entities")
         tabbedPane.setMnemonicAt(2, KeyEvent.VK_3)
+
+        val triggerEntityPanel = createTriggerEntityPanel()
+        tabbedPane.addTab("Triggers", null, triggerEntityPanel, "Triggers")
+        tabbedPane.setMnemonicAt(3, KeyEvent.VK_4)
 
         return tabbedPane
     }
@@ -268,6 +277,16 @@ class LevelEditorSettings {
         return panel
     }
 
+    private fun createTriggerEntityPanel(): JPanel {
+        val panel = JPanel()
+
+        val items = TriggerType.values()
+        triggerTypeCombo = JComboBox(items)
+        panel.add(triggerTypeCombo)
+
+        return panel
+    }
+
     private fun createSaveLoadButtons(): JPanel {
         val panel = JPanel()
         panel.layout = BoxLayout(panel, BoxLayout.X_AXIS)
@@ -331,6 +350,7 @@ class LevelEditorSettings {
                 StaticEntity(id, clampedPoint, pitch, yaw)
             }
             SelectedEntityType.DYNAMIC -> TODO()
+            SelectedEntityType.TRIGGER -> BlockEntity.singleTextureBlock(clampedPoint, TRIGGER_TEXTURE_COORDS)
         }
     }
 

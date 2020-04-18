@@ -122,8 +122,8 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
                 val rotationComponent = entity.getComponent<RotationComponent>()
                 val renderer = YapGame.getInstance().renderer
 
-                val isBlock = entity is BlockEntity
-                renderer.wireframe(isBlock) {
+                val wireframeOn = entity is BlockEntity && settings.selectedEntityType != SelectedEntityType.TRIGGER
+                renderer.wireframe(wireframeOn) {
                     val transformation = Matrix4f()
                             .translate(p)
                             .translate(n)
@@ -133,7 +133,7 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
                     renderer.mesh(meshComponent.mesh, transformation)
                 }
 
-                if (isBlock) {
+                if (wireframeOn) {
                     return
                 }
                 renderer.wireframe {
