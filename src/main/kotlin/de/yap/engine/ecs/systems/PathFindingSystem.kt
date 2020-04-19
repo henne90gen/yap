@@ -10,7 +10,6 @@ import org.joml.Vector3f
 import org.joml.Vector4f
 import org.lwjgl.glfw.GLFW
 import java.util.*
-import kotlin.collections.LinkedHashSet
 
 /**
  * To place a new goal for the dynamic entity to walk to, use the 'P'-key
@@ -23,7 +22,7 @@ class PathFindingSystem : ISystem(DynamicEntityComponent::class.java, PathCompon
 
         private val COLLISION_CAPABILITY = Capability(BoundingBoxComponent::class.java, PositionComponent::class.java)
 
-        fun useAStar(currentPosition: Vector3f, goal: Vector3f, path: MutableList<Vector3f>, collisionEntities: List<Entity>) {
+        fun useAStar(currentPosition: Vector3f, goal: Vector3f, path: MutableList<Vector3f>) {
             class Node(val position: Vector3f, val distance: Double, val estimatedDistance: Double) : Comparable<Node> {
                 override fun compareTo(other: Node): Int {
                     return when {
@@ -32,11 +31,6 @@ class PathFindingSystem : ISystem(DynamicEntityComponent::class.java, PathCompon
                         else -> 0
                     }
                 }
-            }
-
-            val entitySet = LinkedHashSet<Vector3f>()
-            for (entity in collisionEntities) {
-                entitySet.add(entity.getComponent<PositionComponent>().position)
             }
 
             fun h(position: Vector3f): Double {
@@ -52,7 +46,10 @@ class PathFindingSystem : ISystem(DynamicEntityComponent::class.java, PathCompon
                 )
                 val result = mutableListOf<Node>()
                 for (position in positions) {
-                    if (!entitySet.contains(position)) {
+                    val entities = YapGame.getInstance().entityManager.spatialData
+                            .get(position, 3)
+                            .map { it.getComponent<PositionComponent>().position }
+                    if (!entities.contains(position)) {
                         val distance = node.distance + Vector3f(position).sub(node.position).length()
                         val estimatedDistance = distance + h(position)
                         val neighbor = Node(position, distance, estimatedDistance)
@@ -180,8 +177,8 @@ class PathFindingSystem : ISystem(DynamicEntityComponent::class.java, PathCompon
         val position = entity.getComponent<PositionComponent>().position
         val currentPosition = Vector3f(position)
 
-//        useAStar(currentPosition, goal, path, collisionEntities)
-        usePrimitiveAlgorithm(currentPosition, goal, path)
+        useAStar(currentPosition, goal, path)
+//        usePrimitiveAlgorithm(currentPosition, goal, path)
     }
 
     private fun usePrimitiveAlgorithm(currentPosition: Vector3f, goal: Vector3f, path: MutableList<Vector3f>) {
@@ -247,7 +244,7 @@ class PathFindingSystem : ISystem(DynamicEntityComponent::class.java, PathCompon
 
     private fun addNewGoal() {
         val boundingBoxes = YapGame.getInstance().entityManager.getEntities(Capability.ALL_CAPABILITIES)
-                .filter { it.hasComponent<BoundingBoxComponent>() }
+                .filter { it.hasComponent<PositionComponent>() && it.hasComponent<BoundingBoxComponent>() }
                 .map {
                     val position = it.getComponent<PositionComponent>().position
                     TransformedBoundingBox(

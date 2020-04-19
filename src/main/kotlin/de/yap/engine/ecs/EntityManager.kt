@@ -1,5 +1,6 @@
 package de.yap.engine.ecs
 
+import de.yap.engine.AABBTree
 import de.yap.engine.ecs.entities.Entity
 import de.yap.engine.ecs.systems.ISystem
 import org.apache.logging.log4j.LogManager
@@ -44,6 +45,8 @@ class EntityManager {
 
     companion object {
         private val log: Logger = LogManager.getLogger()
+
+        val STATIC_ENTITIES_CAPABILITY = Capability(StaticEntityComponent::class.java)
     }
 
     private val capabilityMap: MutableMap<Capability, MutableList<Entity>> = LinkedHashMap()
@@ -51,8 +54,11 @@ class EntityManager {
     private val eventListeners: MutableMap<String, MutableList<EventListener>> = LinkedHashMap()
     private val workQueue = LinkedBlockingQueue<WorkItem>()
 
+    var spatialData = AABBTree(emptyList())
+
     init {
-        capabilityMap[Capability.ALL_CAPABILITIES] = ArrayList()
+        capabilityMap[Capability.ALL_CAPABILITIES] = mutableListOf()
+        capabilityMap[STATIC_ENTITIES_CAPABILITY] = mutableListOf()
     }
 
     fun init() {
@@ -162,6 +168,10 @@ class EntityManager {
             if (entity.hasCapability(entry.key)) {
                 entry.value.add(entity)
             }
+        }
+
+        if (entity.hasCapability(STATIC_ENTITIES_CAPABILITY)) {
+            spatialData = AABBTree(capabilityMap[STATIC_ENTITIES_CAPABILITY]!!)
         }
 
         log.debug("Added $entity")
