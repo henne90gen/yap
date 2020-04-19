@@ -1,5 +1,6 @@
 package de.yap.engine.ecs
 
+import de.yap.engine.AABBTree
 import de.yap.engine.ecs.entities.Entity
 import de.yap.engine.ecs.systems.PathFindingSystem
 import org.joml.Vector3f
@@ -13,9 +14,9 @@ class PathFindingTest {
         val currentPosition = Vector3f(0.0F, 0.0F, 0.0F)
         val goal = Vector3f(3.0F, 0.0F, 0.0F)
         val path = mutableListOf<Vector3f>()
-        val collisionEntities = listOf<Entity>()
+        val spatialData = AABBTree()
 
-        PathFindingSystem.useAStar(currentPosition, goal, path, collisionEntities)
+        PathFindingSystem.useAStar(currentPosition, goal, path, spatialData)
 
         val expectedPath = listOf(
                 Vector3f(1.0F, 0.0F, 0.0F),
@@ -30,15 +31,14 @@ class PathFindingTest {
         val currentPosition = Vector3f(0.0F, 0.0F, 0.0F)
         val goal = Vector3f(3.0F, 0.0F, 0.0F)
         val path = mutableListOf<Vector3f>()
-        val collisionEntities = listOf(
+        val spatialData = AABBTree(listOf(
                 entity(1.0F, 0.0F, 0.0F),
                 entity(1.0F, 0.0F, 1.0F)
-        )
+        ))
 
-        PathFindingSystem.useAStar(currentPosition, goal, path, collisionEntities)
+        PathFindingSystem.useAStar(currentPosition, goal, path, spatialData)
 
         val expectedPath = listOf(
-                Vector3f(0.0F, 0.0F, 0.0F),
                 Vector3f(0.0F, 0.0F, -1.0F),
                 Vector3f(1.0F, 0.0F, -1.0F),
                 Vector3f(2.0F, 0.0F, -1.0F),
@@ -51,19 +51,23 @@ class PathFindingTest {
     @Test
     fun testAStarLargeDistance() {
         val currentPosition = Vector3f(0.0F, 0.0F, 0.0F)
-        val goal = Vector3f(10.0F, 0.0F, 10.0F)
+        val goal = Vector3f(5.0F, 0.0F, 5.0F)
         val path = mutableListOf<Vector3f>()
-        val collisionEntities = listOf<Entity>()
+        val spatialData = AABBTree()
 
-        PathFindingSystem.useAStar(currentPosition, goal, path, collisionEntities)
+        PathFindingSystem.useAStar(currentPosition, goal, path, spatialData)
 
         val expectedPath = listOf(
-                Vector3f(0.0F, 0.0F, 0.0F),
-                Vector3f(0.0F, 0.0F, -1.0F),
-                Vector3f(1.0F, 0.0F, -1.0F),
-                Vector3f(2.0F, 0.0F, -1.0F),
-                Vector3f(3.0F, 0.0F, -1.0F),
-                Vector3f(3.0F, 0.0F, 0.0F)
+                Vector3f(1.0F, 0.0F, 0.0F),
+                Vector3f(1.0F, 0.0F, 1.0F),
+                Vector3f(2.0F, 0.0F, 1.0F),
+                Vector3f(3.0F, 0.0F, 1.0F),
+                Vector3f(3.0F, 0.0F, 2.0F),
+                Vector3f(3.0F, 0.0F, 3.0F),
+                Vector3f(3.0F, 0.0F, 4.0F),
+                Vector3f(3.0F, 0.0F, 5.0F),
+                Vector3f(4.0F, 0.0F, 5.0F),
+                Vector3f(5.0F, 0.0F, 5.0F)
         )
         assertPathsAreEqual(expectedPath, path)
     }

@@ -1,5 +1,6 @@
 package de.yap.engine.ecs.systems
 
+import de.yap.engine.AABBTree
 import de.yap.engine.ecs.*
 import de.yap.engine.ecs.entities.Entity
 import de.yap.engine.util.CollisionUtils
@@ -22,7 +23,7 @@ class PathFindingSystem : ISystem(DynamicEntityComponent::class.java, PathCompon
 
         private val COLLISION_CAPABILITY = Capability(BoundingBoxComponent::class.java, PositionComponent::class.java)
 
-        fun useAStar(currentPosition: Vector3f, goal: Vector3f, path: MutableList<Vector3f>) {
+        fun useAStar(currentPosition: Vector3f, goal: Vector3f, path: MutableList<Vector3f>, spatialData: AABBTree) {
             class Node(val position: Vector3f, val distance: Double, val estimatedDistance: Double) : Comparable<Node> {
                 override fun compareTo(other: Node): Int {
                     return when {
@@ -46,7 +47,7 @@ class PathFindingSystem : ISystem(DynamicEntityComponent::class.java, PathCompon
                 )
                 val result = mutableListOf<Node>()
                 for (position in positions) {
-                    val entities = YapGame.getInstance().entityManager.spatialData
+                    val entities = spatialData
                             .get(position, 3)
                             .map { it.getComponent<PositionComponent>().position }
                     if (!entities.contains(position)) {
@@ -177,7 +178,8 @@ class PathFindingSystem : ISystem(DynamicEntityComponent::class.java, PathCompon
         val position = entity.getComponent<PositionComponent>().position
         val currentPosition = Vector3f(position)
 
-        useAStar(currentPosition, goal, path)
+        val spatialData = YapGame.getInstance().entityManager.spatialData
+        useAStar(currentPosition, goal, path, spatialData)
 //        usePrimitiveAlgorithm(currentPosition, goal, path)
     }
 

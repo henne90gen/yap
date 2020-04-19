@@ -54,7 +54,7 @@ class EntityManager {
     private val eventListeners: MutableMap<String, MutableList<EventListener>> = LinkedHashMap()
     private val workQueue = LinkedBlockingQueue<WorkItem>()
 
-    var spatialData = AABBTree(emptyList())
+    var spatialData = AABBTree()
 
     init {
         capabilityMap[Capability.ALL_CAPABILITIES] = mutableListOf()

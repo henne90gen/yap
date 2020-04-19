@@ -35,7 +35,7 @@ class EntityQueueElement(val entity: Entity, val distanceSqr: Float) : Comparabl
     }
 }
 
-class AABBTree(entities: List<Entity>, private val splitSize: Int = 10) {
+class AABBTree(entities: List<Entity> = emptyList(), private val splitSize: Int = 10) {
     val root: Node
 
     init {
