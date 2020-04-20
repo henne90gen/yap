@@ -47,6 +47,7 @@ class EntityManager {
         private val log: Logger = LogManager.getLogger()
 
         val STATIC_ENTITIES_CAPABILITY = Capability(StaticEntityComponent::class.java)
+        val BLOCK_ENTITIES_CAPABILITY = Capability(TextureAtlasIndexComponent::class.java)
     }
 
     private val capabilityMap: MutableMap<Capability, MutableList<Entity>> = LinkedHashMap()
@@ -59,6 +60,7 @@ class EntityManager {
     init {
         capabilityMap[Capability.ALL_CAPABILITIES] = mutableListOf()
         capabilityMap[STATIC_ENTITIES_CAPABILITY] = mutableListOf()
+        capabilityMap[BLOCK_ENTITIES_CAPABILITY] = mutableListOf()
     }
 
     fun init() {
@@ -170,9 +172,7 @@ class EntityManager {
             }
         }
 
-        if (entity.hasCapability(STATIC_ENTITIES_CAPABILITY)) {
-            spatialData = AABBTree(capabilityMap[STATIC_ENTITIES_CAPABILITY]!!)
-        }
+        updateSpatialData(entity)
 
         log.debug("Added $entity")
     }
@@ -184,11 +184,25 @@ class EntityManager {
     private fun processRemoveEntity(work: RemoveEntityWork) {
         val entity = work.entity
         for (capability in capabilityMap) {
-            if (!entity.hasCapability(capability.key)) {
-                continue
+            if (entity.hasCapability(capability.key)) {
+                capability.value.remove(entity)
             }
-            capability.value.remove(entity)
         }
+
+        updateSpatialData(entity)
+
+        log.debug("Removed $entity")
+    }
+
+    private fun updateSpatialData(entity: Entity) {
+        if (!entity.hasCapability(STATIC_ENTITIES_CAPABILITY) && !entity.hasCapability(BLOCK_ENTITIES_CAPABILITY)) {
+            return
+        }
+
+        val staticEntities = capabilityMap[STATIC_ENTITIES_CAPABILITY]!!
+        val blockEntities = capabilityMap[BLOCK_ENTITIES_CAPABILITY]!!
+        val entities = listOf(*staticEntities.toTypedArray(), *blockEntities.toTypedArray())
+        spatialData = AABBTree(entities)
     }
 
     fun removeAllEntities() {

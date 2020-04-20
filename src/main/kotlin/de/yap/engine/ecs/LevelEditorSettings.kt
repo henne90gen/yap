@@ -6,7 +6,6 @@ import de.yap.engine.ecs.systems.CustomMouseListener
 import de.yap.engine.ecs.systems.CustomMouseMotionListener
 import de.yap.engine.ecs.systems.LevelFileFilter
 import de.yap.engine.graphics.TRIGGER_TEXTURE_COORDS
-import de.yap.engine.graphics.WHITE
 import de.yap.engine.util.LevelUtils
 import de.yap.game.YapGame
 import org.joml.Vector2i
@@ -24,10 +23,11 @@ import kotlin.math.floor
 
 
 enum class SelectedEntityType {
+    NONE,
     BLOCK,
     STATIC,
     DYNAMIC,
-    TRIGGER,
+    TRIGGER
 }
 
 enum class EditorMode {
@@ -54,11 +54,8 @@ class LevelEditorSettings {
         val saveLoadButtons = createSaveLoadButtons()
         frame.add(saveLoadButtons)
 
-        val editorMode = createEditorMode()
-        frame.add(editorMode)
-
-        val entitySettings = createEntitySettings()
-        frame.add(entitySettings)
+        val tabs = createTabs()
+        frame.add(tabs)
 
         frame.setSize(200, 500)
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
@@ -84,35 +81,45 @@ class LevelEditorSettings {
         return panel
     }
 
-    private fun createEntitySettings(): JComponent {
+    private fun createTabs(): JComponent {
         val tabbedPane = JTabbedPane()
         tabbedPane.addChangeListener {
             selectedEntityType = when (tabbedPane.selectedIndex) {
-                0 -> SelectedEntityType.BLOCK
-                1 -> SelectedEntityType.STATIC
-                2 -> SelectedEntityType.DYNAMIC
-                3 -> SelectedEntityType.TRIGGER
+                0 -> SelectedEntityType.NONE
+                1 -> SelectedEntityType.BLOCK
+                2 -> SelectedEntityType.STATIC
+                3 -> SelectedEntityType.DYNAMIC
+                4 -> SelectedEntityType.TRIGGER
                 else -> SelectedEntityType.BLOCK
             }
         }
 
+        val editPanel = createEditPanel()
+        tabbedPane.addTab("Edit", null, editPanel, "Edit")
+        tabbedPane.setMnemonicAt(0, KeyEvent.VK_1)
+
         val blockPanel = createBlockPanel()
         tabbedPane.addTab("Blocks", null, blockPanel, "Blocks")
-        tabbedPane.setMnemonicAt(0, KeyEvent.VK_1)
+        tabbedPane.setMnemonicAt(1, KeyEvent.VK_2)
 
         val staticEntityPanel = createStaticEntityPanel()
         tabbedPane.addTab("Static Entities", null, staticEntityPanel, "Static Entities")
-        tabbedPane.setMnemonicAt(1, KeyEvent.VK_2)
+        tabbedPane.setMnemonicAt(2, KeyEvent.VK_3)
 
         val dynamicEntityPanel = createDynamicEntityPanel()
         tabbedPane.addTab("Dynamic Entities", null, dynamicEntityPanel, "Dynamic Entities")
-        tabbedPane.setMnemonicAt(2, KeyEvent.VK_3)
+        tabbedPane.setMnemonicAt(3, KeyEvent.VK_4)
 
         val triggerEntityPanel = createTriggerEntityPanel()
         tabbedPane.addTab("Triggers", null, triggerEntityPanel, "Triggers")
-        tabbedPane.setMnemonicAt(3, KeyEvent.VK_4)
+        tabbedPane.setMnemonicAt(4, KeyEvent.VK_5)
 
         return tabbedPane
+    }
+
+    private fun createEditPanel(): JPanel {
+        val panel = JPanel()
+        return panel
     }
 
     private fun createBlockPanel(): JPanel {
@@ -340,8 +347,9 @@ class LevelEditorSettings {
         return fc
     }
 
-    fun createSelectedEntity(clampedPoint: Vector3f): Entity {
+    fun createSelectedEntity(clampedPoint: Vector3f): Entity? {
         return when (selectedEntityType) {
+            SelectedEntityType.NONE -> null
             SelectedEntityType.BLOCK -> BlockEntity.singleTextureBlock(clampedPoint, selectedTextureIndex)
             SelectedEntityType.STATIC -> {
                 val id = staticEntityTypeCombo?.selectedItem as StaticEntityType

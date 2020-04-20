@@ -104,47 +104,55 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
             normal?.let { n ->
                 val entity = settings.createSelectedEntity(Vector3f(p)
                         .add(n))
-                YapGame.getInstance().entityManager.addEntity(entity)
+                entity?.let {
+                    YapGame.getInstance().entityManager.addEntity(it)
+                }
             }
         }
     }
 
     override fun render(entities: List<Entity>) {
         renderCrosshair()
-        renderSelectedBlock()
+        maybeRenderSelectedEntity()
     }
 
-    private fun renderSelectedBlock() {
+    private fun maybeRenderSelectedEntity() {
         clampedPoint?.let { p ->
             normal?.let { n ->
                 val entity = settings.createSelectedEntity(Vector3f(p).add(n))
-                val meshComponent = entity.getComponent<MeshComponent>()
-                val rotationComponent = entity.getComponent<RotationComponent>()
-                val renderer = YapGame.getInstance().renderer
-
-                val wireframeOn = entity is BlockEntity && settings.selectedEntityType != SelectedEntityType.TRIGGER
-                renderer.wireframe(wireframeOn) {
-                    val transformation = Matrix4f()
-                            .translate(p)
-                            .translate(n)
-                            .translate(meshComponent.offset)
-                            .rotate(rotationComponent.yaw, Vector3f(0F, 1F, 0F))
-                            .rotate(rotationComponent.pitch, Vector3f(0F, 0F, 1F))
-                    renderer.mesh(meshComponent.mesh, transformation)
-                }
-
-                if (wireframeOn) {
-                    return
-                }
-                renderer.wireframe {
-                    val transformation = Matrix4f()
-                            .translate(p)
-                            .translate(n)
-                            .translate(0.5F, 0.5F, 0.5F)
-                    val color = Vector4f(1.0F, 1.0F, 1.0F, 1.0F)
-                    renderer.cube(transformation, color)
+                entity?.let { e ->
+                    renderEntityPreview(e, p, n)
                 }
             }
+        }
+    }
+
+    private fun renderEntityPreview(entity: Entity, p: Vector3f, n: Vector3f) {
+        val meshComponent = entity.getComponent<MeshComponent>()
+        val rotationComponent = entity.getComponent<RotationComponent>()
+        val renderer = YapGame.getInstance().renderer
+
+        val wireframeOn = entity is BlockEntity && settings.selectedEntityType != SelectedEntityType.TRIGGER
+        renderer.wireframe(wireframeOn) {
+            val transformation = Matrix4f()
+                    .translate(p)
+                    .translate(n)
+                    .translate(meshComponent.offset)
+                    .rotate(rotationComponent.yaw, Vector3f(0F, 1F, 0F))
+                    .rotate(rotationComponent.pitch, Vector3f(0F, 0F, 1F))
+            renderer.mesh(meshComponent.mesh, transformation)
+        }
+
+        if (wireframeOn) {
+            return
+        }
+        renderer.wireframe {
+            val transformation = Matrix4f()
+                    .translate(p)
+                    .translate(n)
+                    .translate(0.5F, 0.5F, 0.5F)
+            val color = Vector4f(1.0F, 1.0F, 1.0F, 1.0F)
+            renderer.cube(transformation, color)
         }
     }
 

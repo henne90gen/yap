@@ -154,14 +154,13 @@ class PathFindingSystem : ISystem(DynamicEntityComponent::class.java, PathCompon
     }
 
     override fun update(interval: Float, entities: List<Entity>) {
-        val collisionEntities = YapGame.getInstance().entityManager.getEntities(COLLISION_CAPABILITY)
         for (entity in entities) {
-            calculatePath(entity, collisionEntities)
+            calculatePath(entity)
             followPath(interval, entity)
         }
     }
 
-    private fun calculatePath(entity: Entity, collisionEntities: List<Entity>) {
+    private fun calculatePath(entity: Entity) {
         val pathComponent = entity.getComponent<PathComponent>()
         if (pathComponent.waypoints.isEmpty()) {
             return
