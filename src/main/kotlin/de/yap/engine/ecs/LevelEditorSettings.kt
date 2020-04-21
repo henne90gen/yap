@@ -357,11 +357,10 @@ class LevelEditorSettings {
                     .map { entry -> entry.value }
                     .sortedBy { component -> component::class.java.simpleName }
                     .forEachIndexed { index, component ->
-                        val panel = JPanel()
-                        when (component::class) {
-                            PositionComponent::class -> addPositionComponentEditor(panel, component as PositionComponent)
-                            RotationComponent::class -> addRotationComponentEditor(panel, component as RotationComponent)
-                            else -> addDefaultComponentEditor(panel, component)
+                        val panel = when (component::class) {
+                            PositionComponent::class -> PositionComponentPanel(component as PositionComponent)
+                            RotationComponent::class -> RotationComponentPanel(component as RotationComponent)
+                            else -> addDefaultComponentEditor(component)
                         }
                         constraints.gridy = index
                         it.add(panel, constraints)
@@ -371,18 +370,33 @@ class LevelEditorSettings {
         }
     }
 
-    private fun addDefaultComponentEditor(panel: JPanel, component: Component) {
+    private fun addDefaultComponentEditor(component: Component): JPanel {
+        val panel = JPanel()
         val label = JLabel(component::class.java.simpleName)
         panel.add(label)
+        return panel
+    }
+}
+
+class RotationComponentPanel(val component: RotationComponent) : JPanel() {
+    init {
+        val label = JLabel(component::class.java.simpleName)
+        this.add(label)
+    }
+}
+
+class PositionComponentPanel(val component: PositionComponent) : JPanel() {
+    companion object {
+        private val log = LogManager.getLogger()
     }
 
-    private fun addPositionComponentEditor(panel: JPanel, component: PositionComponent) {
-        panel.layout = GridBagLayout()
+    init {
+        this.layout = GridBagLayout()
         val constraints = GridBagConstraints()
 
         val label = JLabel("Position: ")
         constraints.gridx = 0
-        panel.add(label, constraints)
+        this.add(label, constraints)
 
         val position = component.position
         val xTF = JTextField(position.x.toString())
@@ -395,11 +409,11 @@ class LevelEditorSettings {
             }
         })
         constraints.gridx = 1
-        panel.add(xTF, constraints)
+        this.add(xTF, constraints)
 
         val yTF = JTextField(position.y.toString())
         yTF.columns = 10
-        xTF.document.addDocumentListener(CustomDocumentListener {
+        yTF.document.addDocumentListener(CustomDocumentListener {
             try {
                 position.y = yTF.text.toFloat()
             } catch (e: NumberFormatException) {
@@ -407,11 +421,11 @@ class LevelEditorSettings {
             }
         })
         constraints.gridx = 2
-        panel.add(yTF, constraints)
+        this.add(yTF, constraints)
 
         val zTF = JTextField(position.z.toString())
         zTF.columns = 10
-        xTF.document.addDocumentListener(CustomDocumentListener {
+        zTF.document.addDocumentListener(CustomDocumentListener {
             try {
                 position.z = zTF.text.toFloat()
             } catch (e: NumberFormatException) {
@@ -419,11 +433,6 @@ class LevelEditorSettings {
             }
         })
         constraints.gridx = 3
-        panel.add(zTF, constraints)
-    }
-
-    private fun addRotationComponentEditor(panel: JPanel, component: RotationComponent) {
-        val label = JLabel(component::class.java.simpleName)
-        panel.add(label)
+        this.add(zTF, constraints)
     }
 }
