@@ -1,13 +1,11 @@
 package de.yap.engine.ecs
 
 import de.yap.engine.ecs.entities.*
-import de.yap.engine.ecs.systems.CustomKeyListener
-import de.yap.engine.ecs.systems.CustomMouseListener
-import de.yap.engine.ecs.systems.CustomMouseMotionListener
-import de.yap.engine.ecs.systems.LevelFileFilter
+import de.yap.engine.ecs.systems.*
 import de.yap.engine.graphics.TRIGGER_TEXTURE_COORDS
 import de.yap.engine.util.LevelUtils
 import de.yap.game.YapGame
+import org.apache.logging.log4j.LogManager
 import org.joml.Vector2i
 import org.joml.Vector3f
 import java.awt.GridBagConstraints
@@ -30,12 +28,11 @@ enum class SelectedEntityType {
     TRIGGER
 }
 
-enum class EditorMode {
-    CREATE,
-    EDIT
-}
-
 class LevelEditorSettings {
+
+    companion object {
+        private val log = LogManager.getLogger()
+    }
 
     private lateinit var frame: JFrame
 
@@ -352,16 +349,81 @@ class LevelEditorSettings {
         selectedEntity = entity
         editPanel?.let {
             it.removeAll()
-            it.layout = BoxLayout(it, BoxLayout.Y_AXIS)
+
+            it.layout = GridBagLayout()
+            val constraints = GridBagConstraints()
+
             entity.components
                     .map { entry -> entry.value }
-                    .map { component -> component::class.java.simpleName }
-                    .sorted()
-                    .forEach { value ->
-                        val label = JLabel(value)
-                        it.add(label)
+                    .sortedBy { component -> component::class.java.simpleName }
+                    .forEachIndexed { index, component ->
+                        val panel = JPanel()
+                        when (component::class) {
+                            PositionComponent::class -> addPositionComponentEditor(panel, component as PositionComponent)
+                            RotationComponent::class -> addRotationComponentEditor(panel, component as RotationComponent)
+                            else -> addDefaultComponentEditor(panel, component)
+                        }
+                        constraints.gridy = index
+                        it.add(panel, constraints)
                     }
+
             frame.pack()
         }
+    }
+
+    private fun addDefaultComponentEditor(panel: JPanel, component: Component) {
+        val label = JLabel(component::class.java.simpleName)
+        panel.add(label)
+    }
+
+    private fun addPositionComponentEditor(panel: JPanel, component: PositionComponent) {
+        panel.layout = GridBagLayout()
+        val constraints = GridBagConstraints()
+
+        val label = JLabel("Position: ")
+        constraints.gridx = 0
+        panel.add(label, constraints)
+
+        val position = component.position
+        val xTF = JTextField(position.x.toString())
+        xTF.columns = 10
+        xTF.document.addDocumentListener(CustomDocumentListener {
+            try {
+                position.x = xTF.text.toFloat()
+            } catch (e: NumberFormatException) {
+                log.debug("Could not update position.x component")
+            }
+        })
+        constraints.gridx = 1
+        panel.add(xTF, constraints)
+
+        val yTF = JTextField(position.y.toString())
+        yTF.columns = 10
+        xTF.document.addDocumentListener(CustomDocumentListener {
+            try {
+                position.y = yTF.text.toFloat()
+            } catch (e: NumberFormatException) {
+                log.debug("Could not update position.y component")
+            }
+        })
+        constraints.gridx = 2
+        panel.add(yTF, constraints)
+
+        val zTF = JTextField(position.z.toString())
+        zTF.columns = 10
+        xTF.document.addDocumentListener(CustomDocumentListener {
+            try {
+                position.z = zTF.text.toFloat()
+            } catch (e: NumberFormatException) {
+                log.debug("Could not update position.z component")
+            }
+        })
+        constraints.gridx = 3
+        panel.add(zTF, constraints)
+    }
+
+    private fun addRotationComponentEditor(panel: JPanel, component: RotationComponent) {
+        val label = JLabel(component::class.java.simpleName)
+        panel.add(label)
     }
 }
