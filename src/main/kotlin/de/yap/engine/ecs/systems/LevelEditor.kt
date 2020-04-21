@@ -72,8 +72,15 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
         }
 
         if (event.key == GLFW.GLFW_KEY_R && event.action == GLFW.GLFW_RELEASE) {
-            settings.rotationInDegrees.y += 90.0F
-            // TODO update the UI accordingly
+            settings.rotate(0.0F, (Math.PI / 2.0).toFloat())
+        }
+
+        if (event.key == GLFW.GLFW_KEY_P && event.action == GLFW.GLFW_RELEASE) {
+            clampedPoint?.let {
+                val newGoal = Vector3f(it)
+                        .add(normal)
+                settings.addNewGoal(newGoal)
+            }
         }
     }
 

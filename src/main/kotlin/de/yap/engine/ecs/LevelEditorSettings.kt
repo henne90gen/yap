@@ -37,7 +37,7 @@ class LevelEditorSettings {
     private lateinit var frame: JFrame
 
     var selectedTextureIndex = Vector2i(0)
-    var rotationInDegrees = Vector3f(0.0F)
+    var rotationComponent = RotationComponent()
     var selectedEntityType = SelectedEntityType.BLOCK
     var staticEntityTypeCombo: JComboBox<StaticEntityType>? = null
     var dynamicEntityTypeCombo: JComboBox<DynamicEntityType>? = null
@@ -72,6 +72,13 @@ class LevelEditorSettings {
                 3 -> SelectedEntityType.DYNAMIC
                 4 -> SelectedEntityType.TRIGGER
                 else -> SelectedEntityType.BLOCK
+            }
+
+            if (selectedEntityType == SelectedEntityType.NONE) {
+                // this restart any polling thread that are watching the values of the components of this entity
+                selectedEntity?.let {
+                    updateSelectedEntity(it)
+                }
             }
         }
 
@@ -167,86 +174,13 @@ class LevelEditorSettings {
         staticEntityTypeCombo = JComboBox(items)
         constraints.gridx = 0
         constraints.gridy = 0
-        constraints.gridwidth = 3
+        constraints.gridwidth = 1
         panel.add(staticEntityTypeCombo, constraints)
 
-        val pitchLabel = JLabel("Pitch")
         constraints.gridx = 0
         constraints.gridy = 1
-        constraints.gridwidth = 1
-        constraints.gridheight = 1
-        panel.add(pitchLabel, constraints)
+        panel.add(RotationComponentPanel(rotationComponent), constraints)
 
-        val pitchTF = JTextField(rotationInDegrees.x.toString())
-        val pitchSlider = JSlider(0, 360, 0)
-        pitchTF.columns = 5
-        pitchTF.isEditable = true
-        pitchTF.addKeyListener(CustomKeyListener {
-            try {
-                rotationInDegrees.x = pitchTF.text.toFloat()
-                SwingUtilities.invokeLater {
-                    pitchSlider.value = rotationInDegrees.x.toInt()
-                }
-            } catch (e: NumberFormatException) {
-                // ignore
-            }
-        })
-        constraints.fill = GridBagConstraints.HORIZONTAL
-        constraints.gridx = 1
-        constraints.gridy = 1
-        panel.add(pitchTF, constraints)
-
-        pitchSlider.minimum = 0
-        pitchSlider.maximum = 360
-        val pitchFunction: () -> Unit = {
-            rotationInDegrees.x = pitchSlider.value.toFloat()
-            SwingUtilities.invokeLater {
-                pitchTF.text = rotationInDegrees.x.toString()
-            }
-        }
-        pitchSlider.addMouseListener(CustomMouseListener { pitchFunction() })
-        pitchSlider.addMouseMotionListener(CustomMouseMotionListener(pitchFunction))
-        constraints.fill = GridBagConstraints.HORIZONTAL
-        constraints.gridx = 2
-        constraints.gridy = 1
-        panel.add(pitchSlider, constraints)
-
-        val yawLabel = JLabel("Yaw")
-        constraints.gridx = 0
-        constraints.gridy = 2
-        panel.add(yawLabel, constraints)
-
-        val yawTF = JTextField(rotationInDegrees.y.toString())
-        val yawSlider = JSlider(0, 360, 0)
-        yawTF.columns = 5
-        yawTF.isEditable = true
-        yawTF.addKeyListener(CustomKeyListener {
-            try {
-                rotationInDegrees.y = yawTF.text.toFloat()
-                SwingUtilities.invokeLater {
-                    yawSlider.value = rotationInDegrees.y.toInt()
-                }
-            } catch (e: NumberFormatException) {
-                // ignore
-            }
-        })
-        constraints.fill = GridBagConstraints.HORIZONTAL
-        constraints.gridx = 1
-        constraints.gridy = 2
-        panel.add(yawTF, constraints)
-
-        val yawFunction = {
-            rotationInDegrees.y = yawSlider.value.toFloat()
-            SwingUtilities.invokeLater {
-                yawTF.text = rotationInDegrees.y.toString()
-            }
-        }
-        yawSlider.addMouseMotionListener(CustomMouseMotionListener(yawFunction))
-        yawSlider.addMouseListener(CustomMouseListener { yawFunction() })
-        constraints.fill = GridBagConstraints.HORIZONTAL
-        constraints.gridx = 2
-        constraints.gridy = 2
-        panel.add(yawSlider, constraints)
         return panel
     }
 
@@ -329,9 +263,7 @@ class LevelEditorSettings {
             SelectedEntityType.BLOCK -> BlockEntity.singleTextureBlock(clampedPoint, selectedTextureIndex)
             SelectedEntityType.STATIC -> {
                 val id = staticEntityTypeCombo?.selectedItem as StaticEntityType
-                val pitch = Math.toRadians(rotationInDegrees.x.toDouble()).toFloat()
-                val yaw = Math.toRadians(rotationInDegrees.y.toDouble()).toFloat()
-                StaticEntity(id, clampedPoint, pitch, yaw)
+                StaticEntity(id, clampedPoint, rotationComponent.pitch, rotationComponent.yaw)
             }
             SelectedEntityType.DYNAMIC -> {
                 val id = dynamicEntityTypeCombo?.selectedItem as DynamicEntityType
@@ -360,6 +292,7 @@ class LevelEditorSettings {
                         val panel = when (component::class) {
                             PositionComponent::class -> PositionComponentPanel(component as PositionComponent)
                             RotationComponent::class -> RotationComponentPanel(component as RotationComponent)
+                            PathComponent::class -> PathComponentPanel(component as PathComponent, this)
                             else -> addDefaultComponentEditor(component)
                         }
                         constraints.gridy = index
@@ -376,12 +309,147 @@ class LevelEditorSettings {
         panel.add(label)
         return panel
     }
+
+    fun rotate(pitch: Float, yaw: Float) {
+        when (selectedEntityType) {
+            SelectedEntityType.STATIC -> {
+                rotationComponent.pitch += pitch
+                rotationComponent.yaw += yaw
+            }
+            SelectedEntityType.NONE -> {
+                selectedEntity?.let {
+                    if (it.hasComponent<RotationComponent>()) {
+                        val rotComp = it.getComponent<RotationComponent>()
+                        rotComp.pitch += pitch
+                        rotComp.yaw += pitch
+                        updateSelectedEntity(it)
+                    }
+                }
+            }
+        }
+    }
+
+    fun addNewGoal(newGoal: Vector3f) {
+        if (selectedEntityType != SelectedEntityType.NONE) {
+            return
+        }
+
+        selectedEntity?.let {
+            val pathComponent = it.getComponent<PathComponent>()
+            pathComponent.waypoints.add(newGoal)
+        }
+    }
+}
+
+class PathComponentPanel(val component: PathComponent, settings: LevelEditorSettings) : JPanel() {
+    init {
+        this.layout = BoxLayout(this, BoxLayout.Y_AXIS)
+
+        val waypointIndexLabel = JLabel("Current Waypoint: ${component.currentWaypoint + 1}")
+        val waypointSizeLabel = JLabel("Number of Waypoints: ${component.waypoints.size}")
+        val pathSegmentSizeLabel = JLabel("Number of Path Segments: ${component.path.size}")
+
+        this.add(waypointIndexLabel)
+        this.add(waypointSizeLabel)
+        this.add(pathSegmentSizeLabel)
+
+        val pollingThread = Thread {
+            while (settings.selectedEntityType == SelectedEntityType.NONE) {
+                SwingUtilities.invokeLater {
+                    waypointIndexLabel.text = "Current Waypoint: ${component.currentWaypoint + 1}"
+                    waypointSizeLabel.text = "Number of Waypoints: ${component.waypoints.size}"
+                    pathSegmentSizeLabel.text = "Number of Path Segments: ${component.path.size}"
+                }
+                Thread.sleep(100)
+            }
+        }
+        pollingThread.isDaemon = true
+        pollingThread.start()
+    }
 }
 
 class RotationComponentPanel(val component: RotationComponent) : JPanel() {
     init {
-        val label = JLabel(component::class.java.simpleName)
-        this.add(label)
+        this.layout = GridBagLayout()
+        val constraints = GridBagConstraints()
+
+        val pitchLabel = JLabel("Pitch")
+        constraints.gridx = 0
+        constraints.gridy = 0
+        constraints.gridwidth = 1
+        constraints.gridheight = 1
+        this.add(pitchLabel, constraints)
+
+        val pitchInDegrees = Math.toDegrees(component.pitch.toDouble())
+        val pitchTF = JTextField(pitchInDegrees.toString())
+        val pitchSlider = JSlider(0, 360, pitchInDegrees.toInt())
+        pitchTF.columns = 5
+        pitchTF.isEditable = true
+        pitchTF.addKeyListener(CustomKeyListener {
+            try {
+                component.pitch = Math.toRadians(pitchTF.text.toDouble()).toFloat()
+                SwingUtilities.invokeLater {
+                    pitchSlider.value = Math.toDegrees(component.pitch.toDouble()).toInt()
+                }
+            } catch (e: NumberFormatException) {
+                // ignore
+            }
+        })
+        constraints.fill = GridBagConstraints.HORIZONTAL
+        constraints.gridx = 1
+        constraints.gridy = 0
+        this.add(pitchTF, constraints)
+
+        val pitchFunction: () -> Unit = {
+            component.pitch = Math.toRadians(pitchSlider.value.toDouble()).toFloat()
+            SwingUtilities.invokeLater {
+                pitchTF.text = "%.1f".format(Math.toDegrees(component.pitch.toDouble()))
+            }
+        }
+        pitchSlider.addMouseListener(CustomMouseListener { pitchFunction() })
+        pitchSlider.addMouseMotionListener(CustomMouseMotionListener(pitchFunction))
+        constraints.fill = GridBagConstraints.HORIZONTAL
+        constraints.gridx = 2
+        constraints.gridy = 0
+        this.add(pitchSlider, constraints)
+
+        val yawLabel = JLabel("Yaw")
+        constraints.gridx = 0
+        constraints.gridy = 1
+        this.add(yawLabel, constraints)
+
+        val yawInDegrees = Math.toDegrees(component.yaw.toDouble())
+        val yawTF = JTextField(yawInDegrees.toString())
+        val yawSlider = JSlider(0, 360, yawInDegrees.toInt())
+        yawTF.columns = 5
+        yawTF.isEditable = true
+        yawTF.addKeyListener(CustomKeyListener {
+            try {
+                component.yaw = Math.toRadians(yawTF.text.toDouble()).toFloat()
+                SwingUtilities.invokeLater {
+                    yawSlider.value = Math.toDegrees(component.yaw.toDouble()).toInt()
+                }
+            } catch (e: NumberFormatException) {
+                // ignore
+            }
+        })
+        constraints.fill = GridBagConstraints.HORIZONTAL
+        constraints.gridx = 1
+        constraints.gridy = 1
+        this.add(yawTF, constraints)
+
+        val yawFunction = {
+            component.yaw = Math.toRadians(yawSlider.value.toDouble()).toFloat()
+            SwingUtilities.invokeLater {
+                yawTF.text = "%.1f".format(Math.toDegrees(component.yaw.toDouble()))
+            }
+        }
+        yawSlider.addMouseMotionListener(CustomMouseMotionListener(yawFunction))
+        yawSlider.addMouseListener(CustomMouseListener { yawFunction() })
+        constraints.fill = GridBagConstraints.HORIZONTAL
+        constraints.gridx = 2
+        constraints.gridy = 1
+        this.add(yawSlider, constraints)
     }
 }
 

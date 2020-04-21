@@ -3,13 +3,10 @@ package de.yap.engine.ecs.systems
 import de.yap.engine.AABBTree
 import de.yap.engine.ecs.*
 import de.yap.engine.ecs.entities.Entity
-import de.yap.engine.util.CollisionUtils
-import de.yap.engine.util.TransformedBoundingBox
 import de.yap.game.YapGame
 import org.joml.Matrix4f
 import org.joml.Vector3f
 import org.joml.Vector4f
-import org.lwjgl.glfw.GLFW
 import java.util.*
 
 /**
@@ -169,9 +166,9 @@ class PathFindingSystem : ISystem(DynamicEntityComponent::class.java, PathCompon
             return
         }
 
-        val goal = pathComponent.waypoints[pathComponent.nextWaypoint]
-        pathComponent.nextWaypoint++
-        pathComponent.nextWaypoint %= pathComponent.waypoints.size
+        pathComponent.currentWaypoint++
+        pathComponent.currentWaypoint %= pathComponent.waypoints.size
+        val goal = pathComponent.waypoints[pathComponent.currentWaypoint]
 
         val path = pathComponent.path
         val position = entity.getComponent<PositionComponent>().position
@@ -234,40 +231,5 @@ class PathFindingSystem : ISystem(DynamicEntityComponent::class.java, PathCompon
                     .mul(interval)
             positionComponent.position.add(direction)
         }
-    }
-
-    @Subscribe
-    fun keyPressed(event: KeyboardEvent) {
-        if (event.key == GLFW.GLFW_KEY_P && event.action == GLFW.GLFW_RELEASE) {
-            addNewGoal()
-        }
-    }
-
-    private fun addNewGoal() {
-        val boundingBoxes = YapGame.getInstance().entityManager.getEntities(Capability.ALL_CAPABILITIES)
-                .filter { it.hasComponent<PositionComponent>() && it.hasComponent<BoundingBoxComponent>() }
-                .map {
-                    val position = it.getComponent<PositionComponent>().position
-                    TransformedBoundingBox(
-                            it.getComponent(),
-                            Matrix4f().translate(position)
-                    )
-                }
-
-        val intersectionResult = CollisionUtils.rayCastFromCamera(boundingBoxes)
-        if (!intersectionResult.hasValue()) {
-            return
-        }
-
-        val pathFindingEntities = YapGame.getInstance().entityManager.getEntities(capability)
-        if (pathFindingEntities.isEmpty()) {
-            return
-        }
-
-        val entity = pathFindingEntities[0]
-        val pathComponent = entity.getComponent<PathComponent>()
-        val nextGoal = Vector3f(intersectionResult.point)
-                .add(intersectionResult.normal)
-        pathComponent.waypoints.add(nextGoal)
     }
 }

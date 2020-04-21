@@ -90,7 +90,7 @@ class DynamicEntityComponent(val id: DynamicEntityType) : Component()
 class PathComponent(
         // the goal for this path
         var waypoints: MutableList<Vector3f> = mutableListOf(),
-        var nextWaypoint: Int = 0,
+        var currentWaypoint: Int = -1,
         // the current path that is going to be taken
         val path: MutableList<Vector3f> = mutableListOf()
 ) : Component()
