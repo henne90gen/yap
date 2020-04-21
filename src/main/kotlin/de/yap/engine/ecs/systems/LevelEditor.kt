@@ -59,9 +59,9 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
         }
 
         if (event.button == GLFW.GLFW_MOUSE_BUTTON_1 && event.action == GLFW.GLFW_RELEASE) {
-            removeBlock()
+            leftMouseClick()
         } else if (event.button == GLFW.GLFW_MOUSE_BUTTON_2 && event.action == GLFW.GLFW_RELEASE) {
-            placeBlock()
+            rightMouseClick()
         }
     }
 
@@ -84,28 +84,53 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
         reactToMouseInput = !reactToMouseInput
     }
 
-    private fun removeBlock() {
-        clampedPoint?.let { p ->
-            val game = YapGame.getInstance()
-            // TODO use a spatial query
-            val entities = game.entityManager.getEntities(capability)
-            for (entity in entities) {
-                val position = entity.getComponent<PositionComponent>().position
-                if (p == position) {
-                    game.entityManager.removeEntity(entity)
-                    break
-                }
+    private fun leftMouseClick() {
+        clampedPoint?.let {
+            if (settings.createSelectedEntity(it) == null) {
+                selectBlock(it)
+            } else {
+                removeBlock(it)
             }
         }
     }
 
-    private fun placeBlock() {
+    private fun removeBlock(p: Vector3f) {
+        val game = YapGame.getInstance()
+        // TODO use a spatial query
+        val entities = game.entityManager.getEntities(capability)
+        for (entity in entities) {
+            val position = entity.getComponent<PositionComponent>().position
+            if (p == position) {
+                game.entityManager.removeEntity(entity)
+                break
+            }
+        }
+    }
+
+    private fun selectBlock(p: Vector3f) {
+        val game = YapGame.getInstance()
+        // TODO use a spatial query
+        val entities = game.entityManager.getEntities(capability)
+        for (entity in entities) {
+            val position = entity.getComponent<PositionComponent>().position
+            if (p == position) {
+                settings.updateSelectedEntity(entity)
+                break
+            }
+        }
+    }
+
+    private fun rightMouseClick() {
         clampedPoint?.let { p ->
-            normal?.let { n ->
-                val entity = settings.createSelectedEntity(Vector3f(p)
-                        .add(n))
-                entity?.let {
-                    YapGame.getInstance().entityManager.addEntity(it)
+            if (settings.createSelectedEntity(p) == null) {
+                // ignore
+            } else {
+                normal?.let { n ->
+                    val entity = settings.createSelectedEntity(Vector3f(p)
+                            .add(n))
+                    entity?.let {
+                        YapGame.getInstance().entityManager.addEntity(it)
+                    }
                 }
             }
         }
@@ -120,10 +145,24 @@ class LevelEditor : ISystem(BoundingBoxComponent::class.java, PositionComponent:
         clampedPoint?.let { p ->
             normal?.let { n ->
                 val entity = settings.createSelectedEntity(Vector3f(p).add(n))
-                entity?.let { e ->
-                    renderEntityPreview(e, p, n)
+                if (entity == null) {
+                    renderSelectionPreview(p, n)
+                } else {
+                    renderEntityPreview(entity, p, n)
                 }
             }
+        }
+    }
+
+    private fun renderSelectionPreview(p: Vector3f, n: Vector3f) {
+        val renderer = YapGame.getInstance().renderer
+
+        renderer.wireframe {
+            val transformation = Matrix4f()
+                    .translate(p)
+                    .translate(0.5F, 0.5F, 0.5F)
+                    .scale(1.05F, 1.05F, 1.05F)
+            renderer.cube(transformation)
         }
     }
 

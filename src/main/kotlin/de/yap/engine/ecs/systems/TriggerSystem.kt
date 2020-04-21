@@ -1,6 +1,8 @@
 package de.yap.engine.ecs.systems
 
-import de.yap.engine.ecs.*
+import de.yap.engine.ecs.BoundingBoxComponent
+import de.yap.engine.ecs.TriggerType
+import de.yap.engine.ecs.TriggerTypeComponent
 import de.yap.engine.ecs.entities.Entity
 
 class TriggerSystem : ISystem(TriggerTypeComponent::class.java, BoundingBoxComponent::class.java) {

@@ -18,6 +18,7 @@ import org.joml.Vector3f
 import org.joml.Vector4f
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL20.glViewport
+import java.util.*
 
 
 class YapGame private constructor() : IGameLogic {
@@ -93,7 +94,8 @@ class YapGame private constructor() : IGameLogic {
 
         val position = Vector3f(5.0F, 0.0F, 5.0F)
         val goal = Vector3f(0.0F, 0.0F, 0.0F)
-        entityManager.addEntity(DynamicEntity(DynamicEntityType.SIMPLE_AI, position, goal))
+        val waypoints = Collections.singletonList(goal)
+        entityManager.addEntity(DynamicEntity(DynamicEntityType.SIMPLE_AI, position, waypoints))
 
         entityManager.addEntity(TriggerEntity(
                 TriggerType.GAME_FINISHED,

@@ -12,7 +12,7 @@ enum class DynamicEntityType {
 class DynamicEntity(
         id: DynamicEntityType,
         position: Vector3f,
-        goal: Vector3f,
+        waypoints: List<Vector3f> = emptyList(),
         boundingBox: BoundingBoxComponent = BoundingBoxComponent.unitCube()
 ) : Entity() {
     init {
@@ -25,7 +25,7 @@ class DynamicEntity(
         addComponent(boundingBox)
 
         val pathComponent = PathComponent()
-        pathComponent.waypoints.add(goal)
+        pathComponent.waypoints.addAll(waypoints)
         addComponent(pathComponent)
 
         addComponent(DynamicEntityComponent(id))

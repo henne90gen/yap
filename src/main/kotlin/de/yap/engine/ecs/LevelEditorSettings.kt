@@ -39,13 +39,15 @@ class LevelEditorSettings {
 
     private lateinit var frame: JFrame
 
-    var editorMode = EditorMode.CREATE
     var selectedTextureIndex = Vector2i(0)
     var rotationInDegrees = Vector3f(0.0F)
     var selectedEntityType = SelectedEntityType.BLOCK
     var staticEntityTypeCombo: JComboBox<StaticEntityType>? = null
     var dynamicEntityTypeCombo: JComboBox<DynamicEntityType>? = null
     var triggerTypeCombo: JComboBox<TriggerType>? = null
+    var editPanel: JPanel? = null
+
+    private var selectedEntity: Entity? = null
 
     fun init() {
         frame = JFrame("Settings")
@@ -63,24 +65,6 @@ class LevelEditorSettings {
         frame.isVisible = true
     }
 
-    private fun createEditorMode(): JPanel {
-        val panel = JPanel()
-
-        val buttonGroup = ButtonGroup()
-
-        for (mode in EditorMode.values()) {
-            val active = mode == editorMode
-            val button = JRadioButton(mode.name, active)
-            button.addActionListener {
-                editorMode = mode
-            }
-            panel.add(button)
-            buttonGroup.add(button)
-        }
-
-        return panel
-    }
-
     private fun createTabs(): JComponent {
         val tabbedPane = JTabbedPane()
         tabbedPane.addChangeListener {
@@ -94,7 +78,7 @@ class LevelEditorSettings {
             }
         }
 
-        val editPanel = createEditPanel()
+        editPanel = JPanel()
         tabbedPane.addTab("Edit", null, editPanel, "Edit")
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_1)
 
@@ -115,11 +99,6 @@ class LevelEditorSettings {
         tabbedPane.setMnemonicAt(4, KeyEvent.VK_5)
 
         return tabbedPane
-    }
-
-    private fun createEditPanel(): JPanel {
-        val panel = JPanel()
-        return panel
     }
 
     private fun createBlockPanel(): JPanel {
@@ -357,12 +336,32 @@ class LevelEditorSettings {
                 val yaw = Math.toRadians(rotationInDegrees.y.toDouble()).toFloat()
                 StaticEntity(id, clampedPoint, pitch, yaw)
             }
-            SelectedEntityType.DYNAMIC -> TODO()
+            SelectedEntityType.DYNAMIC -> {
+                val id = dynamicEntityTypeCombo?.selectedItem as DynamicEntityType
+                DynamicEntity(id, clampedPoint)
+            }
             SelectedEntityType.TRIGGER -> BlockEntity.singleTextureBlock(clampedPoint, TRIGGER_TEXTURE_COORDS)
         }
     }
 
     fun close() {
         frame.dispatchEvent(WindowEvent(frame, WindowEvent.WINDOW_CLOSING))
+    }
+
+    fun updateSelectedEntity(entity: Entity) {
+        selectedEntity = entity
+        editPanel?.let {
+            it.removeAll()
+            it.layout = BoxLayout(it, BoxLayout.Y_AXIS)
+            entity.components
+                    .map { entry -> entry.value }
+                    .map { component -> component::class.java.simpleName }
+                    .sorted()
+                    .forEach { value ->
+                        val label = JLabel(value)
+                        it.add(label)
+                    }
+            frame.pack()
+        }
     }
 }
