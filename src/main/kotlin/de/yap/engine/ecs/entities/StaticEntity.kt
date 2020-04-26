@@ -51,6 +51,7 @@ enum class StaticEntityType(val id: Int, val meshPath: String) {
     CLOCK(17, "models/clock.obj"),
     DIGITAL_CLOCK(18, "models/digital_clock.obj"),
     DOOR(19, "models/door.obj"),
+    WALL_LAMP(20, "models/wall_lamp.obj"),
 }
 
 class MeshAtlas {
